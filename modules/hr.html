@@ -1,0 +1,4303 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DTA Space - Odoo 19 HR Module</title>
+  <style>
+    :root {
+      --o-primary: #8B2500;
+      --o-primary-dark: #6B1C00;
+      --o-primary-light: #FFF5F2;
+      --o-secondary: #0D9488;
+      --o-bg: #F9FAFB;
+      --o-border: #E5E7EB;
+      --o-text: #111827;
+      --o-text-muted: #6B7280;
+      --o-white: #FFFFFF;
+      --o-success: #059669;
+      --o-warning: #D97706;
+      --o-danger: #DC2626;
+      --o-info: #0891B2;
+      --accent-gold: #C49549;
+      --entity-nk: #007BFF;
+      --entity-bt: #6F42C1;
+      --entity-hq: #28A745;
+      --o-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+      --o-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+      --o-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --o-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+      --o-radius-sm: 6px;
+      --o-radius-md: 8px;
+      --o-radius-lg: 12px;
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      --sidebar-width: 260px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--o-bg);
+      color: var(--o-text);
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* ===== LAYOUT ===== */
+    .app-layout {
+      position: relative;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      position: relative;
+      width: 240px;
+      background: #FFFFFF;
+      color: #212529;
+      border-right: 1px solid #E5E7EB;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: #8B2500;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .logo-text {
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: #8B2500;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .logo-text {
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .page-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+
+    .top-header {
+      height: 46px;
+      background: white;
+      border-bottom: 1px solid #DEE2E6;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 16px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      flex-shrink: 0;
+    }
+
+    .header-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .search-box input {
+      padding: 5px 12px;
+      border: 1px solid var(--o-border);
+      border-radius: 4px;
+      font-size: 12px;
+      width: 200px;
+    }
+
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #8B2500;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 11px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .breadcrumb a {
+      color: #8B2500;
+      text-decoration: none;
+    }
+
+    .entity-switcher {
+      padding: 8px 16px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+
+    .entity-switcher select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #E5E7EB;
+      border-radius: 4px;
+      background: #F9FAFB;
+      color: #212529;
+      font-size: 11px;
+    }
+
+    .entity-switcher select option {
+      color: #212529;
+      background: white;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    .nav-section {
+      margin-bottom: 0px;
+    }
+
+    .nav-section-title {
+      padding: 4px 16px;
+      font-size: 10px;
+      text-transform: uppercase;
+      color: #9CA3AF;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      color: #4B5563;
+      cursor: pointer;
+      transition: all 0.2s;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .nav-item:hover {
+      background: #F3F4F6;
+      color: #111827;
+    }
+
+    .nav-item.active {
+      background: linear-gradient(90deg, #FFF5F2 0%, rgba(255,245,242,0) 100%);
+      color: #8B2500;
+      font-weight: 500;
+      border-left: 3px solid #8B2500;
+      box-shadow: inset 0 0 0 1px rgba(139, 37, 0, 0.05);
+    }
+
+    .nav-icon {
+      width: 18px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    /* Alias for hr.html existing HTML structure */
+    .sidebar-brand {
+      padding: 16px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-brand-logo {
+      width: 32px;
+      height: 32px;
+      background: #8B2500;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+      color: white;
+    }
+
+    .sidebar-brand-text {
+      font-size: 15px;
+      font-weight: bold;
+      color: #212529;
+    }
+
+    .sidebar-brand-sub {
+      font-size: 11px;
+      opacity: 0.7;
+      color: #6B7280;
+    }
+
+    .sidebar-footer {
+      padding: 12px 20px;
+      border-top: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .sidebar-footer-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(164, 16, 16, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    /* ===== MAIN LAYOUT ===== */
+    /* Removed .main-wrapper - using flexbox layout instead */
+
+    /* ===== TOP HEADER ===== */
+    .top-header {
+      background: var(--o-white);
+      border-bottom: 1px solid var(--o-border);
+      padding: 0 24px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-search {
+      position: relative;
+    }
+
+    .header-search input {
+      width: 320px;
+      padding: 6px 12px 6px 32px;
+      border: 1px solid var(--o-border);
+      border-radius: 20px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .header-search input:focus {
+      border-color: var(--o-primary);
+    }
+
+    .header-search::before {
+      content: "\1F50D";
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      position: relative;
+      color: var(--o-text-muted);
+      transition: background 0.15s;
+    }
+
+    .header-icon-btn:hover {
+      background: var(--o-bg);
+    }
+
+    .header-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--o-danger);
+      color: var(--o-white);
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Entity Switcher button (in content area - NOT sidebar) */
+    .entity-switcher-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border: 1px solid var(--o-border);
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      background: var(--o-bg);
+      position: relative;
+    }
+
+    .entity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .entity-dot.nk {
+      background: var(--entity-nk);
+    }
+
+    .entity-dot.bt {
+      background: var(--entity-bt);
+    }
+
+    .entity-dot.hq {
+      background: var(--entity-hq);
+    }
+
+    .entity-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 4px;
+      background: var(--o-white);
+      border: 1px solid var(--o-border);
+      border-radius: var(--o-radius);
+      box-shadow: var(--o-shadow-lg);
+      min-width: 200px;
+      display: none;
+      z-index: 200;
+    }
+
+    .entity-dropdown.show {
+      display: block;
+    }
+
+    .entity-option {
+      padding: 10px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s;
+    }
+
+    .entity-option:hover {
+      background: var(--o-bg);
+    }
+
+    .entity-option.active {
+      background: rgba(113, 75, 103, 0.08);
+      font-weight: 600;
+    }
+
+    /* ===== CONTROL PANEL ===== */
+    .control-panel {
+      background: var(--o-white);
+      border-bottom: 1px solid var(--o-border);
+      padding: 12px 24px;
+    }
+
+    .breadcrumb {
+      font-size: 13px;
+      color: var(--o-text-muted);
+      margin-bottom: 0px;
+    }
+
+    .breadcrumb a {
+      color: var(--o-primary);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .control-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .control-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 6px 16px;
+      border-radius: var(--o-radius);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--o-primary);
+      color: var(--o-white);
+      border-color: var(--o-primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--o-primary-dark);
+    }
+
+    .btn-secondary {
+      background: var(--o-white);
+      color: var(--o-text);
+      border-color: var(--o-border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--o-bg);
+    }
+
+    .btn-success {
+      background: var(--o-success);
+      color: var(--o-white);
+    }
+
+    .btn-success:hover {
+      background: #218838;
+    }
+
+    .btn-danger {
+      background: var(--o-danger);
+      color: var(--o-white);
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    .filter-select {
+      padding: 6px 28px 6px 10px;
+      border: 1px solid var(--o-border);
+      border-radius: var(--o-radius);
+      font-size: 13px;
+      background: var(--o-white);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236C757D' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+
+    /* ===== SUB NAV TABS ===== */
+    .sub-nav {
+      background: var(--o-white);
+      border-bottom: 1px solid var(--o-border);
+      padding: 0 24px;
+      display: flex;
+      gap: 0;
+    }
+
+    .sub-nav-item {
+      padding: 12px 20px;
+      font-size: 13px;
+      color: var(--o-text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      font-weight: 500;
+    }
+
+    .sub-nav-item:hover {
+      color: var(--o-text);
+    }
+
+    .sub-nav-item.active {
+      color: var(--o-primary);
+      border-bottom-color: var(--o-primary);
+    }
+
+    .sub-nav-item .badge {
+      background: var(--o-primary);
+      color: var(--o-white);
+      font-size: 11px;
+      padding: 1px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+      font-weight: 600;
+    }
+
+    /* ===== CONTENT AREA ===== */
+    .content-area {
+      padding: 24px;
+    }
+
+    /* ===== STAT CARDS ===== */
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 0px;
+    }
+
+    .stat-card {
+      background: var(--o-white);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #8B2500, #C49549);
+      opacity: 0;
+      transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-card:hover::before {
+      opacity: 1;
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .stat-icon.blue {
+      background: rgba(0, 123, 255, 0.1);
+      color: var(--entity-nk);
+    }
+
+    .stat-icon.green {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--o-success);
+    }
+
+    .stat-icon.orange {
+      background: rgba(255, 193, 7, 0.1);
+      color: #E0A800;
+    }
+
+    .stat-icon.purple {
+      background: rgba(111, 66, 193, 0.1);
+      color: var(--entity-bt);
+    }
+
+    .stat-icon.red {
+      background: rgba(220, 53, 69, 0.1);
+      color: var(--o-danger);
+    }
+
+    .stat-icon.teal {
+      background: rgba(0, 160, 157, 0.1);
+      color: var(--o-secondary);
+    }
+
+    .stat-info {
+      flex: 1;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--o-text-muted);
+    }
+
+    .stat-change {
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .stat-change.up {
+      color: var(--o-success);
+    }
+
+    .stat-change.down {
+      color: var(--o-danger);
+    }
+
+    /* ===== TABLES ===== */
+    .data-card {
+      background: var(--o-white);
+      border-radius: var(--o-radius);
+      box-shadow: var(--o-shadow);
+      overflow: hidden;
+      margin-bottom: 0px;
+    }
+
+    .data-card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--o-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .data-card-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table thead th {
+      background: var(--o-bg);
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--o-text-muted);
+      border-bottom: 1px solid var(--o-border);
+      white-space: nowrap;
+    }
+
+    .data-table tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #F0F0F0;
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(113, 75, 103, 0.03);
+    }
+
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    /* ===== STATUS BADGES ===== */
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      gap: 5px;
+    }
+
+    .badge-status::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .badge-active {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--o-success);
+    }
+
+    .badge-active::before {
+      background: var(--o-success);
+    }
+
+    .badge-leave {
+      background: rgba(255, 193, 7, 0.1);
+      color: #E0A800;
+    }
+
+    .badge-leave::before {
+      background: #E0A800;
+    }
+
+    .badge-absent {
+      background: rgba(220, 53, 69, 0.1);
+      color: var(--o-danger);
+    }
+
+    .badge-absent::before {
+      background: var(--o-danger);
+    }
+
+    .badge-late {
+      background: rgba(253, 126, 20, 0.1);
+      color: #FD7E14;
+    }
+
+    .badge-late::before {
+      background: #FD7E14;
+    }
+
+    .badge-approved {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--o-success);
+    }
+
+    .badge-approved::before {
+      background: var(--o-success);
+    }
+
+    .badge-pending {
+      background: rgba(255, 193, 7, 0.1);
+      color: #E0A800;
+    }
+
+    .badge-pending::before {
+      background: #E0A800;
+    }
+
+    .badge-rejected {
+      background: rgba(220, 53, 69, 0.1);
+      color: var(--o-danger);
+    }
+
+    .badge-rejected::before {
+      background: var(--o-danger);
+    }
+
+    .badge-present {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--o-success);
+    }
+
+    .badge-present::before {
+      background: var(--o-success);
+    }
+
+    /* ===== ENTITY BADGE ===== */
+    .badge-entity {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-entity.nk {
+      background: rgba(0, 123, 255, 0.1);
+      color: var(--entity-nk);
+    }
+
+    .badge-entity.bt {
+      background: rgba(111, 66, 193, 0.1);
+      color: var(--entity-bt);
+    }
+
+    .badge-entity.hq {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--entity-hq);
+    }
+
+    /* ===== AVATAR ===== */
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--o-white);
+      flex-shrink: 0;
+    }
+
+    .avatar.sm {
+      width: 28px;
+      height: 28px;
+      font-size: 11px;
+    }
+
+    .avatar.lg {
+      width: 64px;
+      height: 64px;
+      font-size: 22px;
+    }
+
+    .avatar.xl {
+      width: 90px;
+      height: 90px;
+      font-size: 32px;
+    }
+
+    .emp-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .emp-name {
+      font-weight: 600;
+      font-size: 13.5px;
+    }
+
+    .emp-id {
+      font-size: 11px;
+      color: var(--o-text-muted);
+    }
+
+    /* ===== VIEW PANELS ===== */
+    .view-panel {
+      display: none;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    /* ===== TWO COLUMN LAYOUT ===== */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 24px;
+    }
+
+    /* ===== EMPLOYEE DETAIL ===== */
+    .detail-header {
+      background: var(--o-white);
+      border-radius: var(--o-radius);
+      box-shadow: var(--o-shadow);
+      padding: 24px;
+      margin-bottom: 0px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    .detail-tabs {
+      display: flex;
+      gap: 0;
+      background: var(--o-white);
+      border-radius: var(--o-radius);
+      box-shadow: var(--o-shadow);
+      overflow: hidden;
+      margin-bottom: 0px;
+    }
+
+    .detail-tab {
+      padding: 12px 24px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      color: var(--o-text-muted);
+      transition: all 0.15s;
+    }
+
+    .detail-tab:hover {
+      color: var(--o-text);
+      background: var(--o-bg);
+    }
+
+    .detail-tab.active {
+      color: var(--o-primary);
+      border-bottom-color: var(--o-primary);
+    }
+
+    .detail-content {
+      display: none;
+    }
+
+    .detail-content.active {
+      display: block;
+    }
+
+    .detail-card {
+      background: var(--o-white);
+      border-radius: var(--o-radius);
+      box-shadow: var(--o-shadow);
+      overflow: hidden;
+    }
+
+    .detail-card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--o-border);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .detail-card-body {
+      padding: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 0px;
+    }
+
+    .form-group {
+      margin-bottom: 0px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--o-text-muted);
+      margin-bottom: 0px;
+    }
+
+    .form-value {
+      font-size: 14px;
+      padding: 8px 0;
+      border-bottom: 1px solid #F0F0F0;
+    }
+
+    .form-section {
+      margin-bottom: 0px;
+    }
+
+    .form-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--o-primary);
+      margin-bottom: 0px;
+      padding-bottom: 0px;
+      border-bottom: 2px solid var(--o-primary);
+      display: inline-block;
+    }
+
+    /* ===== PROGRESS BAR ===== */
+    .progress-bar {
+      height: 8px;
+      background: var(--o-bg);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    .progress-fill.green {
+      background: var(--o-success);
+    }
+
+    .progress-fill.blue {
+      background: var(--entity-nk);
+    }
+
+    .progress-fill.orange {
+      background: #FD7E14;
+    }
+
+    .progress-fill.red {
+      background: var(--o-danger);
+    }
+
+    /* ===== LEAVE BALANCE ===== */
+    .leave-balance-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #F0F0F0;
+    }
+
+    .leave-balance-item:last-child {
+      border-bottom: none;
+    }
+
+    .leave-type-name {
+      font-weight: 500;
+    }
+
+    .leave-days {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .leave-days span {
+      font-size: 13px;
+      color: var(--o-text-muted);
+    }
+
+    .leave-days strong {
+      font-size: 16px;
+      min-width: 30px;
+      text-align: right;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--o-white);
+      border-radius: var(--o-radius);
+      box-shadow: var(--o-shadow-lg);
+      width: 560px;
+      max-width: 90vw;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--o-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: var(--o-white);
+      z-index: 10;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--o-text-muted);
+    }
+
+    .modal-close:hover {
+      background: var(--o-bg);
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--o-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .modal input,
+    .modal select,
+    .modal textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--o-border);
+      border-radius: var(--o-radius);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .modal input:focus,
+    .modal select:focus,
+    .modal textarea:focus {
+      border-color: var(--o-primary);
+    }
+
+    .modal textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* ===== TOAST ===== */
+    .toast-container {
+      position: fixed;
+      top: 60px;
+      right: 24px;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--o-white);
+      border-radius: var(--o-radius);
+      box-shadow: var(--o-shadow-lg);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 300px;
+      animation: slideIn 0.3s ease;
+      border-left: 4px solid var(--o-success);
+    }
+
+    .toast.info {
+      border-left-color: var(--o-info);
+    }
+
+    .toast.warning {
+      border-left-color: var(--o-warning);
+    }
+
+    .toast.error {
+      border-left-color: var(--o-danger);
+    }
+
+    .toast-icon {
+      font-size: 20px;
+    }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .toast-message {
+      font-size: 12px;
+      color: var(--o-text-muted);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+
+    /* ===== ATTENDANCE SUMMARY ===== */
+    .att-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 0px;
+    }
+
+    .att-stat {
+      text-align: center;
+      padding: 16px;
+      background: var(--o-bg);
+      border-radius: var(--o-radius);
+    }
+
+    .att-stat-value {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .att-stat-label {
+      font-size: 12px;
+      color: var(--o-text-muted);
+      margin-top: 4px;
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-btns {
+      display: flex;
+      gap: 4px;
+    }
+
+    .action-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      border: 1px solid var(--o-border);
+      background: var(--o-white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+
+    .action-btn:hover {
+      background: var(--o-bg);
+    }
+
+    .action-btn.approve {
+      color: var(--o-success);
+    }
+
+    .action-btn.approve:hover {
+      background: rgba(40, 167, 69, 0.1);
+      border-color: var(--o-success);
+    }
+
+    .action-btn.reject {
+      color: var(--o-danger);
+    }
+
+    .action-btn.reject:hover {
+      background: rgba(220, 53, 69, 0.1);
+      border-color: var(--o-danger);
+    }
+
+    .action-btn.view {
+      color: var(--o-info);
+    }
+
+    .action-btn.view:hover {
+      background: rgba(23, 162, 184, 0.1);
+      border-color: var(--o-info);
+    }
+
+    /* ===== MISC ===== */
+    .text-right {
+      text-align: right;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .text-muted {
+      color: var(--o-text-muted);
+    }
+
+    .mt-2 {
+      margin-top: 8px;
+    }
+
+    .mt-3 {
+      margin-top: 16px;
+    }
+
+    .mb-3 {
+      margin-bottom: 0px;
+    }
+
+    .fw-600 {
+      font-weight: 600;
+    }
+
+    .fw-700 {
+      font-weight: 700;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .items-center {
+      align-items: center;
+    }
+
+    .gap-2 {
+      gap: 8px;
+    }
+
+    .gap-3 {
+      gap: 16px;
+    }
+
+    /* ===== TIMELINE ===== */
+    .timeline-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #F0F0F0;
+    }
+
+    .timeline-item:last-child {
+      border-bottom: none;
+    }
+
+    .timeline-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .timeline-dot.green {
+      background: var(--o-success);
+    }
+
+    .timeline-dot.blue {
+      background: var(--entity-nk);
+    }
+
+    .timeline-dot.orange {
+      background: #FD7E14;
+    }
+
+    .timeline-content {
+      flex: 1;
+    }
+
+    .timeline-title {
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    .timeline-time {
+      font-size: 12px;
+      color: var(--o-text-muted);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1200px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .stat-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .att-summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .tooltip {
+      position: relative;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .tooltip::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .tooltip:hover::after {
+      opacity: 1;
+    }
+
+    /* Pattern decoration */
+    .sidebar-pattern {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 60px;
+      height: 60px;
+      background-image: url('../Media/pattern.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.08;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+
+    .page-pattern {
+      position: fixed;
+      bottom: 0px;
+      right: 20px;
+      width: 150px;
+      height: 150px;
+      background-image: url('../Media/pattern.png');
+      background-size: contain;
+      margin-bottom: -20px;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.08;
+      pointer-events: none;
+      z-index: 0;
+    }
+  
+    /* ===== TAB BUTTONS (control panel row 2) ===== */
+    .tab-btn {
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid var(--o-border);
+      border-radius: var(--o-radius-sm);
+      background: var(--o-white);
+      color: var(--o-text-muted);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tab-btn:hover {
+      background: var(--o-bg);
+      color: var(--o-text);
+      border-color: var(--o-primary);
+    }
+    .tab-btn.active {
+      background: var(--o-primary);
+      color: #fff;
+      border-color: var(--o-primary);
+      font-weight: 600;
+    }
+
+    /* ===== ENTITY-SWITCHER-BTN (control panel inline) ===== */
+    .entity-switcher-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border: 1px solid var(--o-border);
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      background: var(--o-bg);
+      position: relative;
+      white-space: nowrap;
+    }
+    #entityDropdownHR {
+      display: none;
+    }
+    #entityDropdownHR.show {
+      display: block !important;
+    }
+
+    </style>
+</head>
+
+<body>
+
+  <div class="app-layout">
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-pattern"></div>
+        <div class="sidebar-logo">
+          <img src="../Media/DTA-LOGO.png" alt="DTA Space" style="height: 32px; width: auto;">
+          <div class="logo-text">DTA Space</div>
+        </div>
+      </div>
+      <div class="entity-switcher">
+        <select id="entitySelect" onchange="switchEntity(this.value)">
+          <option value="hq">🏢 HQ - Trụ sở chính</option>
+          <option value="nk">🏪 NK - Cửa hàng Nguyễn Kiệm</option>
+          <option value="bt">🏪 BT - Cửa Hàng Bà Triệu</option>
+        </select>
+      </div>
+      <nav class="sidebar-nav" id="sidebarNav">
+        <div class="nav-section">
+          <div class="nav-section-title">Tổng quan</div>
+          <a class="nav-item" href="../index.html"><span class="nav-icon">📊</span><span>Bảng điều khiển</span></a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Nhân sự</div>
+          <a class="nav-item active" id="sidebarNav-directory" href="#" onclick="navToHRView('directory'); return false;"><span class="nav-icon">👥</span><span>Danh sách nhân viên</span></a>
+          <a class="nav-item" id="sidebarNav-attendance" href="#" onclick="navToHRView('attendance'); return false;"><span class="nav-icon">⏰</span><span>Chấm công</span></a>
+          <a class="nav-item" id="sidebarNav-leaves" href="#" onclick="navToHRView('leaves'); return false;"><span class="nav-icon">🏖️</span><span>Nghỉ phép</span></a>
+          <a class="nav-item" id="sidebarNav-salary" href="#" onclick="navToHRView('salary'); return false;"><span class="nav-icon">💰</span><span>Bảng lương</span></a>
+          <a class="nav-item" id="sidebarNav-contracts" href="#" onclick="navToHRView('contracts'); return false;"><span class="nav-icon">📋</span><span>Hợp đồng</span></a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Modules</div>
+          <a class="nav-item" href="inventory.html"><span class="nav-icon">📦</span><span>Quản lý kho</span></a>
+          <a class="nav-item" href="events.html"><span class="nav-icon">🎨</span><span>Sự kiện</span></a>
+          <a class="nav-item" href="sales.html"><span class="nav-icon">💼</span><span>Bán hàng</span></a>
+          <a class="nav-item" href="design_studio.html"><span class="nav-icon">✏️</span><span>Thiết kế</span></a>
+          <a class="nav-item" href="accounting.html"><span class="nav-icon">💰</span><span>Kế toán</span></a>
+          <a class="nav-item" href="misa.html"><span class="nav-icon">🔄</span><span>Đồng bộ MISA</span></a>
+          <a class="nav-item" href="reports.html"><span class="nav-icon">📈</span><span>Báo cáo</span></a>
+          <a class="nav-item" href="projects.html"><span class="nav-icon">🏗️</span><span>Dự án</span></a>
+          <a class="nav-item" href="products.html"><span class="nav-icon">📦</span><span>Sản phẩm</span></a>
+          <a class="nav-item" href="hr.html"><span class="nav-icon">👥</span><span>Nhân sự</span></a>
+          <a class="nav-item" href="marketing.html"><span class="nav-icon">📢</span><span>Marketing</span></a>
+          <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span>Cài đặt</span></a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <div class="main-content">
+
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="breadcrumb">
+          <a href="../index.html">Bảng điều khiển</a>
+          <span>/</span>
+          <strong>Nhân sự</strong>
+        </div>
+        <div class="header-actions">
+          <div class="search-box">
+            <input type="text" placeholder="Tìm kiếm... (Ctrl+K)" id="globalSearch">
+          </div>
+          <span class="tooltip" data-tip="Notifications">🔔</span>
+          <span class="tooltip" data-tip="Messages">💬</span>
+          <div class="user-menu">
+            <div class="user-avatar">NA</div>
+            <span>Nguyễn Admin</span>
+            <span>▼</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <div class="page-content">
+
+        <!-- CONTROL PANEL – 2-ROW LAYOUT -->
+        <div class="control-panel" style="padding:0; border-bottom:2px solid var(--o-border);">
+          <!-- Row 1: Breadcrumb / Entity / Filters -->
+          <div style="display:flex; align-items:center; gap:16px; padding:10px 24px 8px; border-bottom:1px solid var(--o-border); flex-wrap:nowrap; overflow-x:auto;">
+            <div style="font-size:13px; color:var(--o-text-muted); white-space:nowrap;">
+              <a href="../index.html" style="color:var(--o-primary); text-decoration:none;">Bảng điều khiển</a>
+              <span style="margin:0 4px;">&#47;</span>
+              <span>Nhân sự</span>
+            </div>
+            <div style="width:1px; height:16px; background:var(--o-border); flex-shrink:0;"></div>
+            <div class="entity-switcher-btn" onclick="document.getElementById('entityDropdownHR').classList.toggle('show'); event.stopPropagation();" style="position:relative; flex-shrink:0; padding:4px 12px; border:1px solid var(--o-border); border-radius:20px; font-size:13px; cursor:pointer; background:var(--o-bg); display:inline-flex; align-items:center; gap:6px;">
+              <div class="entity-dot hq" style="width:8px; height:8px; border-radius:50%; background:var(--entity-hq);"></div>
+              <span id="hrEntityLabel">HQ – Trụ sở chính</span>
+              &#9662;
+              <div id="entityDropdownHR" style="position:absolute; top:100%; left:0; margin-top:4px; background:#fff; border:1px solid var(--o-border); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.12); min-width:200px; display:none; z-index:300;">
+                <div onclick="hrSwitchEntity('hq','HQ – Trụ sở chính',this); event.stopPropagation()" style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; background:rgba(40,167,69,.08); font-weight:600;"><div style="width:8px;height:8px;border-radius:50%;background:var(--entity-hq);"></div>HQ – Trụ sở chính</div>
+                <div onclick="hrSwitchEntity('nk','NK – Nguyễn Kiệm',this); event.stopPropagation()" style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--entity-nk);"></div>NK – Nguyễn Kiệm</div>
+                <div onclick="hrSwitchEntity('bt','BT – Bà Triệu',this); event.stopPropagation()" style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--entity-bt);"></div>BT – Bà Triệu</div>
+              </div>
+            </div>
+            <div style="flex:1; min-width:0;"></div>
+            <select class="filter-select" id="deptFilter" onchange="filterByDepartment()" style="flex-shrink:0;">
+              <option value="">Tất cả phòng ban</option>
+              <option value="Sales">Bán hàng</option>
+              <option value="Thiết kế">Thiết kế</option>
+              <option value="QLDA">QLDA</option>
+              <option value="Kế toán">Kế toán</option>
+              <option value="HCNS">HCNS</option>
+              <option value="Marketing">Marketing</option>
+            </select>
+            <div style="font-size:13px; color:var(--o-text-muted); white-space:nowrap; flex-shrink:0;"><span id="hrRecordCount">24</span> nhân viên</div>
+          </div>
+          <!-- Row 2: Title / Action Buttons / View Tabs -->
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 24px; gap:12px; flex-wrap:nowrap;">
+            <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+              <h1 style="font-size:18px; font-weight:700; margin:0;">&#128101; Quản lý Nhân sự</h1>
+              <button class="btn btn-primary btn-sm" onclick="openModal('newEmployeeModal')">&#10010; Thêm nhân viên</button>
+              <button class="btn btn-secondary btn-sm" onclick="showToast('Xuất file','Đã xuất danh sách nhân viên ra Excel','success')">&#128229; Xuất Excel</button>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; flex-shrink:0; flex-wrap:nowrap;">
+              <button class="tab-btn active" data-view="directory" onclick="switchHRView(this)">&#9776; Danh sách</button>
+              <button class="tab-btn" data-view="attendance" onclick="switchHRView(this)">&#9200; Chấm công</button>
+              <button class="tab-btn" data-view="leaves" onclick="switchHRView(this)">&#127796; Nghỉ phép <span style="background:var(--o-primary);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px;">4</span></button>
+              <button class="tab-btn" data-view="salary" onclick="switchHRView(this)">&#128176; Bảng lương</button>
+              <button class="tab-btn" data-view="contracts" onclick="switchHRView(this)">&#128203; Hợp đồng</button>
+              <button class="tab-btn" id="btnDetailTab" data-view="detail" onclick="switchHRView(this)" style="display:none;">&#128100; Chi tiết</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== CONTENT ===== -->
+        <div class="content-area">
+
+          <!-- ===== VIEW: EMPLOYEE DIRECTORY ===== -->
+          <div class="view-panel active" id="view-directory">
+            <!-- Stat Cards -->
+            <div class="stat-cards">
+              <div class="stat-card">
+                <div class="stat-icon blue">&#128101;</div>
+                <div class="stat-info">
+                  <div class="stat-value">24</div>
+                  <div class="stat-label">Tổng nhân viên</div>
+                  <div class="stat-change up">&#9650; +2 tháng này</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green">&#9989;</div>
+                <div class="stat-info">
+                  <div class="stat-value">21</div>
+                  <div class="stat-label">Đang hoạt động</div>
+                  <div class="stat-change">87,5% tổng số</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon orange">&#127796;</div>
+                <div class="stat-info">
+                  <div class="stat-value">2</div>
+                  <div class="stat-label">Nghỉ phép còn lại</div>
+                  <div class="stat-change">1 kỳ nghỉ Thái Lan</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon purple">&#10024;</div>
+                <div class="stat-info">
+                  <div class="stat-value">3</div>
+                  <div class="stat-label">Tháng mới này</div>
+                  <div class="stat-change up">&#9650; Tuyển thêm</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Employee Table -->
+            <div class="data-card">
+              <div class="data-card-header">
+                <div class="data-card-title">Danh sách nhân viên</div>
+                <span class="text-muted" style="font-size:13px">Shows <strong>24</strong> nhân viên</span>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table" id="employeeTable">
+                  <thead>
+                    <tr>
+                      <th style="width:40px">#</th>
+                      <th>Nhân viên</th>
+                      <th>phòng ban</th>
+                      <th>Chức năng</th>
+                      <th>Chi nhánh</th>
+                      <th>Trạng thái</th>
+                      <th>Điện thoại</th>
+                      <th class="text-right">Lương</th>
+                      <th style="width:100px"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr data-dept="HCNS">
+                      <td>1</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#8B2500">TT</div>
+                          <div>
+                            <div class="emp-name">Nguyễn Thị Thanh</div>
+                            <div class="emp-id">EMP-001</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>HCNS</td>
+                      <td>HCNS Trưởng phòng</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0901 234 567</td>
+                      <td class="text-right fw-600">25.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view"
+                            onclick="switchView('detail', document.querySelectorAll('.sub-nav-item')[3])"
+                            title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Sales">
+                      <td>2</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#007BFF">TM</div>
+                          <div>
+                            <div class="emp-name">Trần Văn Minh</div>
+                            <div class="emp-id">EMP-002</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Bán hàng</td>
+                      <td>Nhân viên kinh doanh</td>
+                      <td><span class="badge-entity nk">NK</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0912 345 678</td>
+                      <td class="text-right fw-600">12.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Thiết kế">
+                      <td>3</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#28A745">LH</div>
+                          <div>
+                            <div class="emp-name">Lê Thị Hương</div>
+                            <div class="emp-id">EMP-003</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Thiết kế</td>
+                      <td>Người thiết kế</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0933 456 789</td>
+                      <td class="text-right fw-600">15.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="QLDA">
+                      <td>4</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#6F42C1">PD</div>
+                          <div>
+                            <div class="emp-name">Phạm Đức</div>
+                            <div class="emp-id">EMP-004</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>QLDA</td>
+                      <td>Quản lý dự án</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0977 567 890</td>
+                      <td class="text-right fw-600">20.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Kế toán">
+                      <td>5</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#FD7E14">HL</div>
+                          <div>
+                            <div class="emp-name">Hoàng Lan</div>
+                            <div class="emp-id">EMP-005</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Kế toán</td>
+                      <td>Toán tử kế toán</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0988 678 901</td>
+                      <td class="text-right fw-600">13.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Marketing">
+                      <td>6</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#DC3545">VT</div>
+                          <div>
+                            <div class="emp-name">Vũ Thị Trang</div>
+                            <div class="emp-id">EMP-006</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Marketing</td>
+                      <td>Người sáng tạo nội dung</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-leave">Đang nghỉ</span></td>
+                      <td>0966 789 012</td>
+                      <td class="text-right fw-600">11.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Sales">
+                      <td>7</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#17A2B8">DN</div>
+                          <div>
+                            <div class="emp-name">Đặng Ngọc</div>
+                            <div class="emp-id">EMP-007</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Bán hàng</td>
+                      <td>Nhân viên kinh doanh</td>
+                      <td><span class="badge-entity bt">BT</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0944 890 123</td>
+                      <td class="text-right fw-600">12.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Thiết kế">
+                      <td>8</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#8B2500">BH</div>
+                          <div>
+                            <div class="emp-name">Bùi Hồng</div>
+                            <div class="emp-id">EMP-008</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Thiết kế</td>
+                      <td>Thiết kế nhóm trưởng</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0933 901 234</td>
+                      <td class="text-right fw-600">18.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Sales">
+                      <td>9</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#007BFF">NT</div>
+                          <div>
+                            <div class="emp-name">Ngô Thành</div>
+                            <div class="emp-id">EMP-009</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Bán hàng</td>
+                      <td>Phòng bán hàng trưởng</td>
+                      <td><span class="badge-entity nk">NK</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0911 012 345</td>
+                      <td class="text-right fw-600">22.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="QLDA">
+                      <td>10</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#6F42C1">DM</div>
+                          <div>
+                            <div class="emp-name">Đỗ Mai</div>
+                            <div class="emp-id">EMP-010</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>QLDA</td>
+                      <td>Giám sát quá trình</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0922 123 456</td>
+                      <td class="text-right fw-600">16.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Kế toán">
+                      <td>11</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#FD7E14">LK</div>
+                          <div>
+                            <div class="emp-name">Lý Khánh</div>
+                            <div class="emp-id">EMP-011</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Kế toán</td>
+                      <td>Kế toán trưởng</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hồ động</span></td>
+                      <td>0977 234 567</td>
+                      <td class="text-right fw-600">18.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Sales">
+                      <td>12</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#17A2B8">PT</div>
+                          <div>
+                            <div class="emp-name">Phan Thị</div>
+                            <div class="emp-id">EMP-012</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Bán hàng</td>
+                      <td>Nhân viên kinh doanh</td>
+                      <td><span class="badge-entity bt">BT</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0955 345 678</td>
+                      <td class="text-right fw-600">11.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Thiết kế">
+                      <td>13</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#28A745">HD</div>
+                          <div>
+                            <div class="emp-name">Hà Duy</div>
+                            <div class="emp-id">EMP-013</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Thiết kế</td>
+                      <td>Kiến trúc sư</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0988 456 789</td>
+                      <td class="text-right fw-600">17.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Sales">
+                      <td>14</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#DC3545">TA</div>
+                          <div>
+                            <div class="emp-name">Tô An</div>
+                            <div class="emp-id">EMP-014</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Bán hàng</td>
+                      <td>Chăm sóc KH</td>
+                      <td><span class="badge-entity nk">NK</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0966 567 890</td>
+                      <td class="text-right fw-600">10.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="HCNS">
+                      <td>15</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#8B2500">VL</div>
+                          <div>
+                            <div class="emp-name">Võ Linh</div>
+                            <div class="emp-id">EMP-015</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>HCNS</td>
+                      <td>Nhân sự</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0944 678 901</td>
+                      <td class="text-right fw-600">12.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="QLDA">
+                      <td>16</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#007BFF">CT</div>
+                          <div>
+                            <div class="emp-name">Chu Tuấn</div>
+                            <div class="emp-id">EMP-016</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>QLDA</td>
+                      <td>Kỹ năng xây dựng</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0933 789 012</td>
+                      <td class="text-right fw-600">15.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Marketing">
+                      <td>17</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#6F42C1">DH</div>
+                          <div>
+                            <div class="emp-name">Dương Hương</div>
+                            <div class="emp-id">EMP-017</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Marketing</td>
+                      <td>Nhân viên tiếp thị</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0911 890 123</td>
+                      <td class="text-right fw-600">13.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Sales">
+                      <td>18</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#FD7E14">NB</div>
+                          <div>
+                            <div class="emp-name">Nguyễn Bảo</div>
+                            <div class="emp-id">EMP-018</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Bán hàng</td>
+                      <td>Nhân viên kinh doanh</td>
+                      <td><span class="badge-entity bt">BT</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0977 901 234</td>
+                      <td class="text-right fw-600">11.500.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Thiết kế">
+                      <td>19</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#28A745">LM</div>
+                          <div>
+                            <div class="emp-name">Lâm Mỹ</div>
+                            <div class="emp-id">EMP-019</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Thiết kế</td>
+                      <td>Người thiết kế</td>
+                      <td><span class="badge-entity nk">NK</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0922 012 345</td>
+                      <td class="text-right fw-600">14.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Sales">
+                      <td>20</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#17A2B8">TP</div>
+                          <div>
+                            <div class="emp-name">Trịnh Phương</div>
+                            <div class="emp-id">EMP-020</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Bán hàng</td>
+                      <td>Nhân viên kinh doanh</td>
+                      <td><span class="badge-entity nk">NK</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0988 123 456</td>
+                      <td class="text-right fw-600">12.500.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="HCNS">
+                      <td>21</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#DC3545">DK</div>
+                          <div>
+                            <div class="emp-name">Đinh Khoa</div>
+                            <div class="emp-id">EMP-021</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>HCNS</td>
+                      <td>Quest</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0955 234 567</td>
+                      <td class="text-right fw-600">8.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="QLDA">
+                      <td>22</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#8B2500">GX</div>
+                          <div>
+                            <div class="emp-name">Giang Xuân</div>
+                            <div class="emp-id">EMP-022</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>QLDA</td>
+                      <td>Thợ thi công</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0944 345 678</td>
+                      <td class="text-right fw-600">10.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Sales">
+                      <td>23</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#007BFF">KL</div>
+                          <div>
+                            <div class="emp-name">Khánh Ly</div>
+                            <div class="emp-id">EMP-023</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Bán hàng</td>
+                      <td>Lễ tân</td>
+                      <td><span class="badge-entity bt">BT</span></td>
+                      <td><span class="badge-status badge-leave">Đang nghỉ</span></td>
+                      <td>0933 456 789</td>
+                      <td class="text-right fw-600">9.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                    <tr data-dept="Marketing">
+                      <td>24</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar" style="background:#6F42C1">HN</div>
+                          <div>
+                            <div class="emp-name">Huỳnh Nam</div>
+                            <div class="emp-id">EMP-024</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Marketing</td>
+                      <td>Nhà thiết kế</td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><span class="badge-status badge-active">Hoạt động</span></td>
+                      <td>0911 567 890</td>
+                      <td class="text-right fw-600">14.000.000 &#8363;</td>
+                      <td>
+                        <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== VIEW: ATTENDANCE ===== -->
+          <div class="view-panel" id="view-attendance">
+            <!-- Attendance Summary Stats -->
+            <div class="stat-cards">
+              <div class="stat-card">
+                <div class="stat-icon green">&#9989;</div>
+                <div class="stat-info">
+                  <div class="stat-value">19</div>
+                  <div class="stat-label">Có mặt hôm nay</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon orange">&#9200;</div>
+                <div class="stat-info">
+                  <div class="stat-value">3</div>
+                  <div class="stat-label">Đi trễ</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon red">&#10060;</div>
+                <div class="stat-info">
+                  <div class="stat-value">0</div>
+                  <div class="stat-label">Mặt trống</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon teal">&#128337;</div>
+                <div class="stat-info">
+                  <div class="stat-value">8,4 giờ</div>
+                  <div class="stat-label">TB giờ làm / ngày</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Attendance Summary -->
+            <div class="data-card mb-3">
+              <div class="data-card-header">
+                <div class="data-card-title">Bảng chấm công - Ngày 11/04/2026</div>
+                <div class="flex items-center gap-2">
+                  <input type="date" value="2026-04-11"
+                    style="padding:6px 10px;border:1px solid var(--o-border);border-radius:var(--o-radius);font-size:13px">
+                  <button class="btn btn-sm btn-secondary"
+                    onclick="showToast('Chấm công', 'Đã cập nhật bảng chấm công', 'success')">Update</button>
+                </div>
+              </div>
+              <div class="att-summary">
+                <div class="att-stat">
+                  <div class="att-stat-value" style="color:var(--o-success)">19</div>
+                  <div class="att-stat-label">&#9989; Đúng giờ</div>
+                </div>
+                <div class="att-stat">
+                  <div class="att-stat-value" style="color:#FD7E14">3</div>
+                  <div class="att-stat-label">&#9200; Đi trễ</div>
+                </div>
+                <div class="att-stat">
+                  <div class="att-stat-value" style="color:var(--o-danger)">0</div>
+                  <div class="att-stat-label">&#10060; Vang</div>
+                </div>
+                <div class="att-stat">
+                  <div class="att-stat-value" style="color:var(--entity-bt)">2</div>
+                  <div class="att-stat-label">&#127796; Được phép nghỉ</div>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width:40px">#</th>
+                      <th>Nhân viên</th>
+                      <th>Chi nhánh</th>
+                      <th>Đăng ký vào</th>
+                      <th>Trả phòng</th>
+                      <th>Time doing</th>
+                      <th>OT (giờ)</th>
+                      <th>Trạng thái</th>
+                      <th>Ghi chú</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#8B2500">TT</div>
+                          <div class="emp-name">Nguyễn Thị Thanh</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>7:55</strong></td>
+                      <td>17:30</td>
+                      <td>8,5 giờ</td>
+                      <td>1.5</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#007BFF">TM</div>
+                          <div class="emp-name">Trần Văn Minh</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity nk">NK</span></td>
+                      <td><strong>8:00</strong></td>
+                      <td>17:15</td>
+                      <td>8h25</td>
+                      <td>1.0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>3</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#28A745">LH</div>
+                          <div class="emp-name">Lê Thị Hương</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>8:15</strong></td>
+                      <td>17:45</td>
+                      <td>8,5 giờ</td>
+                      <td>0.5</td>
+                      <td><span class="badge-status badge-late">Đi trễ</span></td>
+                      <td>Chặn đường</td>
+                    </tr>
+                    <tr>
+                      <td>4</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#6F42C1">PD</div>
+                          <div class="emp-name">Phạm Đức</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>7:50</strong></td>
+                      <td>18:30</td>
+                      <td>9,5h</td>
+                      <td>2.0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>OT nghiệm thu DA</td>
+                    </tr>
+                    <tr>
+                      <td>5</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#FD7E14">HL</div>
+                          <div class="emp-name">Hoàng Lan</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>8:00</strong></td>
+                      <td>17:00</td>
+                      <td>8 giờ</td>
+                      <td>0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>6</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#DC3545">VT</div>
+                          <div class="emp-name">Vũ Thị Trang</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td><span class="badge-status badge-leave">Được phép nghỉ</span></td>
+                      <td>Phép tính năm</td>
+                    </tr>
+                    <tr>
+                      <td>7</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#17A2B8">DN</div>
+                          <div class="emp-name">Đặng Ngọc</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity bt">BT</span></td>
+                      <td><strong>8:45</strong></td>
+                      <td>17:30</td>
+                      <td>7h75</td>
+                      <td>0.5</td>
+                      <td><span class="badge-status badge-late">Đi trễ</span></td>
+                      <td>Đưa đón học tập</td>
+                    </tr>
+                    <tr>
+                      <td>8</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#8B2500">BH</div>
+                          <div class="emp-name">Bùi Hồng</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>7:45</strong></td>
+                      <td>18:00</td>
+                      <td>9h25</td>
+                      <td>2.5</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>Thiết kế OT</td>
+                    </tr>
+                    <tr>
+                      <td>9</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#007BFF">NT</div>
+                          <div class="emp-name">Ngô Thành</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity nk">NK</span></td>
+                      <td><strong>8:10</strong></td>
+                      <td>17:20</td>
+                      <td>8h17h</td>
+                      <td>0</td>
+                      <td><span class="badge-status badge-late">Đi trễ</span></td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>10</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#6F42C1">DM</div>
+                          <div class="emp-name">Đỗ Mai</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>7:30</strong></td>
+                      <td>17:00</td>
+                      <td>8,5 giờ</td>
+                      <td>0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>Đi công trình sớm</td>
+                    </tr>
+                    <tr>
+                      <td>11</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#FD7E14">LK</div>
+                          <div class="emp-name">Lý Khánh</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>8:00</strong></td>
+                      <td>17:15</td>
+                      <td>8h25</td>
+                      <td>1.0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>Quyết toán thuế</td>
+                    </tr>
+                    <tr>
+                      <td>12</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#17A2B8">PT</div>
+                          <div class="emp-name">Phan Thị</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity bt">BT</span></td>
+                      <td><strong>8:00</strong></td>
+                      <td>17:00</td>
+                      <td>8 giờ</td>
+                      <td>0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>13</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#28A745">HD</div>
+                          <div class="emp-name">Hà Duy</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>8:20</strong></td>
+                      <td>17:45</td>
+                      <td>8 giờ 42 phút</td>
+                      <td>1.5</td>
+                      <td><span class="badge-status badge-late">Đi trễ</span></td>
+                      <td>Khám sức khoẻ sáng sủa</td>
+                    </tr>
+                    <tr>
+                      <td>14</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#DC3545">TA</div>
+                          <div class="emp-name">Tô An</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity nk">NK</span></td>
+                      <td><strong>7:55</strong></td>
+                      <td>17:30</td>
+                      <td>8,5 giờ</td>
+                      <td>0.5</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>15</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#8B2500">VL</div>
+                          <div class="emp-name">Võ Linh</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>8:00</strong></td>
+                      <td>17:00</td>
+                      <td>8 giờ</td>
+                      <td>0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>16</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#007BFF">CT</div>
+                          <div class="emp-name">Chu Tuấn</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>7:40</strong></td>
+                      <td>17:30</td>
+                      <td>8,83 giờ</td>
+                      <td>1.0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>Đi tới chương trình</td>
+                    </tr>
+                    <tr>
+                      <td>17</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#6F42C1">DH</div>
+                          <div class="emp-name">Dương Hương</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>8:05</strong></td>
+                      <td>17:15</td>
+                      <td>8h17h</td>
+                      <td>0.5</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>18</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#FD7E14">NB</div>
+                          <div class="emp-name">Nguyễn Bảo</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity bt">BT</span></td>
+                      <td><strong>8:00</strong></td>
+                      <td>17:30</td>
+                      <td>8,5 giờ</td>
+                      <td>1.0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>19</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#28A745">LM</div>
+                          <div class="emp-name">Lâm Mỹ</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity nk">NK</span></td>
+                      <td><strong>8:00</strong></td>
+                      <td>17:00</td>
+                      <td>8 giờ</td>
+                      <td>0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>20</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#17A2B8">TP</div>
+                          <div class="emp-name">Trịnh Phương</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity nk">NK</span></td>
+                      <td><strong>8:30</strong></td>
+                      <td>17:45</td>
+                      <td>8h25</td>
+                      <td>1.0</td>
+                      <td><span class="badge-status badge-late">Đi trễ</span></td>
+                      <td>lớn</td>
+                    </tr>
+                    <tr>
+                      <td>21</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#DC3545">DK</div>
+                          <div class="emp-name">Đinh Khoa</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>6:45</strong></td>
+                      <td>15:30</td>
+                      <td>7h75</td>
+                      <td>0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>Ca sáng</td>
+                    </tr>
+                    <tr>
+                      <td>22</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#8B2500">GX</div>
+                          <div class="emp-name">Giang Xuân</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>7:30</strong></td>
+                      <td>17:00</td>
+                      <td>8,5 giờ</td>
+                      <td>2.0</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>Thị Công Quận 2</td>
+                    </tr>
+                    <tr>
+                      <td>23</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#007BFF">KL</div>
+                          <div class="emp-name">Khánh Ly</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity bt">BT</span></td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td><span class="badge-status badge-leave">Được phép nghỉ</span></td>
+                      <td>Ốm</td>
+                    </tr>
+                    <tr>
+                      <td>24</td>
+                      <td>
+                        <div class="emp-cell">
+                          <div class="avatar sm" style="background:#6F42C1">HN</div>
+                          <div class="emp-name">Huỳnh Nam</div>
+                        </div>
+                      </td>
+                      <td><span class="badge-entity hq">HQ</span></td>
+                      <td><strong>8:00</strong></td>
+                      <td>17:30</td>
+                      <td>8,5 giờ</td>
+                      <td>1.5</td>
+                      <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                      <td>Banner thiết kế</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== VIEW: LEAVE REQUESTS ===== -->
+          <div class="view-panel" id="view-leaves">
+            <!-- Leave Summary -->
+            <div class="stat-cards">
+              <div class="stat-card">
+                <div class="stat-icon orange">&#128196;</div>
+                <div class="stat-info">
+                  <div class="stat-value">4</div>
+                  <div class="stat-label">Đang chờ duyệt</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green">&#9989;</div>
+                <div class="stat-info">
+                  <div class="stat-value">12</div>
+                  <div class="stat-label">Đã duyệt tháng này</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon red">&#10060;</div>
+                <div class="stat-info">
+                  <div class="stat-value">1</div>
+                  <div class="stat-label">Bị từ chối</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon purple">&#128203;</div>
+                <div class="stat-info">
+                  <div class="stat-value">17</div>
+                  <div class="stat-label">Tổng đơn tháng này</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="two-col">
+              <!-- Leave Requests Table -->
+              <div class="data-card">
+                <div class="data-card-header">
+                  <div class="data-card-title">Đơn nghỉ phép</div>
+                  <button class="btn btn-sm btn-primary" onclick="openModal('leaveRequestModal')">&#10010; Tạo
+                    đơn</button>
+                </div>
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Mã đơn</th>
+                        <th>Nhân viên</th>
+                        <th>Loại kỳ nghỉ</th>
+                        <th>Từ ngày</th>
+                        <th>Đến ngày</th>
+                        <th>Số ngày</th>
+                        <th>Trạng thái</th>
+                        <th>Trình duyệt của người dùng</th>
+                        <th style="width:90px"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>LV-2026-041</strong></td>
+                        <td>
+                          <div class="emp-cell">
+                            <div class="avatar sm" style="background:#DC3545">VT</div>
+                            <div class="emp-name">Vũ Thị Trang</div>
+                          </div>
+                        </td>
+                        <td><span style="font-size:13px">&#127796;</span> Phép tính năm</td>
+                        <td>11/04/2026</td>
+                        <td>13/04/2026</td>
+                        <td><strong>3</strong></td>
+                        <td><span class="badge-status badge-approved">Đã duyệt</span></td>
+                        <td>Nguyễn Thị Thanh</td>
+                        <td>
+                          <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>LV-2026-042</strong></td>
+                        <td>
+                          <div class="emp-cell">
+                            <div class="avatar sm" style="background:#007BFF">KL</div>
+                            <div class="emp-name">Khánh Ly</div>
+                          </div>
+                        </td>
+                        <td><span style="font-size:13px">&#129301;</span> Ốm</td>
+                        <td>11/04/2026</td>
+                        <td>11/04/2026</td>
+                        <td><strong>1</strong></td>
+                        <td><span class="badge-status badge-pending">Chờ duyệt</span></td>
+                        <td>Nguyễn Thị Thanh</td>
+                        <td>
+                          <div class="action-btns"><button class="action-btn approve"
+                              onclick="approveLeave('LV-2026-042')" title="Duyệt">&#10003;</button><button
+                              class="action-btn reject" onclick="rejectLeave('LV-2026-042')"
+                              title="Từ chối">&#10007;</button></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>LV-2026-043</strong></td>
+                        <td>
+                          <div class="emp-cell">
+                            <div class="avatar sm" style="background:#6F42C1">DH</div>
+                            <div class="emp-name">Dương Hương</div>
+                          </div>
+                        </td>
+                        <td><span style="font-size:13px">&#128204;</span> Việc riêng</td>
+                        <td>14/04/2026</td>
+                        <td>14/04/2026</td>
+                        <td><strong>1</strong></td>
+                        <td><span class="badge-status badge-pending">Chờ duyệt</span></td>
+                        <td>Nguyễn Thị Thanh</td>
+                        <td>
+                          <div class="action-btns"><button class="action-btn approve"
+                              onclick="approveLeave('LV-2026-043')" title="Duyệt">&#10003;</button><button
+                              class="action-btn reject" onclick="rejectLeave('LV-2026-043')"
+                              title="Từ chối">&#10007;</button></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>LV-2026-044</strong></td>
+                        <td>
+                          <div class="emp-cell">
+                            <div class="avatar sm" style="background:#28A745">LM</div>
+                            <div class="emp-name">Lâm Mỹ</div>
+                          </div>
+                        </td>
+                        <td><span style="font-size:13px">&#127796;</span> Phép tính năm</td>
+                        <td>15/04/2026</td>
+                        <td>16/04/2026</td>
+                        <td><strong>2</strong></td>
+                        <td><span class="badge-status badge-pending">Chờ duyệt</span></td>
+                        <td>Bùi Hồng</td>
+                        <td>
+                          <div class="action-btns"><button class="action-btn approve"
+                              onclick="approveLeave('LV-2026-044')" title="Duyệt">&#10003;</button><button
+                              class="action-btn reject" onclick="rejectLeave('LV-2026-044')"
+                              title="Từ chối">&#10007;</button></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>LV-2026-045</strong></td>
+                        <td>
+                          <div class="emp-cell">
+                            <div class="avatar sm" style="background:#17A2B8">TP</div>
+                            <div class="emp-name">Trịnh Phương</div>
+                          </div>
+                        </td>
+                        <td><span style="font-size:13px">&#128204;</span> Việc riêng</td>
+                        <td>16/04/2026</td>
+                        <td>16/04/2026</td>
+                        <td><strong>1</strong></td>
+                        <td><span class="badge-status badge-pending">Chờ duyệt</span></td>
+                        <td>Ngô Thành</td>
+                        <td>
+                          <div class="action-btns"><button class="action-btn approve"
+                              onclick="approveLeave('LV-2026-045')" title="Duyệt">&#10003;</button><button
+                              class="action-btn reject" onclick="rejectLeave('LV-2026-045')"
+                              title="Từ chối">&#10007;</button></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>LV-2026-039</strong></td>
+                        <td>
+                          <div class="emp-cell">
+                            <div class="avatar sm" style="background:#007BFF">TM</div>
+                            <div class="emp-name">Trần Văn Minh</div>
+                          </div>
+                        </td>
+                        <td><span style="font-size:13px">&#127796;</span> Phép tính năm</td>
+                        <td>08/04/2026</td>
+                        <td>08/04/2026</td>
+                        <td><strong>1</strong></td>
+                        <td><span class="badge-status badge-approved">Đã duyệt</span></td>
+                        <td>Ngô Thành</td>
+                        <td>
+                          <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>LV-2026-038</strong></td>
+                        <td>
+                          <div class="emp-cell">
+                            <div class="avatar sm" style="background:#28A745">LH</div>
+                            <div class="emp-name">Lê Thị Hương</div>
+                          </div>
+                        </td>
+                        <td><span style="font-size:13px">&#129301;</span> Ốm</td>
+                        <td>06/04/2026</td>
+                        <td>07/04/2026</td>
+                        <td><strong>2</strong></td>
+                        <td><span class="badge-status badge-approved">Đã duyệt</span></td>
+                        <td>Bùi Hồng</td>
+                        <td>
+                          <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>LV-2026-037</strong></td>
+                        <td>
+                          <div class="emp-cell">
+                            <div class="avatar sm" style="background:#FD7E14">NB</div>
+                            <div class="emp-name">Nguyễn Bảo</div>
+                          </div>
+                        </td>
+                        <td><span style="font-size:13px">&#128204;</span> Việc riêng</td>
+                        <td>05/04/2026</td>
+                        <td>05/04/2026</td>
+                        <td><strong>1</strong></td>
+                        <td><span class="badge-status badge-rejected">Từ chối</span></td>
+                        <td>Đặng Ngọc</td>
+                        <td>
+                          <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>LV-2026-030</strong></td>
+                        <td>
+                          <div class="emp-cell">
+                            <div class="avatar sm" style="background:#8B2500">TT</div>
+                            <div class="emp-name">Nguyễn Thị Thanh</div>
+                          </div>
+                        </td>
+                        <td><span style="font-size:13px">&#128119;</span> sản phẩm Thái Lan</td>
+                        <td>01/03/2026</td>
+                        <td>30/09/2026</td>
+                        <td><strong>180</strong></td>
+                        <td><span class="badge-status badge-approved">Đã duyệt</span></td>
+                        <td>Quản trị viên</td>
+                        <td>
+                          <div class="action-btns"><button class="action-btn view" title="Xem">&#128065;</button></div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Leave Balance Sidebar -->
+              <div>
+                <div class="data-card mb-3">
+                  <div class="data-card-header">
+                    <div class="data-card-title">&#9878; Nhân viên được phép</div>
+                  </div>
+                  <div class="detail-card-body">
+                    <div style="margin-bottom: 0px;padding-bottom: 0px;border-bottom:1px solid var(--o-border)">
+                      <div class="flex items-center gap-2 mb-3">
+                        <div class="avatar sm" style="background:#8B2500">QUẢNG CÁO</div>
+                        <div><strong>DTA quản trị</strong><br><span
+                            style="font-size:12px;color:var(--o-text-muted)">HCNS -
+                            Trụ
+                            sở hữu chính</span></div>
+                      </div>
+                    </div>
+                    <div class="leave-balance-item">
+                      <div class="leave-type-name">&#127796; Phép tính năm</div>
+                      <div class="leave-days"><span>ngày 12/8</span><strong style="color:var(--o-success)">4</strong>
+                      </div>
+                    </div>
+                    <div class="progress-bar mb-3">
+                      <div class="progress-fill green" style="width:67%"></div>
+                    </div>
+                    <div class="leave-balance-item">
+                      <div class="leave-type-name">&#129301; Ốm</div>
+                      <div class="leave-days"><span>15/2</span><strong style="color:var(--o-success)">13</strong>
+                      </div>
+                    </div>
+                    <div class="progress-bar mb-3">
+                      <div class="progress-fill blue" style="width:87%"></div>
+                    </div>
+                    <div class="leave-balance-item">
+                      <div class="leave-type-name">&#128204; Việc riêng</div>
+                      <div class="leave-days"><span>ngày 5/3</span><strong style="color:#FD7E14">2</strong></div>
+                    </div>
+                    <div class="progress-bar mb-3">
+                      <div class="progress-fill orange" style="width:40%"></div>
+                    </div>
+                    <div class="leave-balance-item">
+                      <div class="leave-type-name">&#128119; sản phẩm Thái Lan</div>
+                      <div class="leave-days"><span>0/180 ngày</span><strong style="color:var(--entity-bt)">180</strong>
+                      </div>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-fill blue" style="width:100%"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="data-card">
+                  <div class="data-card-header">
+                    <div class="data-card-title">&#128337; Hoạt động gần đây</div>
+                  </div>
+                  <div class="detail-card-body" style="padding:12px 20px">
+                    <div class="timeline-item">
+                      <div class="timeline-dot green"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">Vũ Thị Trang - Đã được phép năm</div>
+                        <div class="timeline-time">04/11/2026 - Nguyễn Thị Thanh</div>
+                      </div>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot orange"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">Khánh Ly - Chờ duyệt</div>
+                        <div class="timeline-time">11/04/2026</div>
+                      </div>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot orange"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">Dương Hương - Chờ duyệt việc riêng</div>
+                        <div class="timeline-time">10/04/2026</div>
+                      </div>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot blue"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">Trần Văn Minh - Đã được phép năm</div>
+                        <div class="timeline-time">08/04/2026</div>
+                      </div>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot orange"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">Nguyễn Bảo - Từ chối công việc riêng</div>
+                        <div class="timeline-time">05/04/2026</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== VIEW: SALARY ===== -->
+          <div class="view-panel" id="view-salary">
+            <div class="stat-cards">
+              <div class="stat-card">
+                <div class="stat-icon green">&#128176;</div>
+                <div class="stat-info">
+                  <div class="stat-value">24</div>
+                  <div class="stat-label">Nhân viên có lương</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon blue">&#128197;</div>
+                <div class="stat-info">
+                  <div class="stat-value">Tháng 4/2026</div>
+                  <div class="stat-label">Kỳ lương hiện tại</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon orange">&#9888;</div>
+                <div class="stat-info">
+                  <div class="stat-value">2</div>
+                  <div class="stat-label">Chưa xác nhận</div>
+                  <div class="stat-change down">&#9660; Cần kiểm tra</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon purple">&#128184;</div>
+                <div class="stat-info">
+                  <div class="stat-value">312,5 triệu</div>
+                  <div class="stat-label">Tổng quỹ lương</div>
+                  <div class="stat-change up">&#9650; +4.2% so tháng trước</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="data-card" style="margin-top:20px;">
+              <div class="data-card-header">
+                <div class="data-card-title">&#128176; Bảng lương Tháng 04/2026</div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <select class="filter-select" style="font-size:12px;">
+                    <option>Tháng 04/2026</option>
+                    <option>Tháng 03/2026</option>
+                    <option>Tháng 02/2026</option>
+                  </select>
+                  <button class="btn btn-sm btn-secondary" onclick="showToast('Xuất lương','Đã xuất bảng lương tháng 04/2026','success')">&#128229; Xuất</button>
+                  <button class="btn btn-sm btn-primary" onclick="showToast('Chạy lương','Bắt đầu tính toán lương tháng 04/2026','info')">&#9654; Chạy lương</button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width:40px">#</th>
+                      <th>NHÂN VIÊN</th>
+                      <th>PHÒNG BAN</th>
+                      <th>LƯƠNG CƠ BẢN</th>
+                      <th>PHỤ CẤP</th>
+                      <th>KHẤU TRỬ</th>
+                      <th>THƯỞNG</th>
+                      <th>THỰC LÃNH</th>
+                      <th>TRẠNG THÁI</th>
+                      <th>THAO TÁC</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td>
+                        <div style="font-weight:600;">Nguyễn Văn Hùng</div>
+                        <div style="font-size:11px; color:var(--o-text-muted);">NV-001 • Giám đốc Dự án</div>
+                      </td>
+                      <td>QLDA</td>
+                      <td>25.000.000</td>
+                      <td style="color:var(--o-success);">+3.500.000</td>
+                      <td style="color:var(--o-danger);">-2.100.000</td>
+                      <td style="color:#6F42C1;">+5.000.000</td>
+                      <td style="font-weight:700;">31.400.000</td>
+                      <td><span style="background:var(--o-success);color:#fff;padding:3px 8px;border-radius:12px;font-size:11px;">&#9989; Đã duyệt</span></td>
+                      <td><button class="btn btn-sm btn-secondary" onclick="showToast('Xem chi tiết','Mở phiếu lương NV-001','info')">&#128065;</button></td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td>
+                        <div style="font-weight:600;">Trần Thị Mai</div>
+                        <div style="font-size:11px; color:var(--o-text-muted);">NV-002 • Kế toán trưởng</div>
+                      </td>
+                      <td>Kế toán</td>
+                      <td>20.000.000</td>
+                      <td style="color:var(--o-success);">+2.000.000</td>
+                      <td style="color:var(--o-danger);">-1.680.000</td>
+                      <td style="color:#6F42C1;">+2.000.000</td>
+                      <td style="font-weight:700;">22.320.000</td>
+                      <td><span style="background:var(--o-success);color:#fff;padding:3px 8px;border-radius:12px;font-size:11px;">&#9989; Đã duyệt</span></td>
+                      <td><button class="btn btn-sm btn-secondary" onclick="showToast('Xem chi tiết','Mở phiếu lương NV-002','info')">&#128065;</button></td>
+                    </tr>
+                    <tr>
+                      <td>3</td>
+                      <td>
+                        <div style="font-weight:600;">Lê Văn Nam</div>
+                        <div style="font-size:11px; color:var(--o-text-muted);">NV-045 • Nhân viên Thiết kế</div>
+                      </td>
+                      <td>Thiết kế</td>
+                      <td>15.000.000</td>
+                      <td style="color:var(--o-success);">+1.200.000</td>
+                      <td style="color:var(--o-danger);">-1.260.000</td>
+                      <td>0</td>
+                      <td style="font-weight:700;">14.940.000</td>
+                      <td><span style="background:var(--o-warning);color:#fff;padding:3px 8px;border-radius:12px;font-size:11px;">&#9201; Chờ</span></td>
+                      <td><button class="btn btn-sm btn-secondary" onclick="showToast('Xem chi tiết','Mở phiếu lương NV-045','info')">&#128065;</button></td>
+                    </tr>
+                    <tr>
+                      <td>4</td>
+                      <td>
+                        <div style="font-weight:600;">Phạm Thu Hà</div>
+                        <div style="font-size:11px; color:var(--o-text-muted);">NV-038 • Chuyên viên HCNS</div>
+                      </td>
+                      <td>HCNS</td>
+                      <td>18.000.000</td>
+                      <td style="color:var(--o-success);">+1.500.000</td>
+                      <td style="color:var(--o-danger);">-1.512.000</td>
+                      <td style="color:#6F42C1;">+1.000.000</td>
+                      <td style="font-weight:700;">18.988.000</td>
+                      <td><span style="background:var(--o-warning);color:#fff;padding:3px 8px;border-radius:12px;font-size:11px;">&#9201; Chờ</span></td>
+                      <td><button class="btn btn-sm btn-secondary" onclick="showToast('Xem chi tiết','Mở phiếu lương NV-038','info')">&#128065;</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== VIEW: CONTRACTS ===== -->
+          <div class="view-panel" id="view-contracts">
+            <div class="stat-cards">
+              <div class="stat-card">
+                <div class="stat-icon blue">&#128203;</div>
+                <div class="stat-info">
+                  <div class="stat-value">24</div>
+                  <div class="stat-label">Tổng hợp đồng</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green">&#9989;</div>
+                <div class="stat-info">
+                  <div class="stat-value">19</div>
+                  <div class="stat-label">Vô thời hạn</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon orange">&#9200;</div>
+                <div class="stat-info">
+                  <div class="stat-value">3</div>
+                  <div class="stat-label">Thử việc</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon red">&#9888;</div>
+                <div class="stat-info">
+                  <div class="stat-value">2</div>
+                  <div class="stat-label">Sắp hết hạn</div>
+                  <div class="stat-change down">&#9660; Cần gia hạn</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="data-card" style="margin-top:20px;">
+              <div class="data-card-header">
+                <div class="data-card-title">&#128203; Danh sách Hợp đồng Lao động</div>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-sm btn-secondary">&#128269; Lọc</button>
+                  <button class="btn btn-sm btn-primary" onclick="showToast('Tạo HĐ','Mở form tạo hợp đồng mới','info')">&#10010; Tạo hợp đồng</button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width:40px">#</th>
+                      <th>NHÂN VIÊN</th>
+                      <th>CHỨC VỤ</th>
+                      <th>SỐ HỢP ĐỒNG</th>
+                      <th>LOẠI HĐ</th>
+                      <th>BẮT ĐẦU</th>
+                      <th>KẾT THÚC</th>
+                      <th>TRẠNG THÁI</th>
+                      <th>THAO TÁC</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td>
+                        <div style="font-weight:600; color:var(--o-primary); cursor:pointer;" onclick="openEmployeeDetail('NV-001')">Nguyễn Văn Hùng</div>
+                        <div style="font-size:11px; color:var(--o-text-muted);">NV-001</div>
+                      </td>
+                      <td>Giám đốc Dự án</td>
+                      <td style="font-family:monospace; font-weight:600;">HD-001</td>
+                      <td>Vô thời hạn</td>
+                      <td>01/01/2022</td>
+                      <td>&#8212;</td>
+                      <td><span style="background:var(--o-success);color:#fff;padding:3px 8px;border-radius:12px;font-size:11px;">Đang hiệu lực</span></td>
+                      <td><button class="btn btn-sm btn-secondary" onclick="showToast('Hợp đồng','Xem chi tiết hợp đồng HD-001','info')">&#128065;</button></td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td>
+                        <div style="font-weight:600; color:var(--o-primary); cursor:pointer;">Trần Thị Mai</div>
+                        <div style="font-size:11px; color:var(--o-text-muted);">NV-002</div>
+                      </td>
+                      <td>Kế toán trưởng</td>
+                      <td style="font-family:monospace; font-weight:600;">HD-002</td>
+                      <td>Vô thời hạn</td>
+                      <td>15/03/2022</td>
+                      <td>&#8212;</td>
+                      <td><span style="background:var(--o-success);color:#fff;padding:3px 8px;border-radius:12px;font-size:11px;">Đang hiệu lực</span></td>
+                      <td><button class="btn btn-sm btn-secondary" onclick="showToast('Hợp đồng','Xem chi tiết hợp đồng HD-002','info')">&#128065;</button></td>
+                    </tr>
+                    <tr>
+                      <td>3</td>
+                      <td>
+                        <div style="font-weight:600; color:var(--o-primary); cursor:pointer;">Lê Văn Nam</div>
+                        <div style="font-size:11px; color:var(--o-text-muted);">NV-045</div>
+                      </td>
+                      <td>Nhân viên Thiết kế</td>
+                      <td style="font-family:monospace; font-weight:600;">HD-045</td>
+                      <td>Thử việc</td>
+                      <td>01/04/2026</td>
+                      <td>01/06/2026</td>
+                      <td><span style="background:var(--o-warning);color:#fff;padding:3px 8px;border-radius:12px;font-size:11px;">Thử việc</span></td>
+                      <td><button class="btn btn-sm btn-secondary" onclick="showToast('Hợp đồng','Xem chi tiết hợp đồng HD-045','info')">&#128065;</button></td>
+                    </tr>
+                    <tr>
+                      <td>4</td>
+                      <td>
+                        <div style="font-weight:600; color:var(--o-primary); cursor:pointer;">Phạm Thu Hà</div>
+                        <div style="font-size:11px; color:var(--o-text-muted);">NV-038</div>
+                      </td>
+                      <td>Chuyên viên HCNS</td>
+                      <td style="font-family:monospace; font-weight:600;">HD-038</td>
+                      <td>Xác định thời hạn</td>
+                      <td>15/05/2025</td>
+                      <td>15/05/2026</td>
+                      <td><span style="background:var(--o-danger);color:#fff;padding:3px 8px;border-radius:12px;font-size:11px;">Sắp hết hạn</span></td>
+                      <td><button class="btn btn-sm btn-primary" onclick="showToast('Gia hạn HĐ','Đã gửi yêu cầu gia hạn HD-038','success')">Gia hạn</button></td>
+                    </tr>
+                    <tr>
+                      <td>5</td>
+                      <td>
+                        <div style="font-weight:600; color:var(--o-primary); cursor:pointer;">Hoàng Minh Tú</div>
+                        <div style="font-size:11px; color:var(--o-text-muted);">NV-015</div>
+                      </td>
+                      <td>Chuyên viên Thiết kế nội thất</td>
+                      <td style="font-family:monospace; font-weight:600;">HD-015</td>
+                      <td>Xác định thời hạn</td>
+                      <td>01/06/2025</td>
+                      <td>01/06/2026</td>
+                      <td><span style="background:var(--o-danger);color:#fff;padding:3px 8px;border-radius:12px;font-size:11px;">Sắp hết hạn</span></td>
+                      <td><button class="btn btn-sm btn-primary" onclick="showToast('Gia hạn HĐ','Đã gửi yêu cầu gia hạn HD-015','success')">Gia hạn</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== VIEW: EMPLOYEE DETAIL ===== -->
+          <div class="view-panel" id="view-detail">
+            <!-- Detail Header -->
+            <div class="detail-header">
+              <div class="avatar xl" style="background:var(--o-primary)">NTT</div>
+              <div style="flex:1">
+                <div class="flex items-center gap-3" style="margin-bottom:8px">
+                  <h2 style="font-size:24px;font-weight:700">Nguyễn Thị Thanh</h2>
+                  <span class="badge-status badge-active">Hoạt động</span>
+                </div>
+                <div class="flex items-center gap-3" style="margin-bottom:8px">
+                  <span style="font-size:15px;color:var(--o-text-muted)">HCNS Trưởng phòng</span>
+                  <span class="badge-entity hq">HQ</span>
+                </div>
+                <div class="flex items-center gap-3 text-muted" style="font-size:13px">
+                  <span>&#128231; thanh.nguyen&#64;dtaspace.vn</span>
+                  <span>|</span>
+                  <span>&#128222; 0901 234 567</span>
+                  <span>|</span>
+                  <span>&#128196; EMP-001</span>
+                </div>
+                <div style="margin-top:12px;display:flex;gap:8px">
+                  <button class="btn btn-sm btn-primary"
+                    onclick="showToast('Chỉnh sửa', 'Mở form chỉnh sửa nhân viên', 'info')">&#9998; Chỉnh sửa</button>
+                  <button class="btn btn-sm btn-secondary"
+                    onclick="showToast('Xuất file', 'Đang xuất thông tin nhân viên...', 'info')">&#128229; Xuất
+                    PDF</button>
+                </div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:12px;color:var(--o-text-muted)">Ngày làm việc</div>
+                <div style="font-weight:600">15/01/2023</div>
+                <div style="font-size:12px;color:var(--o-text-muted);margin-top:8px">Thâm niên</div>
+                <div style="font-weight:600">3 năm 3 tháng</div>
+              </div>
+            </div>
+
+            <!-- Detail Tabs -->
+            <div class="detail-tabs">
+              <div class="detail-tab active" onclick="switchDetailTab('personal', this)">Personal information</div>
+              <div class="detail-tab" onclick="switchDetailTab('contract', this)">Hợp đồng & Lương</div>
+              <div class="detail-tab" onclick="switchDetailTab('attendance-detail', this)">Công việc</div>
+              <div class="detail-tab" onclick="switchDetailTab('leave-balance', this)">Giấy phép</div>
+              <div class="detail-tab" onclick="switchDetailTab('documents', this)">Tài liệu</div>
+            </div>
+
+            <!-- Tab: Personal Info -->
+            <div class="detail-content active" id="tab-personal">
+              <div class="two-col">
+                <div class="detail-card mb-3">
+                  <div class="detail-card-header">Personal information</div>
+                  <div class="detail-card-body">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <div class="form-label">Họ và tên</div>
+                        <div class="form-value fw-600">Nguyễn Thị Thanh</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Ngày sinh</div>
+                        <div class="form-value">15/08/1990</div>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <div class="form-label">Giới tính</div>
+                        <div class="form-value">Nữ</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Quốc tịch</div>
+                        <div class="form-value">Việt Nam</div>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <div class="form-label">Số CCCD</div>
+                        <div class="form-value">079090001234</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Cấp ngày</div>
+                        <div class="form-value">20/03/2021</div>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <div class="form-label">Email cá nhân</div>
+                        <div class="form-value">thanhnt.90&#64;gmail.com</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Số điện thoại</div>
+                        <div class="form-value">0901 234 567</div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="form-label">Địa chỉ thường gặp</div>
+                      <div class="form-value">123 Nguyễn Văn Trỗi, Phường 8, Quận Phú Nhuận, TP.HCM</div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <div class="form-label">Email công ty</div>
+                        <div class="form-value">thanh.nguyen&#64;dtaspace.vn</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">State state</div>
+                        <div class="form-value">Đã kết thúc</div>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <div class="form-label">Số người phụ thuộc</div>
+                        <div class="form-value">2 (1 vợ/chồng, 1 con)</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Personal Tax Code</div>
+                        <div class="form-value">0790900012</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="detail-card mb-3">
+                    <div class="detail-card-header">Thông tin liên hệ khẩn cấp</div>
+                    <div class="detail-card-body">
+                      <div class="form-group">
+                        <div class="form-label">Liên hệ người</div>
+                        <div class="form-value fw-600">Trần Văn Hùng</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Quan hệ</div>
+                        <div class="form-value">Block</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Số điện thoại</div>
+                        <div class="form-value">0909 876 543</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Địa chỉ</div>
+                        <div class="form-value">123 Nguyễn Văn Trỗi, P.8, Q.Phú Nhuận, TP.HCM</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="detail-card">
+                    <div class="detail-card-header">Ngân hàng</div>
+                    <div class="detail-card-body">
+                      <div class="form-group">
+                        <div class="form-label">Ngân hàng</div>
+                        <div class="form-value">vietcombank</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Số tài khoản</div>
+                        <div class="form-value fw-600">0071001234567</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Chi nhánh</div>
+                        <div class="form-value">Vietcombank Phú Nhuận</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Contract & Salary -->
+            <div class="detail-content" id="tab-contract">
+              <div class="two-col">
+                <div class="detail-card mb-3">
+                  <div class="detail-card-header">Hợp nhất thông tin</div>
+                  <div class="detail-card-body">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <div class="form-label">Hợp lệ loại</div>
+                        <div class="form-value fw-600" style="color:var(--o-success)">Hợp đồng không hết hạn</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Hợp nhất mã</div>
+                        <div class="form-value">HD-2025-001</div>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <div class="form-label">Ký hiệu ngày</div>
+                        <div class="form-value">15/01/2025</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Chức năng</div>
+                        <div class="form-value">HCNS Trưởng phòng</div>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <div class="form-label">phòng ban</div>
+                        <div class="form-value">HCNS</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Chi nhánh</div>
+                        <div class="form-value"><span class="badge-entity hq">HQ</span> Base base</div>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <div class="form-label">Work Time</div>
+                        <div class="form-value">Hành chính (8:00 - 17:00)</div>
+                      </div>
+                      <div class="form-group">
+                        <div class="form-label">Ngày làm việc/tuần</div>
+                        <div class="form-value">5 ngày (T2 - T6)</div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="form-label">Công việc mô tả</div>
+                      <div class="form-value" style="font-size:13px">Quản lý toàn bộ hoạt động chính của công việc
+                        ty.
+                        Tuyển dụng, đào tạo, chấm công, tính lương, Y tế, đánh giá nhân viên. Báo cáo trực tiếp cho Ban
+                        Giám
+                        Giám đốc.</div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="detail-card mb-3">
+                    <div class="detail-card-header">&#128176; Lương</div>
+                    <div class="detail-card-body">
+                      <div class="leave-balance-item">
+                        <div class="leave-type-name">Lương cơ bản</div>
+                        <div class="leave-days"><strong>25.000.000 &#8363;</strong></div>
+                      </div>
+                      <div class="leave-balance-item">
+                        <div class="leave-type-name">Phụ cấp trách nhiệm</div>
+                        <div class="leave-days"><strong>3.000.000 &#8363;</strong></div>
+                      </div>
+                      <div class="leave-balance-item">
+                        <div class="leave-type-name">Phụ cấp ăn dài</div>
+                        <div class="leave-days"><strong>730.000 &#8363;</strong></div>
+                      </div>
+                      <div class="leave-balance-item">
+                        <div class="leave-type-name">Điện thoại phụ</div>
+                        <div class="leave-days"><strong>300.000 &#8363;</strong></div>
+                      </div>
+                      <div class="leave-balance-item"
+                        style="border-top:2px solid var(--o-border);padding-top:16px;margin-top:8px">
+                        <div class="leave-type-name fw-600">Tổng thu nhập</div>
+                        <div class="leave-days"><strong style="color:var(--o-success);font-size:18px">29.030.000
+                            &#8363;</strong></div>
+                      </div>
+                      <div class="leave-balance-item">
+                        <div class="leave-type-name">Bệnh tật (8%)</div>
+                        <div class="leave-days"><strong style="color:var(--o-danger)">-2.000.000 &#8363;</strong></div>
+                      </div>
+                      <div class="leave-balance-item">
+                        <div class="leave-type-name">Mua thuốc (1,5%)</div>
+                        <div class="leave-days"><strong style="color:var(--o-danger)">-375.000 &#8363;</strong></div>
+                      </div>
+                      <div class="leave-balance-item">
+                        <div class="leave-type-name">BHTN (1%)</div>
+                        <div class="leave-days"><strong style="color:var(--o-danger)">-250.000 &#8363;</strong></div>
+                      </div>
+                      <div class="leave-balance-item">
+                        <div class="leave-type-name">Thuế TNCN</div>
+                        <div class="leave-days"><strong style="color:var(--o-danger)">-1.890.000 &#8363;</strong></div>
+                      </div>
+                      <div class="leave-balance-item"
+                        style="border-top:2px solid var(--o-primary);padding-top:16px;margin-top:8px">
+                        <div class="leave-type-name fw-600" style="color:var(--o-primary)">Thực hiện</div>
+                        <div class="leave-days"><strong style="color:var(--o-primary);font-size:18px">24.515.000
+                            &#8363;</strong></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Attendance Detail -->
+            <div class="detail-content" id="tab-attendance-detail">
+              <div class="detail-card mb-3">
+                <div class="detail-card-header">Thống kê chấm công - Tháng 04/2026</div>
+                <div class="detail-card-body">
+                  <div class="att-summary">
+                    <div class="att-stat">
+                      <div class="att-stat-value" style="color:var(--o-success)">8</div>
+                      <div class="att-stat-label">Date public</div>
+                    </div>
+                    <div class="att-stat">
+                      <div class="att-stat-value" style="color:#FD7E14">1</div>
+                      <div class="att-stat-label">Đi trễ</div>
+                    </div>
+                    <div class="att-stat">
+                      <div class="att-stat-value" style="color:var(--o-danger)">0</div>
+                      <div class="att-stat-label">Vang</div>
+                    </div>
+                    <div class="att-stat">
+                      <div class="att-stat-value" style="color:var(--entity-bt)">6.5</div>
+                      <div class="att-stat-label">Time OT</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="data-card">
+                <div class="data-card-header">
+                  <div class="data-card-title">Lịch sử chấm công</div>
+                </div>
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Ngày</th>
+                        <th>Đăng ký vào</th>
+                        <th>Trả phòng</th>
+                        <th>Time doing</th>
+                        <th>OT</th>
+                        <th>Trạng thái</th>
+                        <th>Ghi chú</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>04/11/2026 (T7)</td>
+                        <td><strong>7:55</strong></td>
+                        <td>17:30</td>
+                        <td>8,5 giờ</td>
+                        <td>1,5 giờ</td>
+                        <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                        <td>Tuyển dụng OT</td>
+                      </tr>
+                      <tr>
+                        <td>04/10/2026 (T6)</td>
+                        <td><strong>8:00</strong></td>
+                        <td>17:15</td>
+                        <td>8h25</td>
+                        <td>1,0 giờ</td>
+                        <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                        <td>-</td>
+                      </tr>
+                      <tr>
+                        <td>04/09/2026 (T5)</td>
+                        <td><strong>7:50</strong></td>
+                        <td>17:30</td>
+                        <td>8,67 giờ</td>
+                        <td>1,5 giờ</td>
+                        <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                        <td>Người dùng ứng dụng</td>
+                      </tr>
+                      <tr>
+                        <td>04/08/2026 (T4)</td>
+                        <td><strong>8:00</strong></td>
+                        <td>17:00</td>
+                        <td>8 giờ</td>
+                        <td>1,0 giờ</td>
+                        <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                        <td>-</td>
+                      </tr>
+                      <tr>
+                        <td>04/07/2026 (T3)</td>
+                        <td><strong>8:10</strong></td>
+                        <td>17:15</td>
+                        <td>8.08h</td>
+                        <td>0,5 giờ</td>
+                        <td><span class="badge-status badge-late">Đi trễ</span></td>
+                        <td>Đưa đón học tập</td>
+                      </tr>
+                      <tr>
+                        <td>04/06/2026 (T2)</td>
+                        <td><strong>7:55</strong></td>
+                        <td>17:00</td>
+                        <td>8.08h</td>
+                        <td>1,0 giờ</td>
+                        <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                        <td>Giao ban của họ</td>
+                      </tr>
+                      <tr>
+                        <td>04/04/2026 (T7)</td>
+                        <td><strong>8:30</strong></td>
+                        <td>12:00</td>
+                        <td>3,5 giờ</td>
+                        <td>0</td>
+                        <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                        <td>Nửa ngày (T7)</td>
+                      </tr>
+                      <tr>
+                        <td>04/03/2026 (T6)</td>
+                        <td><strong>8:00</strong></td>
+                        <td>17:30</td>
+                        <td>8,5 giờ</td>
+                        <td>1,0 giờ</td>
+                        <td><span class="badge-status badge-present">Đúng giờ</span></td>
+                        <td>Quyết toán lương</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Leave Balance -->
+            <div class="detail-content" id="tab-leave-balance">
+              <div class="two-col">
+                <div class="detail-card mb-3">
+                  <div class="detail-card-header">&#9878; Giấy phép năm 2026</div>
+                  <div class="detail-card-body">
+                    <div class="leave-balance-item">
+                      <div>
+                        <div class="leave-type-name">&#127796; Phép tính năm</div>
+                        <div style="font-size:12px;color:var(--o-text-muted)">12 ngày/năm theo luật LĐ</div>
+                      </div>
+                      <div class="leave-days"><span>Đã sử dụng: 8</span><strong
+                          style="color:var(--o-success)">4</strong>
+                      </div>
+                    </div>
+                    <div class="progress-bar mb-3">
+                      <div class="progress-fill green" style="width:67%"></div>
+                    </div>
+                    <div class="leave-balance-item">
+                      <div>
+                        <div class="leave-type-name">&#129301; Ốm đau</div>
+                        <div style="font-size:12px;color:var(--o-text-muted)">15 ngày/năm (BHXH)</div>
+                      </div>
+                      <div class="leave-days"><span>Đã sử dụng: 2</span><strong
+                          style="color:var(--o-success)">13</strong>
+                      </div>
+                    </div>
+                    <div class="progress-bar mb-3">
+                      <div class="progress-fill blue" style="width:87%"></div>
+                    </div>
+                    <div class="leave-balance-item">
+                      <div>
+                        <div class="leave-type-name">&#128204; Việc riêng</div>
+                        <div style="font-size:12px;color:var(--o-text-muted)">5 ngày/năm</div>
+                      </div>
+                      <div class="leave-days"><span>Đã sử dụng: 3</span><strong style="color:#FD7E14">2</strong></div>
+                    </div>
+                    <div class="progress-bar mb-3">
+                      <div class="progress-fill orange" style="width:40%"></div>
+                    </div>
+                    <div class="leave-balance-item">
+                      <div>
+                        <div class="leave-type-name">&#128119; sản phẩm Thái Lan</div>
+                        <div style="font-size:12px;color:var(--o-text-muted)">180 ngày (6 tháng)</div>
+                      </div>
+                      <div class="leave-days"><span>Đã sử dụng: 0</span><strong
+                          style="color:var(--entity-bt)">180</strong>
+                      </div>
+                    </div>
+                    <div class="progress-bar mb-3">
+                      <div class="progress-fill blue" style="width:100%"></div>
+                    </div>
+                    <div class="leave-balance-item">
+                      <div>
+                        <div class="leave-type-name">&#128140; Kết quả</div>
+                        <div style="font-size:12px;color:var(--o-text-muted)">3 ngày (hiện tại)</div>
+                      </div>
+                      <div class="leave-days"><span>Đã sử dụng: 0</span><strong>3</strong></div>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-fill green" style="width:100%"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="detail-card">
+                  <div class="detail-card-header">Lịch sử nghỉ phép 2026</div>
+                  <div class="detail-card-body" style="padding:12px 20px">
+                    <div class="timeline-item">
+                      <div class="timeline-dot green"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">Phép tính năm - 3 ngày</div>
+                        <div class="timeline-time">04/11 - 13/04/2026 &#8226; Đã duyệt</div>
+                      </div>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot green"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">Ốm - 2 ngày</div>
+                        <div class="timeline-time">04/06 - 04/07/2026 &#8226; Đã duyệt</div>
+                      </div>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot blue"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">Phép tính năm - 1 ngày</div>
+                        <div class="timeline-time">20/03/2026 &#8226; Đã duyệt</div>
+                      </div>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot orange"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">Việc đặt trước - 2 ngày</div>
+                        <div class="timeline-time">03/10 - 03/11/2026 &#8226; Đã duyệt</div>
+                      </div>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot green"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">Phép tính năm - 2 ngày</div>
+                        <div class="timeline-time">25/02 - 26/02/2026 &#8226; Đã duyệt</div>
+                      </div>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot green"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">Việc riêng - 1 ngày</div>
+                        <div class="timeline-time">15/02/2026 &#8226; Đã duyệt</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Documents -->
+            <div class="detail-content" id="tab-documents">
+              <div class="data-card">
+                <div class="data-card-header">
+                  <div class="data-card-title">&#128196; Nhân viên tài liệu</div>
+                  <button class="btn btn-sm btn-primary"
+                    onclick="showToast('Upload', 'Chức năng tải lên tài liệu', 'info')">&#11014; Tải lên</button>
+                </div>
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Tài liệu tên</th>
+                        <th>Type</th>
+                        <th>Ngày tải lên</th>
+                        <th>Người tải lên</th>
+                        <th>Size</th>
+                        <th style="width:80px"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>CCCD_NguyenThiThanh.pdf</strong></td>
+                        <td>Flat Footcông dân</td>
+                        <td>15/01/2023</td>
+                        <td>Quản trị viên</td>
+                        <td>2,1 MB</td>
+                        <td><button class="btn btn-sm btn-secondary">&#128229; Load</button></td>
+                      </tr>
+                      <tr>
+                        <td><strong>HDDLĐ_2025_001.pdf</strong></td>
+                        <td>Hợp đồng lao động</td>
+                        <td>15/01/2025</td>
+                        <td>Quản trị viên</td>
+                        <td>1,5 MB</td>
+                        <td><button class="btn btn-sm btn-secondary">&#128229; Load</button></td>
+                      </tr>
+                      <tr>
+                        <td><strong>LyLich_NguyenThiThanh.pdf</strong></td>
+                        <td>Sơ yếu lý lịch</td>
+                        <td>15/01/2023</td>
+                        <td>Quản trị viên</td>
+                        <td>3,2 MB</td>
+                        <td><button class="btn btn-sm btn-secondary">&#128229; Load</button></td>
+                      </tr>
+                      <tr>
+                        <td><strong>BangDaiHoc.pdf</strong></td>
+                        <td>Bằng cấp</td>
+                        <td>20/01/2023</td>
+                        <td>Quản trị viên</td>
+                        <td>1,8 MB</td>
+                        <td><button class="btn btn-sm btn-secondary">&#128229; Load</button></td>
+                      </tr>
+                      <tr>
+                        <td><strong>GiayKhamSK_2026.pdf</strong></td>
+                        <td>Khám sức khỏe</td>
+                        <td>10/01/2026</td>
+                        <td>Võ Linh</td>
+                        <td>0,8 MB</td>
+                        <td><button class="btn btn-sm btn-secondary">&#128229; Load</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end content-area -->
+      </div><!-- end main-wrapper -->
+
+      <!-- ===== MODAL: New Employee ===== -->
+      <div class="modal-overlay" id="newEmployeeModal">
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">&#10010; Thêm mới nhân viên</div>
+            <button class="modal-close" onclick="closeModal('newEmployeeModal')">& lần;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Họ và tên *</label><input type="text"
+                  placeholder="VD: Nguyễn Văn A"></div>
+              <div class="form-group"><label class="form-label">Email *</label><input type="email"
+                  placeholder="VD: van&#64;dtaspace.vn"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Số điện thoại</label><input type="tel"
+                  placeholder="VD: 0901 234 567"></div>
+              <div class="form-group"><label class="form-label">Ngày sinh</label><input type="date"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">phòng ban</label><select>
+                  <option>-- Choose ban ban --</option>
+                  <option>Bán hàng</option>
+                  <option>Thiết kế</option>
+                  <option>QLDA</option>
+                  <option>Kế toán</option>
+                  <option>HCNS</option>
+                  <option>Marketing</option>
+                </select></div>
+              <div class="form-group"><label class="form-label">Chức năng</label><input type="text"
+                  placeholder="VD: Nhân viên kinh doanh"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Chi nhánh</label><select>
+                  <option>-- Choose chi nhánh --</option>
+                  <option>Base base (HQ)</option>
+                  <option>Cửa hàng NK</option>
+                  <option>Cửa hàngBT</option>
+                </select></div>
+              <div class="form-group"><label class="form-label">Lương cơ bản</label><input type="text"
+                  placeholder="VĐ: 12.000.000"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Ngày làm việc</label><input type="date"></div>
+              <div class="form-group"><label class="form-label">Hợp lệ loại</label><select>
+                  <option>Thử việc</option>
+                  <option>Xác định thời hạn (1 năm)</option>
+                  <option>No time</option>
+                </select></div>
+            </div>
+            <div class="form-group"><label class="form-label">Địa chỉ</label><input type="text"
+                placeholder="Địa chỉ..."></div>
+            <div class="form-group"><label class="form-label">Ghi chú</label><textarea
+                placeholder="Ghi chú bổ sung..."></textarea></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('newEmployeeModal')">Hủy bỏ</button>
+            <button class="btn btn-primary"
+              onclick="closeModal('newEmployeeModal'); showToast('Thành công', 'Đã thêm nhân viên mới vào hệ thống', 'success')">&#10003;
+              Lưu nhân viên</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== MODAL: Leave Request ===== -->
+      <div class="modal-overlay" id="leaveRequestModal">
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">&#128196; Tạo đơn nghỉ phép</div>
+            <button class="modal-close" onclick="closeModal('leaveRequestModal')">& lần;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Nhân viên</label><select>
+                  <option>Quản trị DTA - HNS</option>
+                  <option>Nguyễn Thị Thanh - HCNS</option>
+                  <option>Trần Văn Minh - Bán hàng</option>
+                  <option>Lê Thị Hương - Design</option>
+                </select></div>
+              <div class="form-group"><label class="form-label">Loại kỳ nghỉ được phép *</label><select>
+                  <option>--Chọn loại --</option>
+                  <option>Phép tính năm</option>
+                  <option>Ốm đau</option>
+                  <option>Việc riêng</option>
+                  <option>sản phẩm Thái Lan</option>
+                  <option>Kết quả</option>
+                  <option>Tai nạn lao động</option>
+                </select></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Từ ngày *</label><input type="date"></div>
+              <div class="form-group"><label class="form-label">Đến ngày *</label><input type="date"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Số ngày nghỉ</label><input type="number"
+                placeholder="VĐ: 2" value="1"></div>
+            <div class="form-group"><label class="form-label">Người phê duyệt</label><select>
+                <option>Nguyễn Thị Thanh - Trưởng phòng HCNS</option>
+                <option>DTA quản trị - Quản trị viên</option>
+              </select></div>
+            <div class="form-group"><label class="form-label">Lý do *</label><textarea
+                placeholder="Lý do nghỉ phép..."></textarea></div>
+            <div class="form-group"><label class="form-label">Tài liệu đính kèm (nếu có)</label><input type="file"
+                style="border:none;padding-left:0">
+              <div style="font-size:12px;color:var(--o-text-muted)">VD: Giấy khám bệnh, giấy mời cưới...</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('leaveRequestModal')">Hủy bỏ</button>
+            <button class="btn btn-primary"
+              onclick="closeModal('leaveRequestModal'); showToast('Thành công', 'Đơn nghỉ phép đã được gửi chờ duyệt', 'success')">&#128228;
+              Gửi đơn</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== MODAL: Approve Leave ===== -->
+      <div class="modal-overlay" id="approveLeaveModal">
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">&#9989; Phê duyệt đơn nghỉ phép</div>
+            <button class="modal-close" onclick="closeModal('approveLeaveModal')">& lần;</button>
+          </div>
+          <div class="modal-body">
+            <div id="approveLeaveInfo"
+              style="padding:12px;background:var(--o-bg);border-radius:var(--o-radius);margin-bottom:16px">
+              <div style="font-weight:600;margin-bottom:8px" id="approveLeaveCode"></div>
+              <div style="font-size:13px;color:var(--o-text-muted)" id="approveLeaveDetail"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Quyết định</label><select id="approveDecision">
+                <option>Duyệt đơn</option>
+                <option>Từ chối đơn</option>
+              </select></div>
+            <div class="form-group"><label class="form-label">Ghi chú phê duyệt</label><textarea
+                placeholder="Lý do (tùy chọn)..."></textarea></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('approveLeaveModal')">Hủy bỏ</button>
+            <button class="btn btn-success"
+              onclick="closeModal('approveLeaveModal'); showToast('Đã duyệt', 'Đơn nghỉ phép đã được phê duyệt thành công', 'success')">&#10003;
+              Xác nhận trình duyệt</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Container -->
+      <div class="toast-container" id="toastContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    // ===== VIEW SWITCHING =====
+    function switchHRView(btn) {
+      if (!btn) return;
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var view = btn.dataset.view;
+      document.querySelectorAll('.view-panel').forEach(function(p){ p.classList.remove('active'); });
+      var target = document.getElementById('view-' + view);
+      if (target) target.classList.add('active');
+      // Sync sidebar active state
+      document.querySelectorAll('.sidebar-nav .nav-item[id^="sidebarNav-"]').forEach(function(a){ a.classList.remove('active'); });
+      var sidebarItem = document.getElementById('sidebarNav-' + view);
+      if (sidebarItem) sidebarItem.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+    function navToHRView(view) {
+      // Called by sidebar nav items – find the matching tab-btn and delegate to switchHRView
+      var tabBtn = document.querySelector('.tab-btn[data-view="' + view + '"]');
+      if (tabBtn) {
+        switchHRView(tabBtn);
+      } else {
+        // View may be hidden (e.g. detail) – show it first then switch
+        var panel = document.getElementById('view-' + view);
+        if (panel) {
+          document.querySelectorAll('.view-panel').forEach(function(p){ p.classList.remove('active'); });
+          panel.classList.add('active');
+          document.querySelectorAll('.sidebar-nav .nav-item[id^="sidebarNav-"]').forEach(function(a){ a.classList.remove('active'); });
+          var sidebarItem = document.getElementById('sidebarNav-' + view);
+          if (sidebarItem) sidebarItem.classList.add('active');
+        }
+      }
+      window.scrollTo(0, 0);
+    }
+    function openEmployeeDetail(code) {
+      var detailBtn = document.getElementById('btnDetailTab');
+      if (detailBtn) { detailBtn.style.display = 'inline-flex'; switchHRView(detailBtn); }
+    }
+    function hrSwitchEntity(code, label, el) {
+      document.getElementById('hrEntityLabel').textContent = label;
+      document.querySelectorAll('#entityDropdownHR > div').forEach(function(d){ d.style.fontWeight=''; d.style.background=''; });
+      if (el) { el.style.fontWeight='600'; el.style.background='rgba(40,167,69,.08)'; }
+      document.getElementById('entityDropdownHR').style.display = 'none';
+      showToast('\u0110\u00e3 chuy\u1ec3n chi nh\u00e1nh', 'Chuy\u1ec3n sang ' + label, 'info');
+    }
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('entityDropdownHR');
+      if (dd && !e.target.closest('[id="entityDropdownHR"]') && !e.target.closest('.entity-switcher-btn')) dd.style.display = 'none';
+    });
+    // Legacy alias
+    function switchView(viewName, navEl) {
+      document.querySelectorAll('.view-panel').forEach(function (el) { el.classList.remove('active'); });
+      var target = document.getElementById('view-' + viewName);
+      if (target) target.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // ===== DETAIL TAB SWITCHING =====
+    function switchDetailTab(tabName, el) {
+      document.querySelectorAll('.detail-content').forEach(function (c) { c.classList.remove('active'); });
+      document.querySelectorAll('.detail-tab').forEach(function (t) { t.classList.remove('active'); });
+      var tab = document.getElementById('tab-' + tabName);
+      if (tab) tab.classList.add('active');
+      if (el) el.classList.add('active');
+    }
+
+    // ===== ENTITY SWITCHING =====
+    var currentEntity = 'hq';
+    function toggleEntityDropdown() {
+      var dd = document.getElementById('entityDropdown');
+      dd.classList.toggle('show');
+    }
+    document.addEventListener('click', function (e) {
+      var dd = document.getElementById('entityDropdown');
+      var sw = e.target.closest('.entity-switcher');
+      if (!sw) dd.classList.remove('show');
+    });
+    function switchEntity(entity, name, event) {
+      if (event) event.stopPropagation();
+      currentEntity = entity;
+      document.getElementById('currentEntityName').textContent = name;
+      var dot = document.getElementById('currentEntityDot');
+      dot.className = 'entity-dot ' + entity;
+      document.querySelectorAll('.entity-option').forEach(function (o) { o.classList.remove('active'); });
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+      document.getElementById('entityDropdown').classList.remove('show');
+      showToast('Đã chuyển chi nhánh', 'Chuyển sang ' + name, 'info');
+    }
+
+    // ===== DEPARTMENT FILTER =====
+    function filterByDepartment() {
+      var dept = document.getElementById('deptFilter').value;
+      var rows = document.querySelectorAll('#employeeTable tbody tr');
+      var count = 0;
+      rows.forEach(function (row) {
+        if (!dept || row.getAttribute('data-dept') === dept) {
+          row.style.display = '';
+          count++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      showToast('Bộ lọc phòng ban', dept ? 'Hiển thị ' + count + ' nhân viên - ' + dept : 'Hiển thị tất cả ' + count + ' nhân viên', 'info');
+    }
+
+    // ===== MODALS =====
+    function openModal(id) {
+      var modal = document.getElementById(id);
+      if (modal) modal.classList.add('show');
+    }
+    function closeModal(id) {
+      var modal = document.getElementById(id);
+      if (modal) modal.classList.remove('show');
+    }
+    document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) overlay.classList.remove('show');
+      });
+    });
+
+    // ===== TOAST NOTIFICATIONS =====
+    function showToast(title, message, type) {
+      type = type || 'success';
+      var container = document.getElementById('toastContainer');
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      var icons = { success: '&#9989;', info: '&#8505;', warning: '&#9888;', error: '&#10060;' };
+      toast.innerHTML =
+        '<div class="toast-icon">' + (icons[type] || '&#9989;') + '</div>' +
+          '<div class="toast-content"><div class="toast-title">' + title + '</div><div class="toast-message">' + message + '</div></div>';
+      container.appendChild(toast);
+      setTimeout(function () {
+        toast.style.animation = 'slideOut 0.3s ease forwards';
+        setTimeout(function () { toast.remove(); }, 300);
+      }, 3000);
+    }
+
+    // ===== LEAVE APPROVAL =====
+    function approveLeave(code) {
+      document.getElementById('approveLeaveCode').textContent = 'Mã đơn: ' + code;
+      document.getElementById('approveLeaveDetail').textContent = 'Phê duyệt đơn nghỉ phép ' + code;
+      openModal('approveLeaveModal');
+    }
+    function rejectLeave(code) {
+      document.getElementById('approveLeaveCode').textContent = 'Mã đơn: ' + code;
+      document.getElementById('approveLeaveDetail').textContent = 'Từ chối đơn nghỉ phép ' + code;
+      openModal('approveLeaveModal');
+    }
+
+    // ===== KEYBOARD SHORTCUTS =====
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.show').forEach(function (m) { m.classList.remove('show'); });
+      }
+    });
+  </script>
+
+  <div class="page-pattern"></div>
+</body>
+
+</html>

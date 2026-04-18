@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô hình bán hàng - DTA Space Odoo 19</title>
+    <link rel="stylesheet" href="../assets/odoo-styles.css">
+    <style>
+        .kanban-stage {
+            min-height: 300px;
+        }
+
+        .kanban-column {
+            background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all var(--transition-normal);
+            position: relative;
+        }
+
+        .kanban-column::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--odoo-primary), var(--accent-gold));
+            border-radius: 12px 12px 0 0;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .kanban-column:hover {
+            background: linear-gradient(180deg, #F1F5F9 0%, #E2E8F0 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .kanban-column:hover::before {
+            opacity: 1;
+        }
+
+        .quotation-preview {
+            background: linear-gradient(180deg, #FAFAFA 0%, #F5F5F5 100%);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+        }
+
+        .commission-bar {
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .commission-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--odoo-primary), var(--accent-gold));
+            border-radius: 4px;
+        }
+
+        .entity-tag {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .entity-tag.nk {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .entity-tag.bt {
+            background: #F3E5F5;
+            color: #7B1FA2;
+        }
+
+        .entity-tag.hq {
+            background: #E8F5E9;
+            color: #388E3C;
+        }
+
+        .customer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        /* MAIN CONTENT - using flexbox layout, no margins needed */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .page-content {
+            padding: 20px 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .tooltip::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+
+        /* Pattern decoration */
+        .sidebar-pattern {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background-image: url('../Media/pattern.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+
+        .page-pattern {
+            position: fixed;
+            bottom: 0px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            background-image: url('../Media/pattern.png');
+            background-size: contain;
+            margin-bottom: -20px;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-pattern"></div>
+                <div class="sidebar-logo">
+                    <img src="../Media/DTA-LOGO.png" alt="DTA Space" style="height: 32px; width: auto;">
+                    <div class="logo-text">DTA Space</div>
+                </div>
+            </div>
+            <div class="entity-switcher">
+                <select id="entitySwitcher" onchange="switchEntity(this.value)">
+                    <option value="all">🏢 Tất cả các thực thể</option>
+                    <option value="hq">🏢 Văn phòng hỗ trợ HQ</option>
+                    <option value="nk">🏪 Cửa hàng Nam Kỳ</option>
+                    <option value="bt">🏪 Cửa hàng Bà Triệu</option>
+                </select>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Tổng quan</div>
+                    <a class="nav-item" href="../index.html"><span class="nav-icon">📊</span><span>Bảng điều
+                            khiển</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">CRM</div>
+                    <a class="nav-item active" href="#" onclick="switchSubmenu('pipeline', this)"><span
+                            class="nav-icon">🔄</span><span>Phễu bán hàng</span></a>
+                    <a class="nav-item" href="#" onclick="switchSubmenu('leads', this)"><span
+                            class="nav-icon">🎯</span><span>Khách tiềm năng</span></a>
+                    <a class="nav-item" href="#" onclick="switchSubmenu('customers', this)"><span
+                            class="nav-icon">👥</span><span>Khách hàng</span></a>
+                    <a class="nav-item" href="#" onclick="switchSubmenu('activities', this)"><span
+                            class="nav-icon">📅</span><span>Hoạt động</span></a>
+                    <a class="nav-item" href="#" onclick="switchSubmenu('reports', this)"><span
+                            class="nav-icon">📈</span><span>Báo cáo</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Mô-đun</div>
+                    <a class="nav-item" href="inventory.html"><span class="nav-icon">📦</span><span>Quản lý
+                            kho</span></a>
+                    <a class="nav-item" href="products.html"><span class="nav-icon">📦</span><span>Sản phẩm</span></a>
+                    <a class="nav-item" href="crm.html"><span class="nav-icon">👥</span><span>CRM</span></a>
+                    <a class="nav-item" href="events.html"><span class="nav-icon">🎨</span><span>Sự kiện</span></a>
+                    <a class="nav-item" href="sales.html"><span class="nav-icon">💼</span><span>Bán hàng</span></a>
+                    <a class="nav-item" href="design_studio.html"><span class="nav-icon">✏️</span><span>Thiết kế
+                            Studio</span></a>
+                    <a class="nav-item" href="accounting.html"><span class="nav-icon">💰</span><span>Kế toán</span></a>
+                    <a class="nav-item" href="misa.html"><span class="nav-icon">🔄</span><span>Đồng bộ MISA</span></a>
+                    <a class="nav-item" href="reports.html"><span class="nav-icon">📈</span><span>Báo cáo</span></a>
+                    <a class="nav-item" href="projects.html"><span class="nav-icon">🏗️</span><span>Dự án</span></a>
+                    <a class="nav-item" href="hr.html"><span class="nav-icon">👥</span><span>Nhân sự</span></a>
+                    <a class="nav-item" href="marketing.html"><span class="nav-icon">📢</span><span>Marketing</span></a>
+                    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span>Cài đặt</span></a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOP HEADER -->
+            <div class="top-header">
+                <div class="breadcrumb">
+                    <a href="../index.html">Bảng điều khiển</a>
+                    <span>/</span>
+                    <strong id="currentViewName">Quy trình bán hàng</strong>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" placeholder="Tìm kiếm... (Ctrl+K)" id="globalSearch">
+                    </div>
+                    <span class="tooltip" data-tip="Notifications">🔔</span>
+                    <span class="tooltip" data-tip="Messages">💬</span>
+                    <div class="user-menu">
+                        <div class="user-avatar">NA</div>
+                        <span>Nguyễn Admin</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-content">
+
+                <!-- ==================== VIEW 1: PIPELINE (Phễu bán hàng) ==================== -->
+                <div id="pipelineView">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Phễu bán hàng</h1>
+                            <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                Quản lý cơ hội theo giai đoạn • 28 cơ hội đang mở, tổng trị giá 1.850.000.000 ₫
+                            </p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="showToast('Đã nhập cơ hội mới', 'success')">📥
+                                Nhập liệu</button>
+                            <button class="btn btn-primary" onclick="showToast('Tạo cơ hội mới', 'info')">➕ Tạo cơ
+                                hội</button>
+                        </div>
+                    </div>
+
+                    <!-- Pipeline Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">🆕</div>
+                            <div class="stat-info">
+                                <div class="stat-value">12</div>
+                                <div class="stat-label">Mới</div>
+                            </div>
+                            <span class="stat-trend up">↑ +3 tuần này</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">📞</div>
+                            <div class="stat-info">
+                                <div class="stat-value">8</div>
+                                <div class="stat-label">Đã liên hệ</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">📋</div>
+                            <div class="stat-info">
+                                <div class="stat-value">5</div>
+                                <div class="stat-label">Đề xuất</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">✅</div>
+                            <div class="stat-info">
+                                <div class="stat-value">15</div>
+                                <div class="stat-label">Đã chốt tháng 4</div>
+                            </div>
+                            <span class="stat-trend up">↑ 680tr ₫</span>
+                        </div>
+                    </div>
+
+                    <!-- Kanban Pipeline Board -->
+                    <div style="display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; margin-top: 20px;">
+
+                        <!-- Stage 1: Mới -->
+                        <div style="flex: 1; min-width: 260px; background: #F0F1F4; border-radius: 8px; padding: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 style="font-size: 14px; font-weight: 600; margin: 0;">🆕 Mới</h3>
+                                <span
+                                    style="background: #E9ECEF; padding: 2px 8px; border-radius: 10px; font-size: 12px;">12</span>
+                            </div>
+                            <div class="kanban-stage">
+                                <!-- Card 1 -->
+                                <div
+                                    style="background: white; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                        <strong style="font-size: 13px;">Set quà Tết Doanh nghiệp</strong>
+                                        <span style="font-size: 11px; color: #666;">85tr ₫</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #999; margin-bottom: 6px;">CTy CP Truyền thông
+                                        VietMedia</div>
+                                    <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                        <span
+                                            style="background: #FFF3E0; color: #E65100; padding: 1px 6px; border-radius: 3px; font-size: 10px;">Quà
+                                            tặng văn hóa</span>
+                                        <span
+                                            style="background: #E3F2FD; color: #1565C0; padding: 1px 6px; border-radius: 3px; font-size: 10px;">NK</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 10px; color: #999;">13/04/2026</span>
+                                        <div
+                                            style="width: 24px; height: 24px; border-radius: 50%; background: #00A09D; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                            TH</div>
+                                    </div>
+                                </div>
+                                <!-- Card 2 -->
+                                <div
+                                    style="background: white; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                        <strong style="font-size: 13px;">Vòng trầm hương cao cấp</strong>
+                                        <span style="font-size: 11px; color: #666;">12tr ₫</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #999; margin-bottom: 6px;">Nguyễn Thị Hồng Nhung
+                                    </div>
+                                    <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                        <span
+                                            style="background: #F3E5F5; color: #7B1FA2; padding: 1px 6px; border-radius: 3px; font-size: 10px;">Trang
+                                            sức</span>
+                                        <span
+                                            style="background: #FCE4EC; color: #C62828; padding: 1px 6px; border-radius: 3px; font-size: 10px;">BT</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 10px; color: #999;">12/04/2026</span>
+                                        <div
+                                            style="width: 24px; height: 24px; border-radius: 50%; background: #8B2500; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                            LV</div>
+                                    </div>
+                                </div>
+                                <!-- Card 3 -->
+                                <div
+                                    style="background: white; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                        <strong style="font-size: 13px;">Đèn thờ bằng đồng - 10 bộ</strong>
+                                        <span style="font-size: 11px; color: #666;">45tr ₫</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #999; margin-bottom: 6px;">Ban Quản lý Chùa Giác
+                                        Ngộ</div>
+                                    <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                        <span
+                                            style="background: #E8F5E9; color: #2E7D32; padding: 1px 6px; border-radius: 3px; font-size: 10px;">Đồ
+                                            thờ cúng</span>
+                                        <span
+                                            style="background: #E3F2FD; color: #1565C0; padding: 1px 6px; border-radius: 3px; font-size: 10px;">HQ</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 10px; color: #999;">11/04/2026</span>
+                                        <div
+                                            style="width: 24px; height: 24px; border-radius: 50%; background: #673AB7; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                            PT</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 2: Đã liên hệ -->
+                        <div style="flex: 1; min-width: 260px; background: #F0F1F4; border-radius: 8px; padding: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 style="font-size: 14px; font-weight: 600; margin: 0;">📞 Đã liên hệ</h3>
+                                <span
+                                    style="background: #E9ECEF; padding: 2px 8px; border-radius: 10px; font-size: 12px;">8</span>
+                            </div>
+                            <div class="kanban-stage">
+                                <!-- Card 1 -->
+                                <div
+                                    style="background: white; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                        <strong style="font-size: 13px;">Trà & Ấm tử sa - Bộ sưu tập mới</strong>
+                                        <span style="font-size: 11px; color: #666;">28tr ₫</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #999; margin-bottom: 6px;">Club Trà đạo Sài Gòn
+                                    </div>
+                                    <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                        <span
+                                            style="background: #FFF8E1; color: #F57F17; padding: 1px 6px; border-radius: 3px; font-size: 10px;">Thiền
+                                            trà</span>
+                                        <span
+                                            style="background: #FCE4EC; color: #C62828; padding: 1px 6px; border-radius: 3px; font-size: 10px;">BT</span>
+                                    </div>
+                                    <div
+                                        style="background: #E8F5E9; padding: 4px 8px; border-radius: 4px; font-size: 10px; color: #2E7D32; margin-bottom: 6px;">
+                                        ✅ Đã gọi - Hẹn demo trà</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 10px; color: #999;">12/04/2026</span>
+                                        <div
+                                            style="width: 24px; height: 24px; border-radius: 50%; background: #00A09D; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                            TH</div>
+                                    </div>
+                                </div>
+                                <!-- Card 2 -->
+                                <div
+                                    style="background: white; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                        <strong style="font-size: 13px;">Nhang thơm cao cấp - Đại lý</strong>
+                                        <span style="font-size: 11px; color: #666;">120tr ₫</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #999; margin-bottom: 6px;">Cửa hàng Tâm Linh -
+                                        Đà Lạt</div>
+                                    <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                        <span
+                                            style="background: #FFF3E0; color: #E65100; padding: 1px 6px; border-radius: 3px; font-size: 10px;">Hương
+                                            đạo</span>
+                                        <span
+                                            style="background: #E3F2FD; color: #1565C0; padding: 1px 6px; border-radius: 3px; font-size: 10px;">NK</span>
+                                    </div>
+                                    <div
+                                        style="background: #FFF3E0; padding: 4px 8px; border-radius: 4px; font-size: 10px; color: #E65100; margin-bottom: 6px;">
+                                        📧 Đã gửi báo giá</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 10px; color: #999;">10/04/2026</span>
+                                        <div
+                                            style="width: 24px; height: 24px; border-radius: 50%; background: #8B2500; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                            LV</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 3: Đề xuất -->
+                        <div style="flex: 1; min-width: 260px; background: #F0F1F4; border-radius: 8px; padding: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 style="font-size: 14px; font-weight: 600; margin: 0;">📋 Đề xuất</h3>
+                                <span
+                                    style="background: #E9ECEF; padding: 2px 8px; border-radius: 10px; font-size: 12px;">5</span>
+                            </div>
+                            <div class="kanban-stage">
+                                <!-- Card 1 -->
+                                <div
+                                    style="background: white; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 3px solid #8B2500;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                        <strong style="font-size: 13px;">Lư hương đồng + Đèn thờ - Nhà mới</strong>
+                                        <span style="font-size: 11px; color: #666;">65tr ₫</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #999; margin-bottom: 6px;">Trần Văn Đức - Q.
+                                        Bình Thạnh</div>
+                                    <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                        <span
+                                            style="background: #E8F5E9; color: #2E7D32; padding: 1px 6px; border-radius: 3px; font-size: 10px;">Đồ
+                                            thờ cúng</span>
+                                        <span
+                                            style="background: #E3F2FD; color: #1565C0; padding: 1px 6px; border-radius: 3px; font-size: 10px;">HQ</span>
+                                    </div>
+                                    <div
+                                        style="background: #FFF3E0; padding: 4px 8px; border-radius: 4px; font-size: 10px; color: #E65100; margin-bottom: 6px;">
+                                        ⏳ Chờ xác nhận mẫu</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 10px; color: #999;">09/04/2026</span>
+                                        <div
+                                            style="width: 24px; height: 24px; border-radius: 50%; background: #673AB7; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                            PT</div>
+                                    </div>
+                                </div>
+                                <!-- Card 2 -->
+                                <div
+                                    style="background: white; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 3px solid #00A09D;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                        <strong style="font-size: 13px;">Set quà đối tác - 50 suất</strong>
+                                        <span style="font-size: 11px; color: #666;">250tr ₫</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #999; margin-bottom: 6px;">Ngân hàng VPBank - CN
+                                        HCM</div>
+                                    <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                        <span
+                                            style="background: #FFF3E0; color: #E65100; padding: 1px 6px; border-radius: 3px; font-size: 10px;">Quà
+                                            tặng văn hóa</span>
+                                        <span
+                                            style="background: #E3F2FD; color: #1565C0; padding: 1px 6px; border-radius: 3px; font-size: 10px;">NK</span>
+                                    </div>
+                                    <div
+                                        style="background: #E3F2FD; padding: 4px 8px; border-radius: 4px; font-size: 10px; color: #1565C0; margin-bottom: 6px;">
+                                        📋 Đã gửi proposal</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 10px; color: #999;">08/04/2026</span>
+                                        <div
+                                            style="width: 24px; height: 24px; border-radius: 50%; background: #00A09D; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                            TH</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 4: Đã chốt -->
+                        <div style="flex: 1; min-width: 260px; background: #F0F1F4; border-radius: 8px; padding: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 style="font-size: 14px; font-weight: 600; margin: 0;">✅ Đã chốt</h3>
+                                <span
+                                    style="background: #C8E6C9; color: #2E7D32; padding: 2px 8px; border-radius: 10px; font-size: 12px;">15</span>
+                            </div>
+                            <div class="kanban-stage">
+                                <!-- Card 1 -->
+                                <div
+                                    style="background: white; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 3px solid #28a745;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                        <strong style="font-size: 13px;">Trầm hương - Vòng + Nhang combo</strong>
+                                        <span style="font-size: 11px; color: #666; font-weight: 600;">38tr ₫</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #999; margin-bottom: 6px;">Lê Thị Thanh Hà - Q.1
+                                    </div>
+                                    <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                        <span
+                                            style="background: #F3E5F5; color: #7B1FA2; padding: 1px 6px; border-radius: 3px; font-size: 10px;">Trang
+                                            sức</span>
+                                        <span
+                                            style="background: #FFF3E0; color: #E65100; padding: 1px 6px; border-radius: 3px; font-size: 10px;">Hương
+                                            đạo</span>
+                                    </div>
+                                    <div
+                                        style="background: #E8F5E9; padding: 4px 8px; border-radius: 4px; font-size: 10px; color: #2E7D32; margin-bottom: 6px;">
+                                        ✅ Đã thanh toán 100%</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 10px; color: #999;">13/04/2026</span>
+                                        <div
+                                            style="width: 24px; height: 24px; border-radius: 50%; background: #28a745; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                            LH</div>
+                                    </div>
+                                </div>
+                                <!-- Card 2 -->
+                                <div
+                                    style="background: white; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 3px solid #28a745;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                        <strong style="font-size: 13px;">Chén trà Bát Tràng - 20 bộ</strong>
+                                        <span style="font-size: 11px; color: #666; font-weight: 600;">52tr ₫</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #999; margin-bottom: 6px;">Quận trà Minh Tâm -
+                                        Q.10</div>
+                                    <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                        <span
+                                            style="background: #FFF8E1; color: #F57F17; padding: 1px 6px; border-radius: 3px; font-size: 10px;">Thiền
+                                            trà</span>
+                                        <span
+                                            style="background: #FCE4EC; color: #C62828; padding: 1px 6px; border-radius: 3px; font-size: 10px;">BT</span>
+                                    </div>
+                                    <div
+                                        style="background: #E8F5E9; padding: 4px 8px; border-radius: 4px; font-size: 10px; color: #2E7D32; margin-bottom: 6px;">
+                                        ✅ Đã giao hàng</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 10px; color: #999;">11/04/2026</span>
+                                        <div
+                                            style="width: 24px; height: 24px; border-radius: 50%; background: #8B2500; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                            LV</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 2: LEADS (Khách tiềm năng) ==================== -->
+                <div id="leadsView" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Khách tiềm năng</h1>
+                            <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                Theo dõi nguồn khách, tỷ lệ chuyển đổi • 156 leads, tỷ lệ chuyển 24.3%
+                            </p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="showToast('Nhập leads từ file', 'info')">📥 Nhập
+                                file</button>
+                            <button class="btn btn-primary" onclick="showToast('Thêm lead mới', 'info')">➕ Thêm
+                                lead</button>
+                        </div>
+                    </div>
+
+                    <!-- Lead Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">🎯</div>
+                            <div class="stat-info">
+                                <div class="stat-value">156</div>
+                                <div class="stat-label">Tổng leads</div>
+                            </div>
+                            <span class="stat-trend up">↑ +28 tháng này</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">📧</div>
+                            <div class="stat-info">
+                                <div class="stat-value">42</div>
+                                <div class="stat-label">Từ Website/Fanpage</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">🤝</div>
+                            <div class="stat-info">
+                                <div class="stat-value">38</div>
+                                <div class="stat-label">Từ giới thiệu</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">📊</div>
+                            <div class="stat-info">
+                                <div class="stat-value">24.3%</div>
+                                <div class="stat-label">Tỷ lệ chuyển đổi</div>
+                            </div>
+                            <span class="stat-trend up">↑ +3.2% vs T3</span>
+                        </div>
+                    </div>
+
+                    <!-- Leads Table -->
+                    <div class="table-container" style="margin-top: 20px;">
+                        <div class="table-header">
+                            <h3 class="card-title">Danh sách Khách tiềm năng</h3>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-secondary">🔍 Lọc</button>
+                                <button class="btn btn-sm btn-secondary">📥 Xuất file</button>
+                            </div>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Mã Lead</th>
+                                    <th>Tên</th>
+                                    <th>Công ty / Tổ chức</th>
+                                    <th>Nguồn</th>
+                                    <th>Sản phẩm quan tâm</th>
+                                    <th>Giá trị dự kiến</th>
+                                    <th>Người phụ trách</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>LEAD-001</code></td>
+                                    <td><strong>Phạm Nguyễn Gia Bảo</strong></td>
+                                    <td>Resort Thiên Đường - Phan Thiết</td>
+                                    <td><span class="badge badge-info">🌐 Website</span></td>
+                                    <td>Set quà welcome + Nhang trầm</td>
+                                    <td style="text-align: right">95.000.000 ₫</td>
+                                    <td>Thanh Hà</td>
+                                    <td>14/04/2026</td>
+                                    <td><span class="badge badge-warning">Mới</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code>LEAD-002</code></td>
+                                    <td><strong>Hoàng Thị Diệp</strong></td>
+                                    <td>Workshop Handmade Đà Lạt</td>
+                                    <td><span class="badge badge-purple">📱 Fanpage</span></td>
+                                    <td>Ấm tử sa + Chén trà (lớp học)</td>
+                                    <td style="text-align: right">32.000.000 ₫</td>
+                                    <td>Lan Hương</td>
+                                    <td>13/04/2026</td>
+                                    <td><span class="badge badge-info">Đã liên hệ</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code>LEAD-003</code></td>
+                                    <td><strong>Vũ Minh Tuấn</strong></td>
+                                    <td>—</td>
+                                    <td><span class="badge badge-success">👤 Giới thiệu</span></td>
+                                    <td>Vòng trầm hương (sinh nhật)</td>
+                                    <td style="text-align: right">8.500.000 ₫</td>
+                                    <td>Thanh Hà</td>
+                                    <td>13/04/2026</td>
+                                    <td><span class="badge badge-info">Đã liên hệ</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code>LEAD-004</code></td>
+                                    <td><strong>Đặng Thu Hà</strong></td>
+                                    <td>CTy TNHH Nội Thất An Nhiên</td>
+                                    <td><span class="badge badge-orange">🎪 Sự kiện</span></td>
+                                    <td>Đèn thờ đồng + Lư hương (dự án)</td>
+                                    <td style="text-align: right">180.000.000 ₫</td>
+                                    <td>Minh Đức</td>
+                                    <td>12/04/2026</td>
+                                    <td><span class="badge badge-warning">Mới</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code>LEAD-005</code></td>
+                                    <td><strong>Nguyễn Khánh Vy</strong></td>
+                                    <td>Trường Mầm non Sen Việt</td>
+                                    <td><span class="badge badge-purple">📱 Fanpage</span></td>
+                                    <td>Set quà Tết GV (50 suất)</td>
+                                    <td style="text-align: right">75.000.000 ₫</td>
+                                    <td>Lan Hương</td>
+                                    <td>11/04/2026</td>
+                                    <td><span class="badge badge-warning">Mới</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code>LEAD-006</code></td>
+                                    <td><strong>Lê Đình Nam</strong></td>
+                                    <td>—</td>
+                                    <td><span class="badge badge-success">👤 Giới thiệu</span></td>
+                                    <td>Nhang thơm cao cấp</td>
+                                    <td style="text-align: right">4.200.000 ₫</td>
+                                    <td>Thanh Hà</td>
+                                    <td>10/04/2026</td>
+                                    <td><span class="badge badge-success">Đã chốt</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code>LEAD-007</code></td>
+                                    <td><strong>Trần Ngọc Anh</strong></td>
+                                    <td>Khách sạn Boutique Hội An</td>
+                                    <td><span class="badge badge-info">🌐 Website</span></td>
+                                    <td>Set quà + Trà + Nhang (welcome kit)</td>
+                                    <td style="text-align: right">145.000.000 ₫</td>
+                                    <td>Minh Đức</td>
+                                    <td>09/04/2026</td>
+                                    <td><span class="badge badge-info">Đã liên hệ</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 3: CUSTOMERS (Khách hàng) ==================== -->
+                <div id="customersView" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Khách hàng</h1>
+                            <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                Quản lý thông tin khách hàng • 342 khách hàng, 48 VIP, 89 mua lặp
+                            </p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="showToast('Xuất danh sách KH', 'info')">📥 Xuất
+                                file</button>
+                            <button class="btn btn-primary" onclick="showToast('Thêm khách hàng mới', 'info')">➕ Thêm
+                                KH</button>
+                        </div>
+                    </div>
+
+                    <!-- Customer Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">👥</div>
+                            <div class="stat-info">
+                                <div class="stat-value">342</div>
+                                <div class="stat-label">Tổng khách hàng</div>
+                            </div>
+                            <span class="stat-trend up">↑ +18 tháng này</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">⭐</div>
+                            <div class="stat-info">
+                                <div class="stat-value">48</div>
+                                <div class="stat-label">Khách VIP</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">🔄</div>
+                            <div class="stat-info">
+                                <div class="stat-value">89</div>
+                                <div class="stat-label">Mua lặp (2+ lần)</div>
+                            </div>
+                            <span class="stat-trend up">↑ 26% repeat rate</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">💰</div>
+                            <div class="stat-info">
+                                <div class="stat-value">2.85 tỷ</div>
+                                <div class="stat-label">Doanh thu T4 (đạt)</div>
+                            </div>
+                            <span class="stat-trend up">↑ +15% vs T3</span>
+                        </div>
+                    </div>
+
+                    <!-- Customer Table -->
+                    <div class="table-container" style="margin-top: 20px;">
+                        <div class="table-header">
+                            <h3 class="card-title">Danh sách Khách hàng</h3>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-secondary">🔍 Lọc</button>
+                                <button class="btn btn-sm btn-secondary">⭐ VIP</button>
+                            </div>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Mã KH</th>
+                                    <th>Tên khách hàng</th>
+                                    <th>Loại</th>
+                                    <th>Lần mua gần nhất</th>
+                                    <th>Số đơn</th>
+                                    <th>Tổng chi tiêu</th>
+                                    <th>Sản phẩm yêu thích</th>
+                                    <th>Phụ trách</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>CUS-001</code></td>
+                                    <td><strong style="color: var(--odoo-primary);">Lê Thị Thanh Hà</strong></td>
+                                    <td><span class="badge badge-purple">⭐ VIP</span></td>
+                                    <td>13/04/2026</td>
+                                    <td>12</td>
+                                    <td style="text-align: right">185.000.000 ₫</td>
+                                    <td>Vòng trầm, Nhang thơm</td>
+                                    <td>Thanh Hà</td>
+                                    <td><button class="btn btn-sm btn-secondary"
+                                            onclick="showToast('Xem chi tiết KH', 'info')">👁️</button></td>
+                                </tr>
+                                <tr>
+                                    <td><code>CUS-002</code></td>
+                                    <td><strong style="color: var(--odoo-primary);">Trần Văn Đức</strong></td>
+                                    <td><span class="badge badge-purple">⭐ VIP</span></td>
+                                    <td>10/04/2026</td>
+                                    <td>8</td>
+                                    <td style="text-align: right">320.000.000 ₫</td>
+                                    <td>Đèn thờ, Lư hương</td>
+                                    <td>Minh Đức</td>
+                                    <td><button class="btn btn-sm btn-secondary"
+                                            onclick="showToast('Xem chi tiết KH', 'info')">👁️</button></td>
+                                </tr>
+                                <tr>
+                                    <td><code>CUS-003</code></td>
+                                    <td><strong style="color: var(--odoo-primary);">Nguyễn Thị Mai</strong></td>
+                                    <td><span class="badge badge-success">Thân thiết</span></td>
+                                    <td>11/04/2026</td>
+                                    <td>6</td>
+                                    <td style="text-align: right">92.000.000 ₫</td>
+                                    <td>Chén trà, Ấm tử sa</td>
+                                    <td>Lan Hương</td>
+                                    <td><button class="btn btn-sm btn-secondary"
+                                            onclick="showToast('Xem chi tiết KH', 'info')">👁️</button></td>
+                                </tr>
+                                <tr>
+                                    <td><code>CUS-004</code></td>
+                                    <td><strong style="color: var(--odoo-primary);">VPBank - Phòng HCNS</strong></td>
+                                    <td><span class="badge badge-purple">⭐ VIP</span></td>
+                                    <td>08/04/2026</td>
+                                    <td>5</td>
+                                    <td style="text-align: right">680.000.000 ₫</td>
+                                    <td>Set quà đối tác</td>
+                                    <td>Thanh Hà</td>
+                                    <td><button class="btn btn-sm btn-secondary"
+                                            onclick="showToast('Xem chi tiết KH', 'info')">👁️</button></td>
+                                </tr>
+                                <tr>
+                                    <td><code>CUS-005</code></td>
+                                    <td><strong style="color: var(--odoo-primary);">Võ Thành Đạt</strong></td>
+                                    <td><span class="badge badge-info">Thường</span></td>
+                                    <td>05/04/2026</td>
+                                    <td>2</td>
+                                    <td style="text-align: right">15.500.000 ₫</td>
+                                    <td>Nhang thơm</td>
+                                    <td>Minh Đức</td>
+                                    <td><button class="btn btn-sm btn-secondary"
+                                            onclick="showToast('Xem chi tiết KH', 'info')">👁️</button></td>
+                                </tr>
+                                <tr>
+                                    <td><code>CUS-006</code></td>
+                                    <td><strong style="color: var(--odoo-primary);">Club Trà đạo Sài Gòn</strong></td>
+                                    <td><span class="badge badge-success">Thân thiết</span></td>
+                                    <td>12/04/2026</td>
+                                    <td>9</td>
+                                    <td style="text-align: right">145.000.000 ₫</td>
+                                    <td>Ấm tử sa, Trà, Chén trà</td>
+                                    <td>Lan Hương</td>
+                                    <td><button class="btn btn-sm btn-secondary"
+                                            onclick="showToast('Xem chi tiết KH', 'info')">👁️</button></td>
+                                </tr>
+                                <tr>
+                                    <td><code>CUS-007</code></td>
+                                    <td><strong style="color: var(--odoo-primary);">Phạm Thị Hồng Đào</strong></td>
+                                    <td><span class="badge badge-purple">⭐ VIP</span></td>
+                                    <td>07/04/2026</td>
+                                    <td>15</td>
+                                    <td style="text-align: right">420.000.000 ₫</td>
+                                    <td>Set quà, Vòng trầm</td>
+                                    <td>Thanh Hà</td>
+                                    <td><button class="btn btn-sm btn-secondary"
+                                            onclick="showToast('Xem chi tiết KH', 'info')">👁️</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 4: ACTIVITIES (Hoạt động) ==================== -->
+                <div id="activitiesView" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Hoạt động</h1>
+                            <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                Lên lịch & theo dõi hoạt động • 12 hoạt động tuần này, 4 cuộc gọi chưa thực hiện
+                            </p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="showToast('Xem lịch', 'info')">📅 Lịch</button>
+                            <button class="btn btn-primary" onclick="showToast('Tạo hoạt động mới', 'info')">➕ Lên
+                                lịch</button>
+                        </div>
+                    </div>
+
+                    <!-- Activity Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">📞</div>
+                            <div class="stat-info">
+                                <div class="stat-value">34</div>
+                                <div class="stat-label">Cuộc gọi tháng 4</div>
+                            </div>
+                            <span class="stat-trend up">↑ +8 vs T3</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">🤝</div>
+                            <div class="stat-info">
+                                <div class="stat-value">12</div>
+                                <div class="stat-label">Cuộc gặp</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">📧</div>
+                            <div class="stat-info">
+                                <div class="stat-value">28</div>
+                                <div class="stat-label">Email đã gửi</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">⏰</div>
+                            <div class="stat-info">
+                                <div class="stat-value">4</div>
+                                <div class="stat-label">Chưa thực hiện</div>
+                            </div>
+                            <span class="stat-trend down">⚠️ Cần xử lý</span>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Activities -->
+                    <div class="table-container" style="margin-top: 20px;">
+                        <div class="table-header">
+                            <h3 class="card-title">📅 Hoạt động sắp tới</h3>
+                            <button class="btn btn-sm btn-primary" onclick="showToast('Đã lên lịch mới', 'success')">➕
+                                Lên lịch</button>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Ngày giờ</th>
+                                    <th>Loại</th>
+                                    <th>Khách hàng</th>
+                                    <th>Nội dung</th>
+                                    <th>Người thực hiện</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>14/04 - 09:00</strong></td>
+                                    <td><span class="badge badge-info">📞 Gọi điện</span></td>
+                                    <td>Phạm Nguyễn Gia Bảo (Resort Thiên Đường)</td>
+                                    <td>Tư vấn set quà welcome + báo giá</td>
+                                    <td>Thanh Hà</td>
+                                    <td><span class="badge badge-warning">Chờ thực hiện</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>14/04 - 14:00</strong></td>
+                                    <td><span class="badge badge-purple">🤝 Gặp mặt</span></td>
+                                    <td>Đặng Thu Hà (Nội Thất An Nhiên)</td>
+                                    <td>Trưng bày đèn thờ đồng tại showroom</td>
+                                    <td>Minh Đức</td>
+                                    <td><span class="badge badge-warning">Chờ thực hiện</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>15/04 - 10:00</strong></td>
+                                    <td><span class="badge badge-orange">📧 Email</span></td>
+                                    <td>Club Trà đạo Sài Gòn</td>
+                                    <td>Gửi catalogue bộ sưu tập ấm mới</td>
+                                    <td>Lan Hương</td>
+                                    <td><span class="badge badge-warning">Chờ thực hiện</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>15/04 - 15:30</strong></td>
+                                    <td><span class="badge badge-info">📞 Gọi điện</span></td>
+                                    <td>Trần Ngọc Anh (KS Boutique Hội An)</td>
+                                    <td>Follow-up báo giá welcome kit</td>
+                                    <td>Minh Đức</td>
+                                    <td><span class="badge badge-warning">Chờ thực hiện</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>16/04 - 09:30</strong></td>
+                                    <td><span class="badge badge-purple">🤝 Gặp mặt</span></td>
+                                    <td>VPBank - Phòng HCNS</td>
+                                    <td>Chốt set quà đối tác 50 suất</td>
+                                    <td>Thanh Hà</td>
+                                    <td><span class="badge badge-info">Đã lên lịch</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Recent Activity Log -->
+                    <div class="table-container" style="margin-top: 20px;">
+                        <div class="table-header">
+                            <h3 class="card-title">📝 Lịch sử hoạt động</h3>
+                            <button class="btn btn-sm btn-secondary">Xem tất cả →</button>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Ngày giờ</th>
+                                    <th>Loại</th>
+                                    <th>Khách hàng</th>
+                                    <th>Nội dung</th>
+                                    <th>Người thực hiện</th>
+                                    <th>Kết quả</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>13/04 - 16:00</td>
+                                    <td><span class="badge badge-info">📞 Gọi điện</span></td>
+                                    <td>Lê Thị Thanh Hà</td>
+                                    <td>Tư vấn vòng trầm hương mới</td>
+                                    <td>Thanh Hà</td>
+                                    <td><span class="badge badge-success">Đã chốt 38tr ₫</span></td>
+                                </tr>
+                                <tr>
+                                    <td>13/04 - 10:30</td>
+                                    <td><span class="badge badge-purple">🤝 Gặp mặt</span></td>
+                                    <td>Club Trà đạo Sài Gòn</td>
+                                    <td>Demo bộ sưu tập trà xuân 2026</td>
+                                    <td>Lan Hương</td>
+                                    <td><span class="badge badge-info">Hẹn đặt hàng</span></td>
+                                </tr>
+                                <tr>
+                                    <td>12/04 - 14:00</td>
+                                    <td><span class="badge badge-orange">📧 Email</span></td>
+                                    <td>Cửa hàng Tâm Linh - Đà Lạt</td>
+                                    <td>Gửi báo giá đại lý nhang thơm</td>
+                                    <td>Minh Đức</td>
+                                    <td><span class="badge badge-info">Đã gửi</span></td>
+                                </tr>
+                                <tr>
+                                    <td>12/04 - 09:00</td>
+                                    <td><span class="badge badge-info">📞 Gọi điện</span></td>
+                                    <td>Quận trà Minh Tâm</td>
+                                    <td>Xác nhận đơn hàng 20 bộ chén trà</td>
+                                    <td>Lan Hương</td>
+                                    <td><span class="badge badge-success">Đã chốt 52tr ₫</span></td>
+                                </tr>
+                                <tr>
+                                    <td>11/04 - 15:00</td>
+                                    <td><span class="badge badge-purple">🤝 Gặp mặt</span></td>
+                                    <td>Trần Văn Đức</td>
+                                    <td>Khảo sát không gian thờ tại nhà</td>
+                                    <td>Minh Đức</td>
+                                    <td><span class="badge badge-warning">Chờ báo giá</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 5: REPORTS (Báo cáo) ==================== -->
+                <div id="reportsView" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Báo cáo CRM</h1>
+                            <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                Hiệu suất bán hàng, phễu chuyển đổi, sản phẩm bán chạy • Tháng 4/2026
+                            </p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="showToast('Xuất báo cáo', 'info')">📥 Xuất
+                                PDF</button>
+                            <button class="btn btn-secondary" onclick="showToast('Xuất báo cáo', 'info')">📊 Xuất
+                                Excel</button>
+                        </div>
+                    </div>
+
+                    <!-- Report Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon green">💰</div>
+                            <div class="stat-info">
+                                <div class="stat-value">2.85 tỷ</div>
+                                <div class="stat-label">Doanh thu T4</div>
+                            </div>
+                            <span class="stat-trend up">↑ +15% vs T3</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon blue">📊</div>
+                            <div class="stat-info">
+                                <div class="stat-value">24.3%</div>
+                                <div class="stat-label">Tỷ lệ chuyển đổi</div>
+                            </div>
+                            <span class="stat-trend up">↑ +3.2%</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">🛒</div>
+                            <div class="stat-info">
+                                <div class="stat-value">4.2tr ₫</div>
+                                <div class="stat-label">Giá trị TB / đơn</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">🏆</div>
+                            <div class="stat-info">
+                                <div class="stat-value">Thanh Hà</div>
+                                <div class="stat-label">Top sales T4</div>
+                            </div>
+                            <span class="stat-trend up">850tr ₫</span>
+                        </div>
+                    </div>
+
+                    <!-- Sales Performance by Salesperson -->
+                    <div class="table-container" style="margin-top: 20px;">
+                        <div class="table-header">
+                            <h3 class="card-title">🏆 Hiệu suất nhân viên sales</h3>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Nhân viên</th>
+                                    <th>Leads phụ trách</th>
+                                    <th>Đã chốt</th>
+                                    <th>Tỷ lệ chốt</th>
+                                    <th>Doanh thu</th>
+                                    <th>Top sản phẩm</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>🥇 Thanh Hà</strong></td>
+                                    <td>42</td>
+                                    <td>12</td>
+                                    <td><strong>28.6%</strong></td>
+                                    <td style="text-align: right">850.000.000 ₫</td>
+                                    <td>Vòng trầm, Set quà</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>🥈 Minh Đức</strong></td>
+                                    <td>38</td>
+                                    <td>9</td>
+                                    <td><strong>23.7%</strong></td>
+                                    <td style="text-align: right">680.000.000 ₫</td>
+                                    <td>Đèn thờ, Lư hương</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>🥉 Lan Hương</strong></td>
+                                    <td>35</td>
+                                    <td>8</td>
+                                    <td><strong>22.9%</strong></td>
+                                    <td style="text-align: right">520.000.000 ₫</td>
+                                    <td>Ấm tử sa, Chén trà</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Hùng Long</strong></td>
+                                    <td>28</td>
+                                    <td>5</td>
+                                    <td><strong>17.9%</strong></td>
+                                    <td style="text-align: right">380.000.000 ₫</td>
+                                    <td>Nhang thơm, Trà</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Thu Trang</strong></td>
+                                    <td>13</td>
+                                    <td>3</td>
+                                    <td><strong>23.1%</strong></td>
+                                    <td style="text-align: right">420.000.000 ₫</td>
+                                    <td>Set quà đối tác</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Conversion Funnel -->
+                    <div class="table-container" style="margin-top: 20px;">
+                        <div class="table-header">
+                            <h3 class="card-title">📊 Phễu chuyển đổi - Tháng 4/2026</h3>
+                        </div>
+                        <div style="padding: 20px;">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                                <div
+                                    style="background: #E3F2FD; padding: 12px 0; width: 90%; border-radius: 8px; text-align: center;">
+                                    <strong>156 Leads</strong> — Tổng khách tiềm năng
+                                </div>
+                                <div style="color: #999;">▼ 75% liên hệ được</div>
+                                <div
+                                    style="background: #FFF3E0; padding: 12px 0; width: 75%; border-radius: 8px; text-align: center;">
+                                    <strong>117 Đã liên hệ</strong> — Gọi điện / Gặp mặt / Email
+                                </div>
+                                <div style="color: #999;">▼ 36% quan tâm</div>
+                                <div
+                                    style="background: #F3E5F5; padding: 12px 0; width: 55%; border-radius: 8px; text-align: center;">
+                                    <strong>42 Đề xuất báo giá</strong> — Gửi proposal
+                                </div>
+                                <div style="color: #999;">▼ 48% chốt</div>
+                                <div
+                                    style="background: #E8F5E9; padding: 12px 0; width: 35%; border-radius: 8px; text-align: center;">
+                                    <strong style="color: #2E7D32;">20 Đã chốt</strong> — Tổng trị giá 2.85 tỷ ₫
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Products -->
+                    <div class="table-container" style="margin-top: 20px;">
+                        <div class="table-header">
+                            <h3 class="card-title">🛒 Top sản phẩm bán chạy</h3>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Danh mục</th>
+                                    <th>Số đơn</th>
+                                    <th>Doanh thu</th>
+                                    <th>% Tổng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>🥇</td>
+                                    <td><strong>Set quà văn hóa Doanh nghiệp</strong></td>
+                                    <td><span class="badge badge-info">Quà tặng văn hóa</span></td>
+                                    <td>18</td>
+                                    <td style="text-align: right">780.000.000 ₫</td>
+                                    <td><strong>27.4%</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>🥈</td>
+                                    <td><strong>Vòng trầm hương</strong></td>
+                                    <td><span class="badge badge-purple">Trang sức</span></td>
+                                    <td>32</td>
+                                    <td style="text-align: right">520.000.000 ₫</td>
+                                    <td><strong>18.2%</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>🥉</td>
+                                    <td><strong>Đèn thờ bằng đồng</strong></td>
+                                    <td><span class="badge badge-success">Đồ thờ cúng</span></td>
+                                    <td>14</td>
+                                    <td style="text-align: right">480.000.000 ₫</td>
+                                    <td><strong>16.8%</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td><strong>Ấm tử sa Nghi Hưng</strong></td>
+                                    <td><span class="badge badge-warning">Thiền trà</span></td>
+                                    <td>22</td>
+                                    <td style="text-align: right">385.000.000 ₫</td>
+                                    <td><strong>13.5%</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td><strong>Nhang thơm Trầm hương</strong></td>
+                                    <td><span class="badge badge-orange">Hương đạo</span></td>
+                                    <td>45</td>
+                                    <td style="text-align: right">320.000.000 ₫</td>
+                                    <td><strong>11.2%</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td><strong>Chén trà Bát Tràng</strong></td>
+                                    <td><span class="badge badge-warning">Thiền trà</span></td>
+                                    <td>28</td>
+                                    <td style="text-align: right">210.000.000 ₫</td>
+                                    <td><strong>7.4%</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td><strong>Lư hương đồng</strong></td>
+                                    <td><span class="badge badge-success">Đồ thờ cúng</span></td>
+                                    <td>10</td>
+                                    <td style="text-align: right">155.000.000 ₫</td>
+                                    <td><strong>5.4%</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Revenue by Category -->
+                    <div class="table-container" style="margin-top: 20px;">
+                        <div class="table-header">
+                            <h3 class="card-title">📊 Doanh thu theo danh mục</h3>
+                        </div>
+                        <div style="padding: 20px;">
+                            <div style="margin-bottom: 16px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                    <span><strong>Quà tặng văn hóa</strong> (Set quà)</span>
+                                    <span><strong>780tr ₫ (27.4%)</strong></span>
+                                </div>
+                                <div style="height: 8px; background: #E9ECEF; border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; width: 27.4%; background: #00A09D; border-radius: 4px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                    <span><strong>Trang sức</strong> (Vòng trầm hương)</span>
+                                    <span><strong>520tr ₫ (18.2%)</strong></span>
+                                </div>
+                                <div style="height: 8px; background: #E9ECEF; border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; width: 18.2%; background: #8B2500; border-radius: 4px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                    <span><strong>Đồ thờ cúng</strong> (Đèn thờ, Lư hương)</span>
+                                    <span><strong>635tr ₫ (22.3%)</strong></span>
+                                </div>
+                                <div style="height: 8px; background: #E9ECEF; border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; width: 22.3%; background: #673AB7; border-radius: 4px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                    <span><strong>Thiền trà</strong> (Ấm tử sa, Chén trà, Trà)</span>
+                                    <span><strong>595tr ₫ (20.9%)</strong></span>
+                                </div>
+                                <div style="height: 8px; background: #E9ECEF; border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; width: 20.9%; background: #F57F17; border-radius: 4px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                    <span><strong>Hương đạo</strong> (Trầm hương, Nhang thơm)</span>
+                                    <span><strong>320tr ₫ (11.2%)</strong></span>
+                                </div>
+                                <div style="height: 8px; background: #E9ECEF; border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; width: 11.2%; background: #FF9800; border-radius: 4px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sub-menu Switching for CRM Module
+        function switchSubmenu(submenuName, navEl) {
+            var views = ['pipelineView', 'leadsView', 'customersView', 'activitiesView', 'reportsView'];
+            views.forEach(function (viewId) {
+                var view = document.getElementById(viewId);
+                if (view) view.style.display = 'none';
+            });
+
+            var viewMap = {
+                'pipeline': 'pipelineView',
+                'leads': 'leadsView',
+                'customers': 'customersView',
+                'activities': 'activitiesView',
+                'reports': 'reportsView'
+            };
+
+            var targetView = document.getElementById(viewMap[submenuName]);
+            if (targetView) targetView.style.display = 'block';
+
+            if (navEl) {
+                document.querySelectorAll('.nav-section .nav-item').forEach(function (item) {
+                    item.classList.remove('active');
+                });
+                navEl.classList.add('active');
+            }
+
+            var breadcrumbNames = {
+                'pipeline': 'Phễu bán hàng',
+                'leads': 'Khách tiềm năng',
+                'customers': 'Khách hàng',
+                'activities': 'Hoạt động',
+                'reports': 'Báo cáo'
+            };
+            document.getElementById('currentViewName').textContent = breadcrumbNames[submenuName] || 'CRM';
+        }
+
+        function switchEntity(entity) {
+            var entityNames = { all: 'Tất cả', hq: 'Văn phòng HQ', nk: 'Cửa hàng Nam Kỳ', bt: 'Cửa hàng Bà Triệu' };
+            showToast('Chuyển sang: ' + entityNames[entity], 'success');
+        }
+
+        function showToast(message, type) {
+            var colors = { success: '#28a745', error: '#dc3545', info: '#17a2b8', warning: '#ffc107' };
+            var toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 18px;background:' + (colors[type] || colors.info) + ';color:white;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:10000;font-size:12px;animation:slideIn 0.3s ease;';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(function () { toast.remove(); }, 3000);
+        }
+    </script>
+    <div class="page-pattern"></div>
+</body>
+
+</html>

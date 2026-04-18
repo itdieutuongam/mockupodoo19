@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đồng bộ MISA - DTA Space Odoo 19</title>
+  <style>
+    /* ============================================
+       DTA DESIGN SYSTEM — MISA MODULE
+       ============================================ */
+     :root {
+       --o-primary: #8B2500;
+       --o-primary-light: #FFF5F2;
+       --o-primary-dark: #6B1C00;
+       --o-secondary: #0D9488;
+       --o-success: #059669;
+       --o-warning: #D97706;
+       --o-danger: #DC2626;
+       --o-info: #0891B2;
+       --accent-gold: #C49549;
+       --sidebar-bg: #FFFFFF;
+       --sidebar-hover: #F9FAFB;
+       --sidebar-active: #FFF5F2;
+       --header-bg: #FFFFFF;
+       --content-bg: #F9FAFB;
+       --card-bg: #FFFFFF;
+       --border-color: #E5E7EB;
+       --text-primary: #111827;
+       --text-secondary: #6B7280;
+       --text-light: #9CA3AF;
+       --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px;
+       --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+       --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+       --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+       --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+       --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+       --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+     }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-size:13px; color:var(--text-primary); background:var(--content-bg); }
+
+    /* ===== LAYOUT ===== */
+    .app-layout { display:flex; height:100vh; overflow:hidden; }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar { position:relative; width:240px; background:var(--sidebar-bg); border-right:1px solid #E5E7EB; display:flex; flex-direction:column; flex-shrink:0; }
+    .sidebar-pattern { position:absolute; top:0; right:0; width:60px; height:60px; background-image:url('../Media/pattern.png'); background-size:contain; background-repeat:no-repeat; background-position:center; opacity:0.08; pointer-events:none; z-index:1; }
+    .sidebar-header { padding:16px; border-bottom:1px solid #E5E7EB; }
+    .sidebar-logo { display:flex; align-items:center; gap:8px; }
+    .logo-text { font-size:15px; font-weight:700; }
+    .entity-switcher { padding:8px 16px; border-bottom:1px solid #E5E7EB; }
+    .entity-switcher select { width:100%; padding:6px 8px; border:1px solid #E5E7EB; border-radius:var(--radius-sm); background:#F9FAFB; font-size:11px; color:var(--text-primary); }
+    .sidebar-nav { flex:1; overflow-y:auto; padding:8px 0; }
+    .nav-section { margin-bottom:8px; }
+    .nav-section-title { padding:4px 16px; font-size:10px; text-transform:uppercase; color:#9CA3AF; letter-spacing:0.5px; font-weight:600; }
+    .nav-item { display:flex; align-items:center; padding:8px 16px; color:#4B5563; cursor:pointer; transition:all 0.2s; gap:8px; text-decoration:none; font-size:12px; }
+    .nav-item:hover { background:var(--sidebar-hover); color:#111827; }
+    .nav-item.active { background:var(--sidebar-active); color:var(--o-primary); font-weight:600; border-left:3px solid var(--o-primary); }
+    .nav-icon { width:18px; text-align:center; font-size:14px; }
+
+    /* ===== MAIN ===== */
+    .main-content { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+    .top-header { height:44px; background:var(--header-bg); border-bottom:1px solid var(--border-color); display:flex; align-items:center; padding:0 16px; gap:16px; box-shadow:var(--shadow-sm); flex-shrink:0; }
+    .breadcrumb { display:flex; align-items:center; gap:8px; font-size:13px; }
+    .breadcrumb a { color:var(--o-primary); text-decoration:none; }
+    .breadcrumb span { color:var(--text-secondary); }
+    .header-actions { margin-left:auto; display:flex; align-items:center; gap:16px; }
+    .search-box input { padding:5px 10px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:12px; width:200px; }
+    .user-menu { display:flex; align-items:center; gap:8px; cursor:pointer; }
+    .user-avatar { width:28px; height:28px; border-radius:50%; background:var(--o-primary); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; }
+    .tooltip { position:relative; cursor:pointer; font-size:16px; }
+    .tooltip::after { content:attr(data-tip); position:absolute; bottom:-28px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:4px 8px; border-radius:4px; font-size:11px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+    .tooltip:hover::after { opacity:1; }
+
+    .page-content { flex:1; overflow-y:auto; padding:24px; }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; }
+    .page-title { font-size:20px; font-weight:700; color:var(--text-primary); }
+    .page-subtitle { font-size:11px; color:var(--text-secondary); margin-top:4px; }
+
+    /* ===== BUTTONS ===== */
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border:1px solid transparent; border-radius:var(--radius-sm); font-size:12px; font-weight:500; cursor:pointer; transition:all 0.2s; background:#fff; color:var(--text-primary); }
+    .btn-primary { background:var(--o-primary); color:#fff; border-color:var(--o-primary); }
+    .btn-primary:hover { background:var(--o-primary-dark); }
+    .btn-secondary { border-color:var(--border-color); }
+    .btn-secondary:hover { background:var(--content-bg); }
+    .btn-success { background:var(--o-success); color:#fff; border-color:var(--o-success); }
+    .btn-sm { padding:4px 10px; font-size:11px; }
+    .btn-group { display:flex; gap:8px; flex-wrap:wrap; }
+
+    /* ===== BADGES ===== */
+    .badge { display:inline-block; padding:3px 8px; border-radius:10px; font-size:10px; font-weight:600; }
+    .badge-success { background:#E8F5E9; color:#2E7D32; }
+    .badge-warning { background:#FFF8E1; color:#F57C00; }
+    .badge-danger { background:#FFEBEE; color:#C62828; }
+    .badge-info { background:#E3F2FD; color:#1565C0; }
+    .badge-secondary { background:#F3F4F6; color:#6B7280; }
+    .badge-purple { background:#F3E5F5; color:#6A1B9A; }
+
+    /* ===== STAT CARDS ===== */
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+    .stat-card { background:var(--card-bg); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:16px; display:flex; align-items:center; gap:14px; box-shadow:var(--shadow-sm); }
+    .stat-icon { width:46px; height:46px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .stat-icon.green { background:#E8F5E9; }
+    .stat-icon.blue { background:#E3F2FD; }
+    .stat-icon.orange { background:#FFF3E0; }
+    .stat-icon.red { background:#FFEBEE; }
+    .stat-icon.purple { background:#F3E5F5; }
+    .stat-info { flex:1; min-width:0; }
+    .stat-value { font-size:22px; font-weight:700; line-height:1.2; }
+    .stat-label { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+    .stat-sub { font-size:10px; margin-top:3px; }
+    .stat-sub.up { color:var(--o-success); }
+    .stat-sub.down { color:var(--o-danger); }
+
+    /* ===== CARD ===== */
+    .card { background:var(--card-bg); border:1px solid var(--border-color); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden; }
+    .card-header { padding:14px 16px; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; }
+    .card-title { font-size:13px; font-weight:600; }
+    .card-body { padding:16px; }
+
+    /* ===== TABLE ===== */
+    .table-wrap { overflow-x:auto; }
+    table.data-table { width:100%; border-collapse:collapse; }
+    table.data-table th { background:#F9FAFB; padding:10px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:var(--text-secondary); font-weight:600; border-bottom:1px solid var(--border-color); white-space:nowrap; }
+    table.data-table td { padding:10px 12px; border-bottom:1px solid #F3F4F6; font-size:12px; vertical-align:middle; }
+    table.data-table tr:hover td { background:#FAFAFA; }
+    table.data-table tr:last-child td { border-bottom:none; }
+
+    /* ===== CONNECTION STATUS ===== */
+    .conn-card { background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:16px; margin-bottom:20px; display:flex; align-items:center; gap:16px; box-shadow:var(--shadow-sm); }
+    .conn-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+    .conn-dot.online { background:var(--o-success); box-shadow:0 0 0 3px rgba(40,167,69,0.2); }
+    .conn-dot.offline { background:var(--o-danger); }
+    .conn-dot.warning { background:var(--o-warning); }
+
+    /* ===== SYNC ACTIVITY BAR CHART ===== */
+    .activity-chart { display:flex; align-items:flex-end; gap:8px; height:80px; padding:8px 0; }
+    .activity-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .activity-bar { width:100%; border-radius:3px 3px 0 0; transition:height 0.3s; min-height:4px; }
+    .activity-bar.success { background:var(--o-success); }
+    .activity-bar.error { background:var(--o-danger); }
+    .activity-label { font-size:9px; color:var(--text-secondary); }
+
+    /* ===== FILTER TABS ===== */
+    .filter-tabs { display:flex; gap:4px; margin-bottom:16px; border-bottom:2px solid var(--border-color); padding-bottom:0; }
+    .filter-tab { padding:8px 16px; font-size:12px; font-weight:500; cursor:pointer; border:none; background:transparent; color:var(--text-secondary); border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.2s; }
+    .filter-tab:hover { color:var(--text-primary); }
+    .filter-tab.active { color:var(--o-primary); border-bottom-color:var(--o-primary); font-weight:600; }
+
+    /* ===== VIEW CONTAINERs ===== */
+    .view { display:none; }
+    .view.active { display:block; }
+
+    /* ===== MAPPING TABLE ===== */
+    .mapping-progress { display:flex; align-items:center; gap:8px; }
+    .progress-bar { flex:1; height:6px; background:#E5E7EB; border-radius:3px; overflow:hidden; }
+    .progress-fill { height:100%; border-radius:3px; }
+    .progress-fill.success { background:var(--o-success); }
+    .progress-fill.warning { background:var(--o-warning); }
+
+    /* ===== SETTINGS ===== */
+    .settings-section { margin-bottom:24px; }
+    .settings-section-title { font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-color); }
+    .form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+    .form-group { display:flex; flex-direction:column; gap:4px; }
+    .form-group label { font-size:11px; font-weight:600; color:var(--text-secondary); }
+    .form-group input, .form-group select, .form-group textarea { padding:7px 10px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; background:#fff; transition:border-color 0.2s; }
+    .form-group input:focus, .form-group select:focus { outline:none; border-color:var(--o-primary); box-shadow:0 0 0 2px rgba(164,16,16,0.08); }
+    .form-group input[type="password"] { font-family:monospace; letter-spacing:2px; }
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #F3F4F6; }
+    .toggle-row:last-child { border-bottom:none; }
+    .toggle-label { font-size:12px; font-weight:500; }
+    .toggle-sub { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+    .toggle-switch { position:relative; width:40px; height:22px; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .slider { position:absolute; inset:0; background:#CBD5E0; border-radius:11px; cursor:pointer; transition:0.3s; }
+    .slider::before { content:''; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:0.3s; }
+    input:checked + .slider { background:var(--o-primary); }
+    input:checked + .slider::before { transform:translateX(18px); }
+
+    /* ===== ERROR ITEMS ===== */
+    .error-item { display:flex; align-items:flex-start; gap:12px; padding:12px 16px; border-bottom:1px solid #F3F4F6; }
+    .error-item:last-child { border-bottom:none; }
+    .error-item:hover { background:#FAFAFA; }
+    .error-icon { font-size:18px; flex-shrink:0; margin-top:2px; }
+    .error-meta { flex:1; min-width:0; }
+    .error-title { font-size:12px; font-weight:600; color:var(--text-primary); }
+    .error-desc { font-size:11px; color:var(--o-danger); margin-top:2px; }
+    .error-info { font-size:10px; color:var(--text-secondary); margin-top:3px; }
+    .error-actions { display:flex; gap:6px; flex-shrink:0; align-items:center; }
+
+    /* ===== LOG EXPAND ===== */
+    .log-row-detail { background:#F8F9FA; border-left:3px solid var(--o-info); display:none; }
+    .log-row-detail.show { display:table-row; }
+    .log-row-detail td { padding:10px 16px; font-size:11px; color:var(--text-secondary); }
+    .log-row-detail code { background:#1e293b; color:#e2e8f0; padding:8px 12px; border-radius:4px; display:block; font-size:11px; margin-top:6px; font-family:monospace; }
+
+    /* ===== 2-COLUMN GRID ===== */
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+    /* ===== TOAST ===== */
+    @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+    @keyframes slideOut { from { transform:translateX(0); opacity:1; } to { transform:translateX(100%); opacity:0; } }
+    .toast-container { position:fixed; top:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+    .toast { display:flex; align-items:center; gap:10px; padding:10px 16px; background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); font-size:12px; min-width:260px; animation:slideIn 0.3s ease; }
+    .toast.success { border-left:3px solid var(--o-success); }
+    .toast.error { border-left:3px solid var(--o-danger); }
+    .toast.warning { border-left:3px solid var(--o-warning); }
+    .toast.info { border-left:3px solid var(--o-info); }
+
+    /* ===== PAGE PATTERN ===== */
+    .page-pattern { position:fixed; bottom:0; right:20px; width:150px; height:150px; background-image:url('../Media/pattern.png'); background-size:contain; background-repeat:no-repeat; background-position:center; opacity:0.06; pointer-events:none; z-index:0; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div class="sidebar">
+    <div class="sidebar-pattern"></div>
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <img src="../Media/DTA-LOGO.png" alt="DTA Space" style="height:32px;width:auto;">
+        <div class="logo-text">DTA Space</div>
+      </div>
+    </div>
+    <div class="entity-switcher">
+      <select onchange="switchEntity(this.value)">
+        <option value="hq">🏢 Văn phòng hỗ trợ HQ</option>
+        <option value="nk">🏪 Cửa hàng Nam Kỳ</option>
+        <option value="bt">🏪 Cửa hàng Bà Triệu</option>
+      </select>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Tổng quan</div>
+        <a class="nav-item" href="../index.html"><span class="nav-icon">📊</span><span>Bảng điều khiển</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Đồng bộ MISA</div>
+        <a class="nav-item active" id="nav-dashboard" onclick="switchView('dashboard','Tổng quan');return false;" href="#">
+          <span class="nav-icon">🔄</span><span>Tổng quan</span>
+        </a>
+        <a class="nav-item" id="nav-logs" onclick="switchView('logs','Nhật ký đồng bộ');return false;" href="#">
+          <span class="nav-icon">📋</span><span>Nhật ký đồng bộ</span>
+        </a>
+        <a class="nav-item" id="nav-errors" onclick="switchView('errors','Hàng đợi lỗi');return false;" href="#">
+          <span class="nav-icon">❌</span><span>Hàng đợi lỗi <span class="badge badge-danger" style="margin-left:4px;">5</span></span>
+        </a>
+        <a class="nav-item" id="nav-mapping" onclick="switchView('mapping','Ánh xạ dữ liệu');return false;" href="#">
+          <span class="nav-icon">🔗</span><span>Ánh xạ dữ liệu</span>
+        </a>
+        <a class="nav-item" id="nav-settings" onclick="switchView('settings','Cấu hình');return false;" href="#">
+          <span class="nav-icon">⚙️</span><span>Cấu hình</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Mô-đun</div>
+        <a class="nav-item" href="inventory.html"><span class="nav-icon">📦</span><span>Quản lý kho</span></a>
+        <a class="nav-item" href="products.html"><span class="nav-icon">🛍️</span><span>Sản phẩm</span></a>
+        <a class="nav-item" href="crm.html"><span class="nav-icon">👥</span><span>CRM</span></a>
+        <a class="nav-item" href="events.html"><span class="nav-icon">🎨</span><span>Sự kiện</span></a>
+        <a class="nav-item" href="sales.html"><span class="nav-icon">💼</span><span>Bán hàng</span></a>
+        <a class="nav-item" href="design_studio.html"><span class="nav-icon">✏️</span><span>Thiết kế Studio</span></a>
+        <a class="nav-item" href="accounting.html"><span class="nav-icon">💰</span><span>Kế toán</span></a>
+        <a class="nav-item" href="misa.html" style="color:var(--o-primary);font-weight:600;"><span class="nav-icon">🔄</span><span>Đồng bộ MISA</span></a>
+        <a class="nav-item" href="reports.html"><span class="nav-icon">📈</span><span>Báo cáo</span></a>
+        <a class="nav-item" href="projects.html"><span class="nav-icon">🏗️</span><span>Dự án</span></a>
+        <a class="nav-item" href="hr.html"><span class="nav-icon">👥</span><span>Nhân sự</span></a>
+        <a class="nav-item" href="marketing.html"><span class="nav-icon">📢</span><span>Marketing</span></a>
+        <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span>Cài đặt</span></a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div class="main-content">
+    <div class="top-header">
+      <div class="breadcrumb">
+        <a href="../index.html">Bảng điều khiển</a>
+        <span>/</span>
+        <span>Đồng bộ MISA</span>
+        <span>/</span>
+        <strong id="breadcrumbCurrent">Tổng quan</strong>
+      </div>
+      <div class="header-actions">
+        <div class="search-box"><input type="text" placeholder="Tìm kiếm... (Ctrl+K)" id="globalSearch"></div>
+        <span class="tooltip" data-tip="Thông báo">🔔</span>
+        <span class="tooltip" data-tip="Tin nhắn">💬</span>
+        <div class="user-menu">
+          <div class="user-avatar">NA</div>
+          <span>Nguyễn Admin</span>
+          <span>▼</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- ================================================================
+           VIEW 1: TỔNG QUAN (DASHBOARD)
+      ================================================================ -->
+      <div class="view active" id="view-dashboard">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">🔄 Đồng bộ MISA AMIS</h1>
+            <p class="page-subtitle">
+              Đồng bộ lần cuối: <strong>17/04/2026 08:30</strong> &nbsp;•&nbsp;
+              Tiếp theo: <strong>09:00</strong> &nbsp;•&nbsp;
+              Trạng thái: <span class="badge badge-success">✓ Kết nối ổn định</span>
+            </p>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="showToast('Đang xuất nhật ký...','info')">📥 Xuất nhật ký</button>
+            <button class="btn btn-primary" onclick="triggerSync()">🔄 Đồng bộ ngay</button>
+          </div>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="conn-card">
+          <div class="conn-dot online"></div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:13px;">MISA AMIS — Kết nối thành công</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">
+              Môi trường: <strong>Sản xuất</strong> &nbsp;|&nbsp;
+              Endpoint: <code style="background:#F3F4F6;padding:2px 6px;border-radius:3px;font-size:10px;">api.misa.com.vn/v2</code> &nbsp;|&nbsp;
+              Phiên bản API: <strong>v2.4.1</strong> &nbsp;|&nbsp;
+              Độ trễ: <strong style="color:var(--o-success);">42ms</strong>
+            </div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-secondary" onclick="testConnection()">🔌 Kiểm tra</button>
+            <button class="btn btn-sm btn-secondary" onclick="switchView('settings','Cấu hình')">⚙️ Cài đặt</button>
+          </div>
+        </div>
+
+        <!-- KPI Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon green">📤</div>
+            <div class="stat-info">
+              <div class="stat-value" style="color:var(--o-success);">12,847</div>
+              <div class="stat-label">Bản ghi đã đồng bộ (tháng này)</div>
+              <div class="stat-sub up">↑ +248 so với tháng trước</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">⏳</div>
+            <div class="stat-info">
+              <div class="stat-value" style="color:var(--o-info);">23</div>
+              <div class="stat-label">Đang chờ đồng bộ</div>
+              <div class="stat-sub" style="color:var(--text-secondary);">Trong hàng đợi</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">❌</div>
+            <div class="stat-info">
+              <div class="stat-value" style="color:var(--o-danger);">5</div>
+              <div class="stat-label">Lỗi cần xử lý</div>
+              <div class="stat-sub down">↑ +2 so với hôm qua</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">⚡</div>
+            <div class="stat-info">
+              <div class="stat-value" style="color:#F57C00;">2m 18s</div>
+              <div class="stat-label">Thời gian sync trung bình</div>
+              <div class="stat-sub up">↓ Nhanh hơn 12s hôm qua</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Chart + Recent Jobs -->
+        <div class="two-col" style="margin-bottom:20px;">
+          <!-- Activity Chart -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📈 Hoạt động đồng bộ 7 ngày gần nhất</span>
+              <span style="font-size:11px;color:var(--text-secondary);">
+                <span style="display:inline-block;width:10px;height:10px;background:var(--o-success);border-radius:2px;margin-right:4px;"></span>Thành công
+                <span style="display:inline-block;width:10px;height:10px;background:var(--o-danger);border-radius:2px;margin:0 4px 0 10px;"></span>Lỗi
+              </span>
+            </div>
+            <div class="card-body">
+              <div class="activity-chart">
+                <div class="activity-bar-wrap">
+                  <div class="activity-bar success" style="height:55px;"></div>
+                  <div class="activity-label">11/4</div>
+                </div>
+                <div class="activity-bar-wrap">
+                  <div class="activity-bar success" style="height:48px;"></div>
+                  <div class="activity-label">12/4</div>
+                </div>
+                <div class="activity-bar-wrap">
+                  <div class="activity-bar success" style="height:62px;"></div>
+                  <div class="activity-label">13/4</div>
+                </div>
+                <div class="activity-bar-wrap">
+                  <div class="activity-bar error" style="height:30px;"></div>
+                  <div class="activity-label">14/4</div>
+                </div>
+                <div class="activity-bar-wrap">
+                  <div class="activity-bar success" style="height:58px;"></div>
+                  <div class="activity-label">15/4</div>
+                </div>
+                <div class="activity-bar-wrap">
+                  <div class="activity-bar success" style="height:70px;"></div>
+                  <div class="activity-label">16/4</div>
+                </div>
+                <div class="activity-bar-wrap">
+                  <div class="activity-bar success" style="height:50px;"></div>
+                  <div class="activity-label">17/4</div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid #F3F4F6;">
+                <div style="text-align:center;">
+                  <div style="font-size:16px;font-weight:700;color:var(--o-success);">1,834</div>
+                  <div style="font-size:10px;color:var(--text-secondary);">Jobs thành công</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="font-size:16px;font-weight:700;color:var(--o-danger);">12</div>
+                  <div style="font-size:10px;color:var(--text-secondary);">Jobs lỗi</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="font-size:16px;font-weight:700;color:var(--o-info);">99.3%</div>
+                  <div style="font-size:10px;color:var(--text-secondary);">Tỷ lệ thành công</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sync scope summary -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🗂️ Phạm vi đồng bộ</span>
+              <button class="btn btn-sm btn-secondary" onclick="switchView('mapping','Ánh xạ dữ liệu')">Xem chi tiết →</button>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F3F4F6;">
+                <div>
+                  <div style="font-weight:600;font-size:12px;">Hóa đơn bán hàng</div>
+                  <div style="font-size:10px;color:var(--text-secondary);">ERP → MISA | Tự động mỗi giờ</div>
+                </div>
+                <div style="text-align:right;">
+                  <span class="badge badge-success">✓ Hoạt động</span>
+                  <div style="font-size:10px;color:var(--text-secondary);margin-top:3px;">4,218 bản ghi</div>
+                </div>
+              </div>
+              <div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F3F4F6;">
+                <div>
+                  <div style="font-weight:600;font-size:12px;">Hóa đơn mua vào</div>
+                  <div style="font-size:10px;color:var(--text-secondary);">ERP → MISA | Tự động mỗi giờ</div>
+                </div>
+                <div style="text-align:right;">
+                  <span class="badge badge-success">✓ Hoạt động</span>
+                  <div style="font-size:10px;color:var(--text-secondary);margin-top:3px;">1,842 bản ghi</div>
+                </div>
+              </div>
+              <div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F3F4F6;">
+                <div>
+                  <div style="font-weight:600;font-size:12px;">Bút toán kế toán</div>
+                  <div style="font-size:10px;color:var(--text-secondary);">ERP → MISA | Tự động hàng ngày</div>
+                </div>
+                <div style="text-align:right;">
+                  <span class="badge badge-success">✓ Hoạt động</span>
+                  <div style="font-size:10px;color:var(--text-secondary);margin-top:3px;">6,234 bản ghi</div>
+                </div>
+              </div>
+              <div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F3F4F6;">
+                <div>
+                  <div style="font-weight:600;font-size:12px;">Phiếu thu / Phiếu chi</div>
+                  <div style="font-size:10px;color:var(--text-secondary);">ERP → MISA | Tự động mỗi giờ</div>
+                </div>
+                <div style="text-align:right;">
+                  <span class="badge badge-warning">⚠ 1 lỗi</span>
+                  <div style="font-size:10px;color:var(--text-secondary);margin-top:3px;">553 bản ghi</div>
+                </div>
+              </div>
+              <div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <div style="font-weight:600;font-size:12px;">Danh mục đối tác</div>
+                  <div style="font-size:10px;color:var(--text-secondary);">ERP ↔ MISA | Đồng bộ 2 chiều</div>
+                </div>
+                <div style="text-align:right;">
+                  <span class="badge badge-success">✓ Hoạt động</span>
+                  <div style="font-size:10px;color:var(--text-secondary);margin-top:3px;">342 đối tác</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Sync Jobs -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🕐 5 jobs đồng bộ gần nhất</span>
+            <button class="btn btn-sm btn-secondary" onclick="switchView('logs','Nhật ký đồng bộ')">Xem tất cả →</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr>
+                <th>Mã job</th><th>Ngày giờ</th><th>Loại dữ liệu</th><th>Chiều</th><th>Số b/ghi</th><th>Trạng thái</th><th>Thời gian</th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td><a href="#" onclick="return false" style="color:var(--o-primary);font-weight:600;">SJ-0142</a></td>
+                  <td>17/04 08:30</td>
+                  <td>Tất cả loại</td>
+                  <td><span style="color:var(--o-success);">ERP → MISA</span></td>
+                  <td>12,860</td>
+                  <td><span class="badge badge-success">✓ Thành công</span></td>
+                  <td>2m 34s</td>
+                </tr>
+                <tr>
+                  <td><a href="#" onclick="return false" style="color:var(--o-primary);font-weight:600;">SJ-0141</a></td>
+                  <td>17/04 07:30</td>
+                  <td>Hóa đơn</td>
+                  <td><span style="color:var(--o-success);">ERP → MISA</span></td>
+                  <td>45</td>
+                  <td><span class="badge badge-warning">⚠ Một phần</span></td>
+                  <td>42s</td>
+                </tr>
+                <tr>
+                  <td><a href="#" onclick="return false" style="color:var(--o-primary);font-weight:600;">SJ-0140</a></td>
+                  <td>16/04 23:00</td>
+                  <td>Bút toán</td>
+                  <td><span style="color:var(--o-success);">ERP → MISA</span></td>
+                  <td>312</td>
+                  <td><span class="badge badge-success">✓ Thành công</span></td>
+                  <td>1m 08s</td>
+                </tr>
+                <tr>
+                  <td><a href="#" onclick="return false" style="color:var(--o-primary);font-weight:600;">SJ-0139</a></td>
+                  <td>16/04 22:00</td>
+                  <td>Đối tác</td>
+                  <td><span style="color:var(--o-info);">MISA → ERP</span></td>
+                  <td>8</td>
+                  <td><span class="badge badge-danger">❌ Thất bại</span></td>
+                  <td>15s</td>
+                </tr>
+                <tr>
+                  <td><a href="#" onclick="return false" style="color:var(--o-primary);font-weight:600;">SJ-0138</a></td>
+                  <td>16/04 21:00</td>
+                  <td>Phiếu thu/chi</td>
+                  <td><span style="color:var(--o-success);">ERP → MISA</span></td>
+                  <td>24</td>
+                  <td><span class="badge badge-success">✓ Thành công</span></td>
+                  <td>28s</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ================================================================
+           VIEW 2: NHẬT KÝ ĐỒNG BỘ
+      ================================================================ -->
+      <div class="view" id="view-logs">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">📋 Nhật ký đồng bộ</h1>
+            <p class="page-subtitle">Lịch sử toàn bộ quá trình đồng bộ giữa Odoo ERP và MISA AMIS</p>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="showToast('Đang xuất nhật ký...','info')">📥 Xuất Excel</button>
+            <button class="btn btn-primary" onclick="triggerSync()">🔄 Chạy sync mới</button>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-body" style="padding:12px 16px;">
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <label style="font-size:11px;font-weight:600;color:var(--text-secondary);">Từ ngày:</label>
+                <input type="date" value="2026-04-01" style="padding:5px 8px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:11px;">
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <label style="font-size:11px;font-weight:600;color:var(--text-secondary);">Đến ngày:</label>
+                <input type="date" value="2026-04-17" style="padding:5px 8px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:11px;">
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <label style="font-size:11px;font-weight:600;color:var(--text-secondary);">Loại:</label>
+                <select style="padding:5px 8px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:11px;">
+                  <option>Tất cả</option>
+                  <option>Hóa đơn bán</option>
+                  <option>Hóa đơn mua</option>
+                  <option>Bút toán</option>
+                  <option>Phiếu thu/chi</option>
+                  <option>Đối tác</option>
+                </select>
+              </div>
+              <button class="btn btn-sm btn-secondary" onclick="showToast('Đang lọc...','info')">🔍 Áp dụng</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterLogs(this,'all')">Tất cả (142)</button>
+          <button class="filter-tab" onclick="filterLogs(this,'success')">✓ Thành công (127)</button>
+          <button class="filter-tab" onclick="filterLogs(this,'partial')">⚠ Một phần (8)</button>
+          <button class="filter-tab" onclick="filterLogs(this,'error')">❌ Thất bại (7)</button>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table class="data-table" id="logs-table">
+              <thead><tr>
+                <th></th><th>Mã job</th><th>Ngày / Giờ bắt đầu</th><th>Loại dữ liệu</th><th>Chiều</th>
+                <th>Số bản ghi</th><th>Thành công</th><th>Thất bại</th><th>Trạng thái</th><th>Thời gian</th><th>Nguồn</th><th>Hành động</th>
+              </tr></thead>
+              <tbody>
+                <tr data-status="success" onclick="toggleLogDetail('log-1')" style="cursor:pointer;">
+                  <td>▶</td>
+                  <td style="color:var(--o-primary);font-weight:600;">SJ-0142</td>
+                  <td>17/04/2026 08:30:01</td>
+                  <td>Tất cả loại</td>
+                  <td><span class="badge badge-success">ERP → MISA</span></td>
+                  <td>12,860</td><td style="color:var(--o-success);">12,860</td><td>0</td>
+                  <td><span class="badge badge-success">✓ Thành công</span></td>
+                  <td>2m 34s</td><td>Tự động</td>
+                  <td><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();showToast('Đã sao chép ID','info')">📋</button></td>
+                </tr>
+                <tr class="log-row-detail" id="log-1"><td colspan="12"><strong>Chi tiết SJ-0142:</strong> Đồng bộ lúc 08:30, xử lý 12,860 bản ghi trong 2m34s. Tất cả entity hoàn tất. <code>INFO: Sync completed. Records: 12860, Success: 12860, Failed: 0. Duration: 154s</code></td></tr>
+
+                <tr data-status="partial" onclick="toggleLogDetail('log-2')" style="cursor:pointer;">
+                  <td>▶</td>
+                  <td style="color:var(--o-primary);font-weight:600;">SJ-0141</td>
+                  <td>17/04/2026 07:30:05</td>
+                  <td>Hóa đơn bán</td>
+                  <td><span class="badge badge-success">ERP → MISA</span></td>
+                  <td>45</td><td style="color:var(--o-success);">44</td><td style="color:var(--o-danger);">1</td>
+                  <td><span class="badge badge-warning">⚠ Một phần</span></td>
+                  <td>42s</td><td>Tự động</td>
+                  <td><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();switchView('errors','Hàng đợi lỗi')">Xem lỗi</button></td>
+                </tr>
+                <tr class="log-row-detail" id="log-2"><td colspan="12"><strong>Chi tiết SJ-0141:</strong> 1 hóa đơn thất bại — INV-0045 — Mã số thuế không hợp lệ (null). 44/45 hoàn tất. <code>ERROR [INV-0045]: Invalid tax code: null. Field 'ma_so_thue' required by MISA API.</code></td></tr>
+
+                <tr data-status="success" onclick="toggleLogDetail('log-3')" style="cursor:pointer;">
+                  <td>▶</td>
+                  <td style="color:var(--o-primary);font-weight:600;">SJ-0140</td>
+                  <td>16/04/2026 23:00:02</td>
+                  <td>Bút toán KT</td>
+                  <td><span class="badge badge-success">ERP → MISA</span></td>
+                  <td>312</td><td style="color:var(--o-success);">312</td><td>0</td>
+                  <td><span class="badge badge-success">✓ Thành công</span></td>
+                  <td>1m 08s</td><td>Tự động</td>
+                  <td><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();showToast('Đã sao chép ID','info')">📋</button></td>
+                </tr>
+                <tr class="log-row-detail" id="log-3"><td colspan="12"><strong>Chi tiết SJ-0140:</strong> Đồng bộ bút toán ngày 16/04. 312 bút toán từ tài khoản 111, 112, 131, 331, 511, 641, 642. <code>INFO: Journal sync OK. Accounts: [111,112,131,331,511,641,642]. Duration: 68s</code></td></tr>
+
+                <tr data-status="error" onclick="toggleLogDetail('log-4')" style="cursor:pointer;">
+                  <td>▶</td>
+                  <td style="color:var(--o-primary);font-weight:600;">SJ-0139</td>
+                  <td>16/04/2026 22:00:10</td>
+                  <td>Đối tác</td>
+                  <td><span class="badge badge-info">MISA → ERP</span></td>
+                  <td>8</td><td style="color:var(--o-success);">0</td><td style="color:var(--o-danger);">8</td>
+                  <td><span class="badge badge-danger">❌ Thất bại</span></td>
+                  <td>15s</td><td>Tự động</td>
+                  <td><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();showToast('Đang chạy lại SJ-0139...','info')">🔄 Retry</button></td>
+                </tr>
+                <tr class="log-row-detail" id="log-4"><td colspan="12"><strong>Chi tiết SJ-0139:</strong> Kết nối timeout khi đọc dữ liệu đối tác từ MISA. API trả về 504 Gateway Timeout. Cần kiểm tra lại kết nối mạng. <code>ERROR: HTTP 504 Gateway Timeout. URL: api.misa.com.vn/v2/partners. Retry: 3/3 failed.</code></td></tr>
+
+                <tr data-status="success" onclick="toggleLogDetail('log-5')" style="cursor:pointer;">
+                  <td>▶</td>
+                  <td style="color:var(--o-primary);font-weight:600;">SJ-0138</td>
+                  <td>16/04/2026 21:00:00</td>
+                  <td>Phiếu thu/chi</td>
+                  <td><span class="badge badge-success">ERP → MISA</span></td>
+                  <td>24</td><td style="color:var(--o-success);">24</td><td>0</td>
+                  <td><span class="badge badge-success">✓ Thành công</span></td>
+                  <td>28s</td><td>Tự động</td>
+                  <td><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();showToast('Đã sao chép ID','info')">📋</button></td>
+                </tr>
+                <tr class="log-row-detail" id="log-5"><td colspan="12"><strong>Chi tiết SJ-0138:</strong> 24 phiếu thu/chi đồng bộ thành công. Phiếu thu: 14, Phiếu chi: 10. Tài khoản: 111, 112. <code>INFO: Payment sync OK. Receipts: 14, Payments: 10. Duration: 28s</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:12px 16px;border-top:1px solid #F3F4F6;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:11px;color:var(--text-secondary);">Hiển thị 5 / 142 records</span>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-secondary">← Trước</button>
+              <button class="btn btn-sm btn-primary">1</button>
+              <button class="btn btn-sm btn-secondary">2</button>
+              <button class="btn btn-sm btn-secondary">3</button>
+              <button class="btn btn-sm btn-secondary">Sau →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ================================================================
+           VIEW 3: HÀNG ĐỢI LỖI
+      ================================================================ -->
+      <div class="view" id="view-errors">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">❌ Hàng đợi lỗi</h1>
+            <p class="page-subtitle">5 bản ghi thất bại cần xử lý thủ công — cập nhật lúc 08:35 hôm nay</p>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="showToast('Bỏ qua tất cả lỗi đã xử lý','warning')">⬜ Đánh dấu đã xử lý</button>
+            <button class="btn btn-primary" onclick="retryAll()">🔄 Thử lại tất cả</button>
+          </div>
+        </div>
+
+        <div class="two-col" style="margin-bottom:16px;">
+          <div class="stat-card">
+            <div class="stat-icon red">❌</div>
+            <div class="stat-info">
+              <div class="stat-value" style="color:var(--o-danger);">5</div>
+              <div class="stat-label">Lỗi đang chờ xử lý</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">⚠️</div>
+            <div class="stat-info">
+              <div class="stat-value" style="color:#F57C00;">3</div>
+              <div class="stat-label">Lỗi đồng bộ một phần</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error categories -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header">
+            <span class="card-title">🔴 Lỗi hoàn toàn — Cần xử lý thủ công (5)</span>
+            <button class="btn btn-sm btn-primary" onclick="retryAll()">🔄 Retry tất cả</button>
+          </div>
+          <div>
+            <div class="error-item">
+              <div class="error-icon">🧾</div>
+              <div class="error-meta">
+                <div class="error-title">INV-0045 — Hóa đơn bán hàng</div>
+                <div class="error-desc">❌ Mã số thuế không hợp lệ — trường ma_so_thue bắt buộc nhưng đang null</div>
+                <div class="error-info">Job SJ-0141 · 17/04/2026 07:30 · Khách hàng: Công ty ABC · Giá trị: 15,400,000 đ</div>
+              </div>
+              <div class="error-actions">
+                <span class="badge badge-danger">Hóa đơn</span>
+                <button class="btn btn-sm btn-secondary" onclick="showToast('Mở INV-0045 trong kế toán...','info')">✏️ Sửa</button>
+                <button class="btn btn-sm btn-primary" onclick="showToast('Đang thử lại INV-0045...','info')">🔄</button>
+              </div>
+            </div>
+            <div class="error-item">
+              <div class="error-icon">📒</div>
+              <div class="error-meta">
+                <div class="error-title">JE-0312 — Bút toán kế toán</div>
+                <div class="error-desc">❌ Tài khoản 511 chưa được ánh xạ trong MISA — thiếu mã tài khoản tương ứng</div>
+                <div class="error-info">Job SJ-0137 · 15/04/2026 23:00 · Diễn giải: Doanh thu bán hàng T4 · Số tiền: 48,200,000 đ</div>
+              </div>
+              <div class="error-actions">
+                <span class="badge badge-secondary">Bút toán</span>
+                <button class="btn btn-sm btn-secondary" onclick="switchView('mapping','Ánh xạ dữ liệu')">🔗 Ánh xạ</button>
+                <button class="btn btn-sm btn-primary" onclick="showToast('Đang thử lại JE-0312...','info')">🔄</button>
+              </div>
+            </div>
+            <div class="error-item">
+              <div class="error-icon">💸</div>
+              <div class="error-meta">
+                <div class="error-title">PAY-0087 — Phiếu chi</div>
+                <div class="error-desc">❌ Số tham chiếu trùng lặp — MISA đã tồn tại chứng từ với mã PAY-0087</div>
+                <div class="error-info">Job SJ-0135 · 14/04/2026 21:00 · Người thụ hưởng: NCC Nội Thất Việt · Số tiền: 8,500,000 đ</div>
+              </div>
+              <div class="error-actions">
+                <span class="badge badge-purple">Phiếu chi</span>
+                <button class="btn btn-sm btn-secondary" onclick="showToast('Kiểm tra MISA...','info')">🔍 Kiểm tra</button>
+                <button class="btn btn-sm btn-secondary" onclick="showToast('Đã bỏ qua PAY-0087','warning')">⬜ Bỏ qua</button>
+              </div>
+            </div>
+            <div class="error-item">
+              <div class="error-icon">🧾</div>
+              <div class="error-meta">
+                <div class="error-title">BILL-0024 — Hóa đơn mua vào</div>
+                <div class="error-desc">❌ Không tìm thấy nhà cung cấp — MST 0314123456 chưa có trong MISA</div>
+                <div class="error-info">Job SJ-0133 · 13/04/2026 07:30 · NCC: Công ty Decor Saigon · Giá trị: 23,100,000 đ</div>
+              </div>
+              <div class="error-actions">
+                <span class="badge badge-info">Hóa đơn mua</span>
+                <button class="btn btn-sm btn-secondary" onclick="showToast('Mở danh mục đối tác...','info')">👥 Thêm NCC</button>
+                <button class="btn btn-sm btn-primary" onclick="showToast('Đang thử lại BILL-0024...','info')">🔄</button>
+              </div>
+            </div>
+            <div class="error-item">
+              <div class="error-icon">🌐</div>
+              <div class="error-meta">
+                <div class="error-title">SJ-0139 — Toàn bộ job đồng bộ đối tác</div>
+                <div class="error-desc">❌ API timeout — MISA trả về HTTP 504 sau 3 lần retry</div>
+                <div class="error-info">16/04/2026 22:00 · 8 bản ghi đối tác chưa được đồng bộ từ MISA về ERP</div>
+              </div>
+              <div class="error-actions">
+                <span class="badge badge-secondary">Kết nối</span>
+                <button class="btn btn-sm btn-secondary" onclick="testConnection()">🔌 Test kết nối</button>
+                <button class="btn btn-sm btn-primary" onclick="showToast('Đang thử lại SJ-0139...','info')">🔄</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Partial errors -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🟡 Đồng bộ một phần — Theo dõi (3)</span>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr>
+                <th>Job</th><th>Ngày giờ</th><th>Loại</th><th>Tổng</th><th>Thành công</th><th>Thất bại</th><th>Chi tiết lỗi</th><th>Hành động</th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600;color:var(--o-primary);">SJ-0141</td>
+                  <td>17/04 07:30</td>
+                  <td><span class="badge badge-info">Hóa đơn bán</span></td>
+                  <td>45</td>
+                  <td style="color:var(--o-success);">44</td>
+                  <td style="color:var(--o-danger);">1</td>
+                  <td style="font-size:11px;color:var(--o-danger);">INV-0045: MST null</td>
+                  <td><button class="btn btn-sm btn-secondary" onclick="showToast('Xem chi tiết SJ-0141','info')">Chi tiết</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;color:var(--o-primary);">SJ-0136</td>
+                  <td>15/04 14:00</td>
+                  <td><span class="badge badge-purple">Phiếu chi</span></td>
+                  <td>18</td>
+                  <td style="color:var(--o-success);">17</td>
+                  <td style="color:var(--o-danger);">1</td>
+                  <td style="font-size:11px;color:var(--o-danger);">PAY-0087: Trùng tham chiếu</td>
+                  <td><button class="btn btn-sm btn-secondary" onclick="showToast('Xem chi tiết SJ-0136','info')">Chi tiết</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;color:var(--o-primary);">SJ-0128</td>
+                  <td>13/04 07:30</td>
+                  <td><span class="badge badge-info">Hóa đơn mua</span></td>
+                  <td>22</td>
+                  <td style="color:var(--o-success);">21</td>
+                  <td style="color:var(--o-danger);">1</td>
+                  <td style="font-size:11px;color:var(--o-danger);">BILL-0024: NCC không tồn tại</td>
+                  <td><button class="btn btn-sm btn-secondary" onclick="showToast('Xem chi tiết SJ-0128','info')">Chi tiết</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ================================================================
+           VIEW 4: ÁNH XẠ DỮ LIỆU
+      ================================================================ -->
+      <div class="view" id="view-mapping">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">🔗 Ánh xạ dữ liệu</h1>
+            <p class="page-subtitle">Cấu hình đối chiếu trường dữ liệu giữa Odoo ERP và MISA AMIS</p>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="showToast('Đang tự động ánh xạ...','info')">🤖 Tự động ánh xạ</button>
+            <button class="btn btn-primary" onclick="showToast('Đã lưu cấu hình ánh xạ','success')">💾 Lưu thay đổi</button>
+          </div>
+        </div>
+
+        <div class="filter-tabs">
+          <button class="filter-tab active" id="map-tab-accounts" onclick="switchMappingTab('accounts')">🏦 Tài khoản kế toán</button>
+          <button class="filter-tab" id="map-tab-partners" onclick="switchMappingTab('partners')">👥 Đối tác</button>
+          <button class="filter-tab" id="map-tab-doctypes" onclick="switchMappingTab('doctypes')">🧾 Loại chứng từ</button>
+        </div>
+
+        <!-- Tab: Tài khoản -->
+        <div id="mapping-accounts" class="mapping-tab-content">
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-header">
+              <span class="card-title">Hệ thống tài khoản kế toán — ERP ↔ MISA</span>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <span style="font-size:11px;color:var(--text-secondary);">156/160 tài khoản đã ánh xạ</span>
+                <div class="mapping-progress" style="width:120px;">
+                  <div class="progress-bar"><div class="progress-fill success" style="width:97.5%;"></div></div>
+                  <span style="font-size:11px;font-weight:600;color:var(--o-success);">97.5%</span>
+                </div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr>
+                  <th>Mã TK (ERP)</th><th>Tên TK (ERP)</th><th>↔</th><th>Mã TK (MISA)</th><th>Tên TK (MISA)</th><th>Trạng thái</th><th>Thao tác</th>
+                </tr></thead>
+                <tbody>
+                  <tr>
+                    <td><code style="background:#F3F4F6;padding:2px 6px;border-radius:3px;font-size:11px;">111</code></td>
+                    <td>Tiền mặt</td><td style="color:var(--o-success);font-weight:700;">↔</td>
+                    <td><code style="background:#E8F5E9;padding:2px 6px;border-radius:3px;font-size:11px;">111</code></td>
+                    <td>Tiền mặt</td>
+                    <td><span class="badge badge-success">✓ Khớp</span></td>
+                    <td><button class="btn btn-sm btn-secondary">Sửa</button></td>
+                  </tr>
+                  <tr>
+                    <td><code style="background:#F3F4F6;padding:2px 6px;border-radius:3px;font-size:11px;">112</code></td>
+                    <td>Tiền gửi ngân hàng</td><td style="color:var(--o-success);font-weight:700;">↔</td>
+                    <td><code style="background:#E8F5E9;padding:2px 6px;border-radius:3px;font-size:11px;">112</code></td>
+                    <td>Tiền gửi ngân hàng</td>
+                    <td><span class="badge badge-success">✓ Khớp</span></td>
+                    <td><button class="btn btn-sm btn-secondary">Sửa</button></td>
+                  </tr>
+                  <tr>
+                    <td><code style="background:#F3F4F6;padding:2px 6px;border-radius:3px;font-size:11px;">131</code></td>
+                    <td>Phải thu khách hàng</td><td style="color:var(--o-success);font-weight:700;">↔</td>
+                    <td><code style="background:#E8F5E9;padding:2px 6px;border-radius:3px;font-size:11px;">131</code></td>
+                    <td>Phải thu KH</td>
+                    <td><span class="badge badge-success">✓ Khớp</span></td>
+                    <td><button class="btn btn-sm btn-secondary">Sửa</button></td>
+                  </tr>
+                  <tr>
+                    <td><code style="background:#F3F4F6;padding:2px 6px;border-radius:3px;font-size:11px;">331</code></td>
+                    <td>Phải trả nhà cung cấp</td><td style="color:var(--o-success);font-weight:700;">↔</td>
+                    <td><code style="background:#E8F5E9;padding:2px 6px;border-radius:3px;font-size:11px;">331</code></td>
+                    <td>Phải trả NCC</td>
+                    <td><span class="badge badge-success">✓ Khớp</span></td>
+                    <td><button class="btn btn-sm btn-secondary">Sửa</button></td>
+                  </tr>
+                  <tr>
+                    <td><code style="background:#F3F4F6;padding:2px 6px;border-radius:3px;font-size:11px;">511</code></td>
+                    <td>Doanh thu bán hàng</td><td style="color:var(--o-danger);font-weight:700;">✗</td>
+                    <td><code style="background:#FFEBEE;padding:2px 6px;border-radius:3px;font-size:11px;">—</code></td>
+                    <td style="color:var(--text-light);font-style:italic;">Chưa ánh xạ</td>
+                    <td><span class="badge badge-danger">Chưa ánh xạ</span></td>
+                    <td><button class="btn btn-sm btn-primary" onclick="showToast('Mở form ánh xạ TK 511','info')">+ Ánh xạ</button></td>
+                  </tr>
+                  <tr>
+                    <td><code style="background:#F3F4F6;padding:2px 6px;border-radius:3px;font-size:11px;">641</code></td>
+                    <td>Chi phí bán hàng</td><td style="color:var(--o-success);font-weight:700;">↔</td>
+                    <td><code style="background:#E8F5E9;padding:2px 6px;border-radius:3px;font-size:11px;">641</code></td>
+                    <td>CP bán hàng</td>
+                    <td><span class="badge badge-success">✓ Khớp</span></td>
+                    <td><button class="btn btn-sm btn-secondary">Sửa</button></td>
+                  </tr>
+                  <tr>
+                    <td><code style="background:#F3F4F6;padding:2px 6px;border-radius:3px;font-size:11px;">642</code></td>
+                    <td>Chi phí QLDN</td><td style="color:var(--o-warning);font-weight:700;">≈</td>
+                    <td><code style="background:#FFF8E1;padding:2px 6px;border-radius:3px;font-size:11px;">642_ADM</code></td>
+                    <td>CP Quản lý</td>
+                    <td><span class="badge badge-warning">⚠ Khác mã</span></td>
+                    <td><button class="btn btn-sm btn-secondary">Sửa</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Đối tác -->
+        <div id="mapping-partners" class="mapping-tab-content" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Danh mục đối tác — Khách hàng & Nhà cung cấp</span>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <span style="font-size:11px;color:var(--text-secondary);">340/342 đã ánh xạ</span>
+                <div class="mapping-progress" style="width:120px;">
+                  <div class="progress-bar"><div class="progress-fill success" style="width:99.4%;"></div></div>
+                  <span style="font-size:11px;font-weight:600;color:var(--o-success);">99.4%</span>
+                </div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr>
+                  <th>Tên đối tác (ERP)</th><th>MST</th><th>Loại</th><th>ID MISA</th><th>Trạng thái</th><th>Thao tác</th>
+                </tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="font-weight:500;">Công ty CP Nội Thất Việt</td>
+                    <td><code style="font-size:11px;">0301234567</code></td>
+                    <td><span class="badge badge-info">Khách hàng</span></td>
+                    <td><code style="font-size:11px;background:#E8F5E9;padding:2px 6px;border-radius:3px;">MISA-KH-0012</code></td>
+                    <td><span class="badge badge-success">✓ Đồng bộ</span></td>
+                    <td><button class="btn btn-sm btn-secondary">Xem</button></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:500;">Anh Tâm — Villa Q.9</td>
+                    <td><code style="font-size:11px;">CÁNHÂN</code></td>
+                    <td><span class="badge badge-info">Khách hàng</span></td>
+                    <td><code style="font-size:11px;background:#E8F5E9;padding:2px 6px;border-radius:3px;">MISA-KH-0189</code></td>
+                    <td><span class="badge badge-success">✓ Đồng bộ</span></td>
+                    <td><button class="btn btn-sm btn-secondary">Xem</button></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:500;">Công ty Decor Saigon</td>
+                    <td><code style="font-size:11px;">0314123456</code></td>
+                    <td><span class="badge badge-secondary">NCC</span></td>
+                    <td><code style="font-size:11px;background:#FFEBEE;padding:2px 6px;border-radius:3px;">—</code></td>
+                    <td><span class="badge badge-danger">Chưa ánh xạ</span></td>
+                    <td><button class="btn btn-sm btn-primary" onclick="showToast('Thêm NCC vào MISA...','info')">+ Tạo mới</button></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:500;">NCC Vải Nội Thất HCM</td>
+                    <td><code style="font-size:11px;">0309876543</code></td>
+                    <td><span class="badge badge-secondary">NCC</span></td>
+                    <td><code style="font-size:11px;background:#FFEBEE;padding:2px 6px;border-radius:3px;">—</code></td>
+                    <td><span class="badge badge-danger">Chưa ánh xạ</span></td>
+                    <td><button class="btn btn-sm btn-primary" onclick="showToast('Thêm NCC vào MISA...','info')">+ Tạo mới</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Loại chứng từ -->
+        <div id="mapping-doctypes" class="mapping-tab-content" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Loại chứng từ — ERP ↔ MISA</span>
+              <span style="font-size:11px;color:var(--text-secondary);">6/6 loại đã cấu hình</span>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr>
+                  <th>Loại ERP</th><th>Mô tả</th><th>Mã MISA</th><th>Chiều sync</th><th>Tần suất</th><th>Trạng thái</th>
+                </tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="font-weight:600;">out_invoice</td>
+                    <td>Hóa đơn bán hàng</td>
+                    <td><code style="font-size:11px;background:#E8F5E9;padding:2px 6px;border-radius:3px;">HDonBanHang</code></td>
+                    <td><span class="badge badge-success">ERP → MISA</span></td>
+                    <td>Mỗi giờ</td>
+                    <td><span class="badge badge-success">✓ Hoạt động</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">in_invoice</td>
+                    <td>Hóa đơn mua vào</td>
+                    <td><code style="font-size:11px;background:#E8F5E9;padding:2px 6px;border-radius:3px;">HDonMuaVao</code></td>
+                    <td><span class="badge badge-success">ERP → MISA</span></td>
+                    <td>Mỗi giờ</td>
+                    <td><span class="badge badge-success">✓ Hoạt động</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">account.move (JE)</td>
+                    <td>Bút toán kế toán</td>
+                    <td><code style="font-size:11px;background:#E8F5E9;padding:2px 6px;border-radius:3px;">NhatKyChung</code></td>
+                    <td><span class="badge badge-success">ERP → MISA</span></td>
+                    <td>Hàng ngày 23:00</td>
+                    <td><span class="badge badge-success">✓ Hoạt động</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">cash.receipt</td>
+                    <td>Phiếu thu tiền mặt</td>
+                    <td><code style="font-size:11px;background:#E8F5E9;padding:2px 6px;border-radius:3px;">PhieuThu_TM</code></td>
+                    <td><span class="badge badge-success">ERP → MISA</span></td>
+                    <td>Mỗi giờ</td>
+                    <td><span class="badge badge-warning">⚠ 1 lỗi</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">cash.payment</td>
+                    <td>Phiếu chi tiền mặt</td>
+                    <td><code style="font-size:11px;background:#E8F5E9;padding:2px 6px;border-radius:3px;">PhieuChi_TM</code></td>
+                    <td><span class="badge badge-success">ERP → MISA</span></td>
+                    <td>Mỗi giờ</td>
+                    <td><span class="badge badge-success">✓ Hoạt động</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">res.partner</td>
+                    <td>Danh mục đối tác</td>
+                    <td><code style="font-size:11px;background:#E8F5E9;padding:2px 6px;border-radius:3px;">DanhMucDoiTuong</code></td>
+                    <td><span class="badge badge-info">ERP ↔ MISA</span></td>
+                    <td>Mỗi ngày 06:00</td>
+                    <td><span class="badge badge-success">✓ Hoạt động</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ================================================================
+           VIEW 5: CẤU HÌNH
+      ================================================================ -->
+      <div class="view" id="view-settings">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">⚙️ Cấu hình đồng bộ MISA</h1>
+            <p class="page-subtitle">Quản lý kết nối API, lịch đồng bộ tự động và thông báo hệ thống</p>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="testConnection()">🔌 Test kết nối</button>
+            <button class="btn btn-primary" onclick="saveSettings()">💾 Lưu cấu hình</button>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <!-- Left column -->
+          <div>
+            <!-- API Connection -->
+            <div class="card settings-section" style="margin-bottom:16px;">
+              <div class="card-header"><span class="card-title">🔌 Kết nối API MISA AMIS</span></div>
+              <div class="card-body">
+                <div class="settings-section-title">Thông tin xác thực</div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                  <div class="form-group">
+                    <label>Base URL</label>
+                    <input type="text" value="https://api.misa.com.vn/v2">
+                  </div>
+                  <div class="form-group">
+                    <label>API Key</label>
+                    <div style="position:relative;">
+                      <input type="password" id="apiKeyInput" value="sk_prod_DTA2026_xK9mN3pQ7rLvW1yZ" style="padding-right:70px;">
+                      <button onclick="toggleApiKey()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;font-size:11px;color:var(--text-secondary);">Hiện</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Môi trường</label>
+                    <select>
+                      <option selected>🟢 Sản xuất (Production)</option>
+                      <option>🟡 Kiểm tra (Staging)</option>
+                      <option>🔵 Phát triển (Development)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Timeout kết nối (giây)</label>
+                    <input type="number" value="30" min="5" max="120">
+                  </div>
+                  <div class="form-group">
+                    <label>Số lần thử lại khi lỗi</label>
+                    <input type="number" value="3" min="1" max="10">
+                  </div>
+                </div>
+                <div style="margin-top:14px;padding:10px 12px;background:#E8F5E9;border-radius:var(--radius-md);border:1px solid #C8E6C9;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="color:var(--o-success);font-size:16px;">✓</span>
+                    <div>
+                      <div style="font-size:12px;font-weight:600;color:#2E7D32;">Kết nối đang hoạt động</div>
+                      <div style="font-size:10px;color:#388E3C;">Độ trễ: 42ms · Kiểm tra lần cuối: 08:35 · Phiên bản API: v2.4.1</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notification -->
+            <div class="card">
+              <div class="card-header"><span class="card-title">🔔 Thông báo & Cảnh báo</span></div>
+              <div class="card-body">
+                <div class="settings-section-title">Kênh thông báo</div>
+                <div class="form-group" style="margin-bottom:12px;">
+                  <label>Email nhận cảnh báo lỗi</label>
+                  <input type="email" value="admin@dta.vn">
+                </div>
+                <div class="form-group" style="margin-bottom:16px;">
+                  <label>Webhook Zalo OA (tùy chọn)</label>
+                  <input type="text" placeholder="https://openapi.zalo.me/v2.0/oa/message...">
+                </div>
+                <div class="settings-section-title">Điều kiện gửi thông báo</div>
+                <div class="toggle-row">
+                  <div><div class="toggle-label">Gửi khi sync thất bại hoàn toàn</div><div class="toggle-sub">Job bị lỗi 100%</div></div>
+                  <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                  <div><div class="toggle-label">Gửi khi có lỗi từng phần</div><div class="toggle-sub">Job thành công &lt; 95%</div></div>
+                  <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                  <div><div class="toggle-label">Gửi báo cáo tổng hợp hàng ngày</div><div class="toggle-sub">Gửi lúc 08:00 sáng</div></div>
+                  <label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                  <div><div class="toggle-label">Cảnh báo khi kết nối gián đoạn</div><div class="toggle-sub">Timeout hoặc HTTP 5xx</div></div>
+                  <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right column -->
+          <div>
+            <!-- Sync Schedule -->
+            <div class="card settings-section" style="margin-bottom:16px;">
+              <div class="card-header"><span class="card-title">🕐 Lịch đồng bộ tự động</span></div>
+              <div class="card-body">
+                <div class="settings-section-title">Tần suất theo loại dữ liệu</div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#F8F9FA;border-radius:var(--radius-md);">
+                    <div>
+                      <div style="font-size:12px;font-weight:600;">Hóa đơn bán / mua</div>
+                      <div style="font-size:10px;color:var(--text-secondary);">ERP → MISA</div>
+                    </div>
+                    <select style="padding:4px 8px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:11px;">
+                      <option>Mỗi 30 phút</option>
+                      <option selected>Mỗi 1 giờ</option>
+                      <option>Mỗi 2 giờ</option>
+                      <option>Thủ công</option>
+                    </select>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#F8F9FA;border-radius:var(--radius-md);">
+                    <div>
+                      <div style="font-size:12px;font-weight:600;">Bút toán kế toán</div>
+                      <div style="font-size:10px;color:var(--text-secondary);">ERP → MISA</div>
+                    </div>
+                    <select style="padding:4px 8px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:11px;">
+                      <option>Mỗi 1 giờ</option>
+                      <option selected>Hàng ngày 23:00</option>
+                      <option>Thủ công</option>
+                    </select>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#F8F9FA;border-radius:var(--radius-md);">
+                    <div>
+                      <div style="font-size:12px;font-weight:600;">Phiếu thu / Phiếu chi</div>
+                      <div style="font-size:10px;color:var(--text-secondary);">ERP → MISA</div>
+                    </div>
+                    <select style="padding:4px 8px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:11px;">
+                      <option>Mỗi 30 phút</option>
+                      <option selected>Mỗi 1 giờ</option>
+                      <option>Mỗi 2 giờ</option>
+                    </select>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#F8F9FA;border-radius:var(--radius-md);">
+                    <div>
+                      <div style="font-size:12px;font-weight:600;">Danh mục đối tác</div>
+                      <div style="font-size:10px;color:var(--text-secondary);">ERP ↔ MISA (2 chiều)</div>
+                    </div>
+                    <select style="padding:4px 8px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:11px;">
+                      <option selected>Mỗi ngày 06:00</option>
+                      <option>Mỗi ngày 00:00 và 12:00</option>
+                      <option>Thủ công</option>
+                    </select>
+                  </div>
+                </div>
+                <div style="margin-top:14px;padding-top:14px;border-top:1px solid #F3F4F6;">
+                  <div style="font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">Giờ không đồng bộ (maintenance window)</div>
+                  <div style="display:flex;gap:8px;align-items:center;">
+                    <input type="time" value="02:00" style="padding:5px 8px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:11px;">
+                    <span style="font-size:11px;">đến</span>
+                    <input type="time" value="03:00" style="padding:5px 8px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:11px;">
+                    <span style="font-size:10px;color:var(--text-secondary);">(Khuyến nghị: 02:00–03:00)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Data Scope -->
+            <div class="card">
+              <div class="card-header"><span class="card-title">📂 Phạm vi dữ liệu</span></div>
+              <div class="card-body">
+                <div class="settings-section-title">Giới hạn đồng bộ</div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                  <div class="form-group">
+                    <label>Đồng bộ dữ liệu từ ngày</label>
+                    <input type="date" value="2026-01-01">
+                  </div>
+                  <div class="form-group">
+                    <label>Entity áp dụng</label>
+                    <select>
+                      <option selected>Tất cả (HQ + Nam Kỳ + Bà Triệu)</option>
+                      <option>Chỉ HQ Backoffice</option>
+                      <option>HQ + Nam Kỳ</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="settings-section-title" style="margin-top:16px;">Tuỳ chọn nâng cao</div>
+                <div class="toggle-row">
+                  <div><div class="toggle-label">Sync mode: Chỉ dữ liệu mới</div><div class="toggle-sub">Chỉ push bản ghi tạo/sửa sau lần sync trước</div></div>
+                  <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                  <div><div class="toggle-label">Tự động retry khi lỗi tạm thời</div><div class="toggle-sub">HTTP 429, 503, 504</div></div>
+                  <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                  <div><div class="toggle-label">Ghi log chi tiết (verbose)</div><div class="toggle-sub">Lưu toàn bộ request/response</div></div>
+                  <label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<div class="toast-container" id="toast-container"></div>
+<div class="page-pattern"></div>
+
+<script>
+  // ===== ALL VIEWS =====
+  var ALL_VIEWS = ['dashboard', 'logs', 'errors', 'mapping', 'settings'];
+
+  // ===== SWITCH VIEW + NAV =====
+  function switchView(viewName, label) {
+    ALL_VIEWS.forEach(function(v) {
+      var el = document.getElementById('view-' + v);
+      if (el) el.classList.toggle('active', v === viewName);
+    });
+    // Breadcrumb
+    var bc = document.getElementById('breadcrumbCurrent');
+    if (bc) bc.textContent = label || viewName;
+    // Sidebar active
+    document.querySelectorAll('.nav-item').forEach(function(item) { item.classList.remove('active'); });
+    var navEl = document.getElementById('nav-' + viewName);
+    if (navEl) navEl.classList.add('active');
+  }
+
+  // ===== FILTER LOGS =====
+  function filterLogs(btn, status) {
+    // Tab active
+    document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
+    btn.classList.add('active');
+    // Filter rows (non-detail rows)
+    document.querySelectorAll('#logs-table tbody tr:not(.log-row-detail)').forEach(function(row) {
+      if (status === 'all') {
+        row.style.display = '';
+      } else {
+        row.style.display = row.getAttribute('data-status') === status ? '' : 'none';
+      }
+    });
+    // Hide all detail rows when filtering
+    document.querySelectorAll('.log-row-detail').forEach(function(r) { r.classList.remove('show'); });
+  }
+
+  // ===== TOGGLE LOG DETAIL =====
+  function toggleLogDetail(id) {
+    var detail = document.getElementById(id);
+    if (!detail) return;
+    detail.classList.toggle('show');
+    // Update arrow on parent row
+    var parentRow = detail.previousElementSibling;
+    if (parentRow) {
+      var arrow = parentRow.querySelector('td:first-child');
+      if (arrow) arrow.textContent = detail.classList.contains('show') ? '▼' : '▶';
+    }
+  }
+
+  // ===== MAPPING TABS =====
+  function switchMappingTab(tab) {
+    ['accounts', 'partners', 'doctypes'].forEach(function(t) {
+      var content = document.getElementById('mapping-' + t);
+      var tabBtn = document.getElementById('map-tab-' + t);
+      if (content) content.style.display = t === tab ? 'block' : 'none';
+      if (tabBtn) tabBtn.classList.toggle('active', t === tab);
+    });
+  }
+
+  // ===== ACTIONS =====
+  function triggerSync() {
+    showToast('⏳ Đang khởi động đồng bộ tổng thể...', 'info');
+    setTimeout(function() {
+      showToast('✓ Sync SJ-0143 đã bắt đầu — 12,860 bản ghi', 'success');
+    }, 1500);
+  }
+
+  function testConnection() {
+    showToast('🔌 Đang kiểm tra kết nối API...', 'info');
+    setTimeout(function() {
+      showToast('✅ Kết nối thành công — Độ trễ: 42ms', 'success');
+    }, 1200);
+  }
+
+  function retryAll() {
+    showToast('🔄 Đang thử lại 5 bản ghi lỗi...', 'info');
+    setTimeout(function() {
+      showToast('✓ Thử lại hoàn tất — Kiểm tra nhật ký để xem kết quả', 'success');
+    }, 2000);
+  }
+
+  function saveSettings() {
+    showToast('💾 Đã lưu cấu hình thành công', 'success');
+  }
+
+  function switchEntity(val) {
+    var names = { hq: 'HQ - Văn phòng hỗ trợ', nk: 'Cửa hàng Nam Kỳ', bt: 'Cửa hàng Bà Triệu' };
+    showToast('Đã chuyển sang: ' + (names[val] || val), 'info');
+  }
+
+  function toggleApiKey() {
+    var input = document.getElementById('apiKeyInput');
+    if (!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+
+  // ===== TOAST =====
+  function showToast(message, type) {
+    type = type || 'info';
+    var container = document.getElementById('toast-container');
+    if (!container) return;
+    var icons = { success: '✔', error: '✖', warning: '⚠', info: 'ℹ' };
+    var colors = { success: 'var(--o-success)', error: 'var(--o-danger)', warning: 'var(--o-warning)', info: 'var(--o-info)' };
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.innerHTML =
+      '<span style="color:' + (colors[type] || colors.info) + ';font-size:16px;">' + (icons[type] || 'ℹ') + '</span>' +
+      '<span style="flex:1;">' + message + '</span>' +
+      '<span onclick="var t=this.parentElement;t.style.animation=\'slideOut .3s forwards\';setTimeout(function(){if(t.parentElement)t.remove();},300)" style="cursor:pointer;color:var(--text-secondary);font-size:16px;padding-left:8px;">×</span>';
+    container.appendChild(toast);
+    setTimeout(function() {
+      toast.style.animation = 'slideOut .3s forwards';
+      setTimeout(function() { if (toast.parentElement) toast.remove(); }, 300);
+    }, 4000);
+  }
+
+  // ===== KEYBOARD =====
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.show').forEach(function(m) { m.classList.remove('show'); });
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      var s = document.getElementById('globalSearch');
+      if (s) s.focus();
+    }
+  });
+</script>
+</body>
+</html>

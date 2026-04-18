@@ -1,0 +1,2059 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô hình kho hàng - DTA Space Odoo 19</title>
+    <style>
+        /* ============================================
+           EMBEDDED ODOO 19 STYLES (Self-contained)
+           ============================================ */
+        :root {
+            /* Modern DTA Color Palette 2026 */
+            --odoo-primary: #8B2500;
+            --odoo-primary-light: #FFF5F2;
+            --odoo-primary-dark: #6B1C00;
+            --odoo-secondary: #0D9488;
+            --odoo-success: #059669;
+            --odoo-warning: #D97706;
+            --odoo-danger: #DC2626;
+            --odoo-info: #0891B2;
+            --accent-gold: #C49549;
+            --sidebar-bg: #FFFFFF;
+            --sidebar-hover: #F9FAFB;
+            --sidebar-active: #FFF5F2;
+            --header-bg: #FFFFFF;
+            --content-bg: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --text-light: #9CA3AF;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            /* Modern Elevation */
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            /* Modern Border Radius */
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            /* Animation System */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: var(--content-bg);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* LAYOUT */
+        .app-layout {
+            position: relative;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: relative;
+            width: 240px;
+            background: var(--sidebar-bg);
+            color: var(--text-primary);
+            border-right: 1px solid #E5E7EB;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--odoo-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .logo-text {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .entity-switcher {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .entity-switcher select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #E5E7EB;
+            border-radius: var(--radius-sm);
+            background: #F9FAFB;
+            color: var(--text-primary);
+            font-size: 11px;
+        }
+
+        .entity-switcher select option {
+            color: var(--text-primary);
+            background: white;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-sm) 0;
+        }
+
+        .nav-section {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .nav-section-title {
+            padding: var(--spacing-xs) var(--spacing-md);
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #9CA3AF;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 8px var(--spacing-md);
+            color: #4B5563;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: var(--spacing-sm);
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .nav-item:hover {
+            background: var(--sidebar-hover);
+            color: #111827;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, var(--odoo-primary-light) 0%, rgba(255,245,242,0) 100%);
+            color: var(--odoo-primary);
+            font-weight: 500;
+            border-left: 3px solid var(--odoo-primary);
+            box-shadow: inset 0 0 0 1px rgba(139, 37, 0, 0.05);
+        }
+
+        .nav-icon {
+            width: 18px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* MAIN CONTENT - using flexbox layout, no margins needed */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .page-content {
+            padding: 24px 32px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Content wrapper to prevent full-width */
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* TOP HEADER */
+        .top-header {
+            height: 44px;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 var(--spacing-md);
+            gap: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 13px;
+        }
+
+        .breadcrumb a {
+            color: var(--odoo-primary);
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            width: 200px;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--odoo-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        /* PAGE CONTENT */
+        .page-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-lg);
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 8px 16px;
+            border: 1px solid transparent;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            background: white;
+            color: var(--text-primary);
+            will-change: transform;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--odoo-primary) 0%, #9D2900 100%);
+            color: white;
+            border-color: var(--odoo-primary);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--odoo-primary-dark) 0%, var(--odoo-primary) 100%);
+        }
+
+        .btn-secondary {
+            border-color: var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-300);
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        /* STAT CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--odoo-primary), var(--accent-gold));
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue {
+            background: #E3F2FD;
+        }
+
+        .stat-icon.green {
+            background: #E8F5E9;
+        }
+
+        .stat-icon.orange {
+            background: #FFF3E0;
+        }
+
+        .stat-icon.red {
+            background: #FFEBEE;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* TABLES */
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: linear-gradient(180deg, #FAFAFA 0%, #F5F5F5 100%);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 13px;
+            transition: background var(--transition-fast);
+        }
+
+        .table tr:hover {
+            background: linear-gradient(90deg, var(--gray-50) 0%, rgba(249,250,251,0) 100%);
+        }
+
+        .table tr:nth-child(even) {
+            background: rgba(249, 250, 251, 0.3);
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #E8F5E9;
+            color: #388E3C;
+        }
+
+        .badge-warning {
+            background: #FFF3E0;
+            color: #F57C00;
+        }
+
+        .badge-danger {
+            background: #FFEBEE;
+            color: #D32F2F;
+        }
+
+        .badge-info {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .badge-secondary {
+            background: #F0F0F0;
+            color: #666;
+        }
+
+        /* ENTITY TAGS */
+        .entity-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .entity-tag.nk {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .entity-tag.bt {
+            background: #F3E5F5;
+            color: #7B1FA2;
+        }
+
+        .entity-tag.hq {
+            background: #E8F5E9;
+            color: #388E3C;
+        }
+
+        /* STOCK ALERTS */
+        .stock-alert {
+            padding: 10px 14px;
+            border-left: 4px solid var(--odoo-warning);
+            background: #FFF8E1;
+            margin-bottom: 0px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+        }
+
+        .stock-alert.critical {
+            border-left-color: var(--odoo-danger);
+            background: #FFEBEE;
+        }
+
+        /* FORM STYLES */
+        .form-view {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+        }
+
+        .form-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-statusbar {
+            display: flex;
+            gap: 4px;
+        }
+
+        .statusbar-btn {
+            padding: 4px 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .statusbar-btn.active {
+            background: var(--odoo-primary);
+            color: white;
+            border-color: var(--odoo-primary);
+        }
+
+        .form-body {
+            padding: var(--spacing-lg);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--odoo-primary);
+            box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+        }
+
+        /* QR CODE PLACEHOLDER */
+        .qr-code {
+            width: 70px;
+            height: 70px;
+            background: #F0F0F0;
+            border: 1px dashed #CCC;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: #999;
+            text-align: center;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: var(--spacing-lg);
+        }
+
+        .modal-footer {
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-sm);
+        }
+
+        /* TOAST */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .tooltip::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+
+        /* Pattern decoration */
+        .sidebar-pattern {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background-image: url('../Media/pattern.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+
+        .page-pattern {
+            position: fixed;
+            bottom: 0px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            background-image: url('../Media/pattern.png');
+            background-size: contain;
+            margin-bottom: -20px;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-pattern"></div>
+                <div class="sidebar-logo">
+                    <img src="../Media/DTA-LOGO.png" alt="DTA Space" style="height: 32px; width: auto;">
+                    <div class="logo-text">DTA Space</div>
+                </div>
+            </div>
+            <div class="entity-switcher">
+                <select id="entitySwitcher" onchange="switchEntity(this.value)">
+                    <option value="hq">🏢 Cơ sở chính</option>
+                    <option value="nk">🏪 Cửa hàng Nam Kỳ Khởi Nghĩa</option>
+                    <option value="bt">🏪 Cửa hàng Bà Triệu</option>
+                </select>
+            </div>
+            <nav class="sidebar-nav">
+                <!-- Dashboard Link -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Tổng quan</div>
+                    <a class="nav-item" href="../index.html"><span class="nav-icon">📊</span><span>Bảng điều
+                            khiển</span></a>
+                </div>
+                <!-- Inventory Features -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Quản lý kho</div>
+                    <a class="nav-item active" href="#" onclick="switchView('dashboard', this); return false;"><span
+                            class="nav-icon">📊</span><span>Tổng quan</span></a>
+                    <a class="nav-item" href="#" onclick="switchView('locations', this); return false;"><span
+                            class="nav-icon">📍</span><span>Vị trí kho</span></a>
+                    <a class="nav-item" href="#" onclick="switchView('receipts', this); return false;"><span
+                            class="nav-icon">📥</span><span>Nhập kho</span></a>
+                    <a class="nav-item" href="#" onclick="switchView('deliveries', this); return false;"><span
+                            class="nav-icon">📤</span><span>Xuất kho</span></a>
+                    <a class="nav-item" href="#" onclick="switchView('transfers', this); return false;"><span
+                            class="nav-icon">🔄</span><span>Chuyển kho</span></a>
+                    <a class="nav-item" href="#" onclick="switchView('shipping', this); return false;"><span
+                            class="nav-icon">🚚</span><span>Giao hàng</span></a>
+                    <a class="nav-item" href="#" onclick="switchView('adjustments', this); return false;"><span
+                            class="nav-icon">📝</span><span>Kiểm kê</span></a>
+                    <a class="nav-item" href="#" onclick="switchView('reports', this); return false;"><span
+                            class="nav-icon">📊</span><span>Báo cáo</span></a>
+                </div>
+                <!-- Other Modules -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Mô-đun</div>
+                    <a class="nav-item" href="inventory.html"><span class="nav-icon">📦</span><span>Quản lý
+                            kho</span></a>
+                    <a class="nav-item" href="products.html"><span class="nav-icon">📦</span><span>Sản phẩm</span></a>
+                    <a class="nav-item" href="crm.html"><span class="nav-icon">👥</span><span>CRM</span></a>
+                    <a class="nav-item" href="events.html"><span class="nav-icon">🎨</span><span>Sự kiện</span></a>
+                    <a class="nav-item" href="sales.html"><span class="nav-icon">💼</span><span>Bán hàng</span></a>
+                    <a class="nav-item" href="design_studio.html"><span class="nav-icon">✏️</span><span>Thiết kế
+                            Studio</span></a>
+                    <a class="nav-item" href="accounting.html"><span class="nav-icon">💰</span><span>Kế toán</span></a>
+                    <a class="nav-item" href="misa.html"><span class="nav-icon">🔄</span><span>Đồng bộ MISA</span></a>
+                    <a class="nav-item" href="reports.html"><span class="nav-icon">📈</span><span>Báo cáo</span></a>
+                    <a class="nav-item" href="projects.html"><span class="nav-icon">🏗️</span><span>Dự án</span></a>
+                    <a class="nav-item" href="hr.html"><span class="nav-icon">👥</span><span>Nhân sự</span></a>
+                    <a class="nav-item" href="marketing.html"><span class="nav-icon">📢</span><span>Marketing</span></a>
+                    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span>Cài đặt</span></a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOP HEADER -->
+            <div class="top-header">
+                <div class="breadcrumb">
+                    <a href="../index.html">Bảng điều khiển</a>
+                    <span>/</span>
+                    <strong>Quản lý kho hàng</strong>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" placeholder="Tìm kiếm... (Ctrl+K)" id="globalSearch">
+                    </div>
+                    <span class="tooltip" data-tip="Notifications">🔔</span>
+                    <span class="tooltip" data-tip="Messages">💬</span>
+                    <div class="user-menu">
+                        <div class="user-avatar">NA</div>
+                        <span>Nguyễn Admin</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE CONTENT -->
+            <div class="page-content">
+                <!-- Content wrapper to prevent full-width -->
+                <div class="content-wrapper">
+
+                    <!-- ===== VIEW: DASHBOARD ===== -->
+                    <div id="view-dashboard" class="inventory-view">
+                        <div class="page-header">
+                            <div>
+                                <h1 class="page-title">📦 Tổng quan Quản lý kho</h1>
+                                <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                    3 kho • 2,847 sản phẩm • 12 phiếu chờ xử lý
+                                </p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary btn-sm" onclick="switchView('receipts')">📥 Nhập
+                                    kho</button>
+                                <button class="btn btn-secondary btn-sm" onclick="switchView('deliveries')">📤 Xuất
+                                    kho</button>
+                                <button class="btn btn-primary btn-sm" onclick="switchView('transfers')">🔄 Chuyển
+                                    kho</button>
+                            </div>
+                        </div>
+
+                        <!-- Stats Cards -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon blue">📦</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">2,847</div>
+                                    <div class="stat-label">Tổng sản phẩm</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">📥</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">156</div>
+                                    <div class="stat-label">Nhập kho tháng này</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon orange">📤</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">89</div>
+                                    <div class="stat-label">Xuất kho tháng này</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon red">⚠️</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">12</div>
+                                    <div class="stat-label">Cảnh báo tồn kho</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Operations -->
+                        <div class="table-container" style="margin-bottom: 20px;">
+                            <div class="table-header">
+                                <h3 class="card-title">📋 Giao dịch gần đây</h3>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-secondary">Xem tất cả →</button>
+                                </div>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã phiếu</th>
+                                        <th>Loại</th>
+                                        <th>Kho</th>
+                                        <th>Đối tác</th>
+                                        <th>Sản phẩm</th>
+                                        <th>Ngày</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('PO-2026-0456'); return false"
+                                                style="color: var(--odoo-primary);">PO-2026-0456</a></td>
+                                        <td><span class="badge badge-info">📥 Nhập kho</span></td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td>Cty CP Nội Thất ABC</td>
+                                        <td>24 sản phẩm</td>
+                                        <td>13/04/2026</td>
+                                        <td><span class="badge badge-success">Đã hoàn thành</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('DO-2026-0234'); return false"
+                                                style="color: var(--odoo-primary);">DO-2026-0234</a></td>
+                                        <td><span class="badge badge-warning">📤 Xuất kho</span></td>
+                                        <td><span class="entity-tag bt">BT</span></td>
+                                        <td>Mr. Nguyễn Văn An</td>
+                                        <td>8 sản phẩm</td>
+                                        <td>13/04/2026</td>
+                                        <td><span class="badge badge-warning">Đang xử lý</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('TO-2026-0089'); return false"
+                                                style="color: var(--odoo-primary);">TO-2026-0089</a></td>
+                                        <td><span class="badge badge-purple">🔄 Chuyển kho</span></td>
+                                        <td><span class="entity-tag nk">NK</span> → <span
+                                                class="entity-tag bt">BT</span>
+                                        </td>
+                                        <td>Nội bộ</td>
+                                        <td>15 sản phẩm</td>
+                                        <td>12/04/2026</td>
+                                        <td><span class="badge badge-info">Đang vận chuyển</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('PO-2026-0455'); return false"
+                                                style="color: var(--odoo-primary);">PO-2026-0455</a></td>
+                                        <td><span class="badge badge-info">📥 Nhập kho</span></td>
+                                        <td><span class="entity-tag hq">HQ</span></td>
+                                        <td>TNHH Kiến Trúc XYZ</td>
+                                        <td>32 sản phẩm</td>
+                                        <td>12/04/2026</td>
+                                        <td><span class="badge badge-success">Đã hoàn thành</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== VIEW: LOCATIONS ===== -->
+                    <div id="view-locations" class="inventory-view" style="display: none;">
+                        <div class="page-header">
+                            <div>
+                                <h1 class="page-title">📍 Quản lý Vị trí kho</h1>
+                                <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                    3 kho chính • 18 vị trí lưu trữ • Nhấp vào kho để xem chi tiết tồn kho
+                                </p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="showToast('Thêm vị trí kho mới', 'info')">➕ Thêm vị trí</button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã vị trí</th>
+                                        <th>Tên kho</th>
+                                        <th>Chi nhánh</th>
+                                        <th>Loại</th>
+                                        <th>Số sản phẩm</th>
+                                        <th>Giá trị tồn kho</th>
+                                        <th>Sức chứa</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>WH-NK-01</code></td>
+                                        <td><strong>Kho chính Nam Kỳ</strong></td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td>Kho lưu trữ</td>
+                                        <td>1,245 SP</td>
+                                        <td style="text-align: right">6.8 tỷ ₫</td>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <div
+                                                    style="background: #e9ecef; border-radius: 4px; width: 80px; height: 8px;">
+                                                    <div
+                                                        style="background: var(--odoo-success); height: 100%; border-radius: 4px; width: 68%;">
+                                                    </div>
+                                                </div>
+                                                <span style="font-size: 12px;">68%</span>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-success">Hoạt động</span></td>
+                                        <td><button class="btn btn-sm btn-secondary"
+                                                onclick="showWarehouseDetail('nk')">👁️ Xem tồn kho</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>WH-BT-01</code></td>
+                                        <td><strong>Kho chính Bà Triệu</strong></td>
+                                        <td><span class="entity-tag bt">BT</span></td>
+                                        <td>Kho lưu trữ</td>
+                                        <td>892 SP</td>
+                                        <td style="text-align: right">4.2 tỷ ₫</td>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <div
+                                                    style="background: #e9ecef; border-radius: 4px; width: 80px; height: 8px;">
+                                                    <div
+                                                        style="background: var(--odoo-warning); height: 100%; border-radius: 4px; width: 85%;">
+                                                    </div>
+                                                </div>
+                                                <span style="font-size: 12px;">85%</span>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-warning">Gần đầy</span></td>
+                                        <td><button class="btn btn-sm btn-secondary"
+                                                onclick="showWarehouseDetail('bt')">👁️ Xem tồn kho</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>WH-HQ-01</code></td>
+                                        <td><strong>Kho trung tâm HQ</strong></td>
+                                        <td><span class="entity-tag hq">HQ</span></td>
+                                        <td>Kho trung tâm</td>
+                                        <td>710 SP</td>
+                                        <td style="text-align: right">4.2 tỷ ₫</td>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <div
+                                                    style="background: #e9ecef; border-radius: 4px; width: 80px; height: 8px;">
+                                                    <div
+                                                        style="background: var(--odoo-success); height: 100%; border-radius: 4px; width: 45%;">
+                                                    </div>
+                                                </div>
+                                                <span style="font-size: 12px;">45%</span>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-success">Hoạt động</span></td>
+                                        <td><button class="btn btn-sm btn-secondary"
+                                                onclick="showWarehouseDetail('hq')">👁️ Xem tồn kho</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== VIEW: STOCK (Tồn kho chi tiết) ===== -->
+                    <div id="view-stock" class="inventory-view" style="display: none;">
+                        <div class="page-header">
+                            <div>
+                                <h1 class="page-title">📦 Tồn kho: <span id="stockWarehouseName">Kho Nam Kỳ</span></h1>
+                                <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                    Danh sách sản phẩm hiện có trong kho • <span id="stockProductCount">1,245 sản
+                                        phẩm</span>
+                                </p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary btn-sm" onclick="switchView('locations')">← Quay
+                                    lại</button>
+                                <button class="btn btn-secondary btn-sm"
+                                    onclick="showToast('Xuất danh sách tồn kho', 'info')">📥 Xuất Excel</button>
+                                <button class="btn btn-primary btn-sm" onclick="switchView('receipts')">📥 Nhập
+                                    kho</button>
+                            </div>
+                        </div>
+
+                        <!-- Warehouse Summary -->
+                        <div class="stats-grid" style="margin-bottom: 20px;">
+                            <div class="stat-card">
+                                <div class="stat-icon blue">📦</div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="stockTotalProducts">1,245</div>
+                                    <div class="stat-label">Tổng sản phẩm</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">💰</div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="stockTotalValue">6.8 tỷ</div>
+                                    <div class="stat-label">Giá trị tồn kho</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon orange">⚠️</div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="stockLowCount">8</div>
+                                    <div class="stat-label">Sắp hết hàng</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon purple">📊</div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="stockCapacity">68%</div>
+                                    <div class="stat-label">Sức chứa sử dụng</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product List in Warehouse -->
+                        <div class="table-container">
+                            <div class="table-header">
+                                <h3 class="card-title">📋 Danh sách sản phẩm trong kho</h3>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-secondary">🔍 Lọc</button>
+                                </div>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã SKU</th>
+                                        <th>Tên sản phẩm</th>
+                                        <th>Danh mục</th>
+                                        <th>ĐVT</th>
+                                        <th style="text-align: right">Giá vốn</th>
+                                        <th style="text-align: right">Giá bán</th>
+                                        <th style="text-align: right">Tồn kho</th>
+                                        <th style="text-align: right">Khả dụng</th>
+                                        <th style="text-align: right">Tối thiểu</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stockProductList">
+                                    <!-- Filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== VIEW: RECEIPTS (Nhập kho) ===== -->
+                    <div id="view-receipts" class="inventory-view" style="display: none;">
+                        <div class="page-header">
+                            <div>
+                                <h1 class="page-title">📥 Quản lý Nhập kho</h1>
+                                <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                    156 phiếu nhập tháng này • 12 phiếu chờ
+                                </p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="showToast('Tạo phiếu nhập kho mới', 'info')">➕
+                                    Tạo phiếu nhập</button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã phiếu</th>
+                                        <th>Ngày nhập</th>
+                                        <th>Kho đến</th>
+                                        <th>Nhà cung cấp</th>
+                                        <th>Số lượng</th>
+                                        <th>Người lập</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('PO-2026-0456'); return false"
+                                                style="color: var(--odoo-primary);">PO-2026-0456</a></td>
+                                        <td>13/04/2026</td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td>Cty CP Nội Thất ABC</td>
+                                        <td>24 SP</td>
+                                        <td>Trần Thị Thanh</td>
+                                        <td><span class="badge badge-success">Đã nhập</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('PO-2026-0455'); return false"
+                                                style="color: var(--odoo-primary);">PO-2026-0455</a></td>
+                                        <td>12/04/2026</td>
+                                        <td><span class="entity-tag hq">HQ</span></td>
+                                        <td>TNHH Kiến Trúc XYZ</td>
+                                        <td>32 SP</td>
+                                        <td>Lê Văn Hùng</td>
+                                        <td><span class="badge badge-success">Đã nhập</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('PO-2026-0454'); return false"
+                                                style="color: var(--odoo-primary);">PO-2026-0454</a></td>
+                                        <td>11/04/2026</td>
+                                        <td><span class="entity-tag bt">BT</span></td>
+                                        <td>Cty TNHH Xây Dựng Minh Anh</td>
+                                        <td>18 SP</td>
+                                        <td>Phạm Thị Hương</td>
+                                        <td><span class="badge badge-warning">Chờ duyệt</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('PO-2026-0453'); return false"
+                                                style="color: var(--odoo-primary);">PO-2026-0453</a></td>
+                                        <td>10/04/2026</td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td>Cafe Sáng Tạo</td>
+                                        <td>45 SP</td>
+                                        <td>Nguyễn Văn Tuấn</td>
+                                        <td><span class="badge badge-warning">Chờ duyệt</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== VIEW: DELIVERIES (Xuất kho) ===== -->
+                    <div id="view-deliveries" class="inventory-view" style="display: none;">
+                        <div class="page-header">
+                            <div>
+                                <h1 class="page-title">📤 Quản lý Xuất kho</h1>
+                                <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                    89 phiếu xuất tháng này • 5 phiếu chờ xử lý
+                                </p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="showToast('Tạo phiếu xuất kho mới', 'info')">➕
+                                    Tạo phiếu xuất</button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã phiếu</th>
+                                        <th>Ngày xuất</th>
+                                        <th>Kho đi</th>
+                                        <th>Khách hàng</th>
+                                        <th>Số lượng</th>
+                                        <th>Người lập</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('DO-2026-0234'); return false"
+                                                style="color: var(--odoo-primary);">DO-2026-0234</a></td>
+                                        <td>13/04/2026</td>
+                                        <td><span class="entity-tag bt">BT</span></td>
+                                        <td>Mr. Nguyễn Văn An</td>
+                                        <td>8 SP</td>
+                                        <td>Trần Thị Mai</td>
+                                        <td><span class="badge badge-warning">Đang xử lý</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('DO-2026-0233'); return false"
+                                                style="color: var(--odoo-primary);">DO-2026-0233</a></td>
+                                        <td>12/04/2026</td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td>Cty Delta</td>
+                                        <td>15 SP</td>
+                                        <td>Lê Hoàng Minh</td>
+                                        <td><span class="badge badge-success">Đã xuất</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('DO-2026-0232'); return false"
+                                                style="color: var(--odoo-primary);">DO-2026-0232</a></td>
+                                        <td>11/04/2026</td>
+                                        <td><span class="entity-tag hq">HQ</span></td>
+                                        <td>Biệt thự Vinhome</td>
+                                        <td>22 SP</td>
+                                        <td>Vũ Đức Tài</td>
+                                        <td><span class="badge badge-success">Đã xuất</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('DO-2026-0231'); return false"
+                                                style="color: var(--odoo-primary);">DO-2026-0231</a></td>
+                                        <td>10/04/2026</td>
+                                        <td><span class="entity-tag bt">BT</span></td>
+                                        <td>Mr. Lê Quang Hưng</td>
+                                        <td>5 SP</td>
+                                        <td>Đặng Thị Lan</td>
+                                        <td><span class="badge badge-warning">Chờ duyệt</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== VIEW: TRANSFERS (Chuyển kho) ===== -->
+                    <div id="view-transfers" class="inventory-view" style="display: none;">
+                        <div class="page-header">
+                            <div>
+                                <h1 class="page-title">🔄 Quản lý Chuyển kho</h1>
+                                <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                    34 phiếu chuyển tháng này • 3 đang vận chuyển
+                                </p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="showToast('Tạo phiếu chuyển kho mới', 'info')">➕
+                                    Tạo phiếu chuyển</button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã phiếu</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Kho gửi</th>
+                                        <th>Kho nhận</th>
+                                        <th>Số lượng</th>
+                                        <th>Người lập</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('TO-2026-0089'); return false"
+                                                style="color: var(--odoo-primary);">TO-2026-0089</a></td>
+                                        <td>12/04/2026</td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td><span class="entity-tag bt">BT</span></td>
+                                        <td>15 SP</td>
+                                        <td>Trần Thị Thanh</td>
+                                        <td><span class="badge badge-info">🚚 Đang vận chuyển</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('TO-2026-0088'); return false"
+                                                style="color: var(--odoo-primary);">TO-2026-0088</a></td>
+                                        <td>10/04/2026</td>
+                                        <td><span class="entity-tag hq">HQ</span></td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td>30 SP</td>
+                                        <td>Lê Văn Hùng</td>
+                                        <td><span class="badge badge-info">🚚 Đang vận chuyển</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('TO-2026-0087'); return false"
+                                                style="color: var(--odoo-primary);">TO-2026-0087</a></td>
+                                        <td>08/04/2026</td>
+                                        <td><span class="entity-tag hq">HQ</span></td>
+                                        <td><span class="entity-tag bt">BT</span></td>
+                                        <td>25 SP</td>
+                                        <td>Phạm Thị Hương</td>
+                                        <td><span class="badge badge-success">Đã nhận</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('TO-2026-0086'); return false"
+                                                style="color: var(--odoo-primary);">TO-2026-0086</a></td>
+                                        <td>05/04/2026</td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td><span class="entity-tag hq">HQ</span></td>
+                                        <td>12 SP</td>
+                                        <td>Nguyễn Văn Tuấn</td>
+                                        <td><span class="badge badge-success">Đã nhận</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== VIEW: SHIPPING (Giao hàng) ===== -->
+                    <div id="view-shipping" class="inventory-view" style="display: none;">
+                        <div class="page-header">
+                            <div>
+                                <h1 class="page-title">🚚 Quản lý Giao hàng</h1>
+                                <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                    45 đơn giao hàng tháng này • 8 đơn đang giao • 3 đơn chờ xử lý
+                                </p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary btn-sm"
+                                    onclick="showToast('Xuất danh sách giao hàng', 'info')">📥 Xuất file</button>
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="showToast('Tạo đơn giao hàng mới', 'info')">➕ Tạo đơn giao</button>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Stats -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon blue">🚚</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">45</div>
+                                    <div class="stat-label">Đơn giao hàng</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">✅</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">34</div>
+                                    <div class="stat-label">Đã giao thành công</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon orange">🚛</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">8</div>
+                                    <div class="stat-label">Đang giao hàng</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon red">⏳</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">3</div>
+                                    <div class="stat-label">Chờ xử lý</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Orders -->
+                        <div class="table-container" style="margin-top: 20px;">
+                            <div class="table-header">
+                                <h3 class="card-title">📋 Danh sách đơn giao hàng</h3>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-secondary">🔍 Lọc</button>
+                                </div>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Khách hàng</th>
+                                        <th>Kho đi</th>
+                                        <th>Địa chỉ giao</th>
+                                        <th>Đơn vị vận chuyển</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('SH-2026-0123'); return false"
+                                                style="color: var(--odoo-primary);">SH-2026-0123</a></td>
+                                        <td>13/04/2026</td>
+                                        <td>Nguyễn Văn An</td>
+                                        <td><span class="entity-tag bt">BT</span></td>
+                                        <td>123 Lê Lợi, Q.1, TP.HCM</td>
+                                        <td>GiaoHangNhanh (GHN)</td>
+                                        <td><span class="badge badge-info">🚛 Đang giao</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('SH-2026-0122'); return false"
+                                                style="color: var(--odoo-primary);">SH-2026-0122</a></td>
+                                        <td>13/04/2026</td>
+                                        <td>Cty Delta</td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td>456 Nguyễn Huệ, Q.1, TP.HCM</td>
+                                        <td>ViettelPost</td>
+                                        <td><span class="badge badge-success">✅ Đã giao</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('SH-2026-0121'); return false"
+                                                style="color: var(--odoo-primary);">SH-2026-0121</a></td>
+                                        <td>12/04/2026</td>
+                                        <td>Trần Thị Mai</td>
+                                        <td><span class="entity-tag hq">HQ</span></td>
+                                        <td>789 Hai Bà Trưng, Q.3, TP.HCM</td>
+                                        <td>GiaoHangTietKiem (GHTK)</td>
+                                        <td><span class="badge badge-warning">⏳ Chờ lấy hàng</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('SH-2026-0120'); return false"
+                                                style="color: var(--odoo-primary);">SH-2026-0120</a></td>
+                                        <td>12/04/2026</td>
+                                        <td>Biệt thự Vinhome</td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td>Vinhomes Grand Park, Q.9, TP.HCM</td>
+                                        <td>GiaoHangNhanh (GHN)</td>
+                                        <td><span class="badge badge-success">✅ Đã giao</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('SH-2026-0119'); return false"
+                                                style="color: var(--odoo-primary);">SH-2026-0119</a></td>
+                                        <td>11/04/2026</td>
+                                        <td>Mr. Lê Quang Hưng</td>
+                                        <td><span class="entity-tag bt">BT</span></td>
+                                        <td>321 CMT8, Q.10, TP.HCM</td>
+                                        <td>ViettelPost</td>
+                                        <td><span class="badge badge-success">✅ Đã giao</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== VIEW: ADJUSTMENTS (Kiểm kê) ===== -->
+                    <div id="view-adjustments" class="inventory-view" style="display: none;">
+                        <div class="page-header">
+                            <div>
+                                <h1 class="page-title">📝 Kiểm kê & Điều chỉnh tồn kho</h1>
+                                <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                    Lần kiểm kê cuối: 05/04/2026 • 5 phiếu điều chỉnh
+                                </p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary btn-sm"
+                                    onclick="showToast('Xuất báo cáo kiểm kê', 'info')">📥
+                                    Xuất báo cáo</button>
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="showToast('Tạo phiếu kiểm kê mới', 'info')">➕
+                                    Tạo kiểm kê</button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã kiểm kê</th>
+                                        <th>Ngày kiểm kê</th>
+                                        <th>Kho</th>
+                                        <th>Người kiểm kê</th>
+                                        <th>Số lượng kiểm tra</th>
+                                        <th>Chênh lệch</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><a href="#" onclick="return false"
+                                                style="color: var(--odoo-primary);">IA-2026-0012</a></td>
+                                        <td>13/04/2026</td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td>Trần Thị Thanh</td>
+                                        <td>156 SP</td>
+                                        <td style="color: var(--odoo-danger);">-3 SP</td>
+                                        <td><span class="badge badge-warning">Chờ duyệt</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="return false"
+                                                style="color: var(--odoo-primary);">IA-2026-0011</a></td>
+                                        <td>10/04/2026</td>
+                                        <td><span class="entity-tag bt">BT</span></td>
+                                        <td>Lê Hoàng Minh</td>
+                                        <td>89 SP</td>
+                                        <td style="color: var(--odoo-success);">0 SP</td>
+                                        <td><span class="badge badge-success">Đã hoàn thành</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="showDocDetail('IA-2026-0010'); return false"
+                                                style="color: var(--odoo-primary);">IA-2026-0010</a></td>
+                                        <td>05/04/2026</td>
+                                        <td><span class="entity-tag hq">HQ</span></td>
+                                        <td>Phạm Thị Hương</td>
+                                        <td>245 SP</td>
+                                        <td style="color: var(--odoo-success);">0 SP</td>
+                                        <td><span class="badge badge-success">Đã hoàn thành</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== VIEW: REPORTS ===== -->
+                    <div id="view-reports" class="inventory-view" style="display: none;">
+                        <div class="page-header">
+                            <div>
+                                <h1 class="page-title">📊 Báo cáo Quản lý kho</h1>
+                                <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">
+                                    Tổng hợp thống kê và phân tích tồn kho
+                                </p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary btn-sm" onclick="showToast('Xuất báo cáo', 'info')">📥
+                                    Xuất
+                                    Excel</button>
+                                <button class="btn btn-secondary btn-sm" onclick="showToast('In báo cáo', 'info')">🖨️
+                                    In</button>
+                            </div>
+                        </div>
+
+                        <!-- Summary Stats -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon blue">💰</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">15.2 tỷ</div>
+                                    <div class="stat-label">Giá trị tồn kho</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">📈</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">8.5</div>
+                                    <div class="stat-label">Vòng quay tồn kho</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon orange">⏱️</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">43 ngày</div>
+                                    <div class="stat-label">Ngày tồn kho trung bình</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon purple">✅</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">98.5%</div>
+                                    <div class="stat-label">Độ chính xác tồn kho</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inventory by Warehouse -->
+                        <div class="table-container" style="margin-top: 20px;">
+                            <div class="table-header">
+                                <h3 class="card-title">📦 Tồn kho theo Kho</h3>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Kho</th>
+                                        <th>Số sản phẩm</th>
+                                        <th>Giá trị (VNĐ)</th>
+                                        <th>Sức chứa</th>
+                                        <th>Tỷ lệ sử dụng</th>
+                                        <th>Cảnh báo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="entity-tag nk">NK</span> Kho Nam Kỳ</td>
+                                        <td>1,245</td>
+                                        <td>6.8 tỷ</td>
+                                        <td>5,000 SP</td>
+                                        <td>
+                                            <div
+                                                style="background: #e9ecef; border-radius: 4px; width: 100px; height: 8px; display: inline-block; margin-right: 8px;">
+                                                <div
+                                                    style="background: var(--odoo-success); height: 100%; border-radius: 4px; width: 68%;">
+                                                </div>
+                                            </div>
+                                            68%
+                                        </td>
+                                        <td><span class="badge badge-success">Bình thường</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="entity-tag bt">BT</span> Kho Bà Triệu</td>
+                                        <td>892</td>
+                                        <td>4.2 tỷ</td>
+                                        <td>3,000 SP</td>
+                                        <td>
+                                            <div
+                                                style="background: #e9ecef; border-radius: 4px; width: 100px; height: 8px; display: inline-block; margin-right: 8px;">
+                                                <div
+                                                    style="background: var(--odoo-warning); height: 100%; border-radius: 4px; width: 85%;">
+                                                </div>
+                                            </div>
+                                            85%
+                                        </td>
+                                        <td><span class="badge badge-warning">Gần đầy</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="entity-tag hq">HQ</span> Kho trung tâm</td>
+                                        <td>710</td>
+                                        <td>4.2 tỷ</td>
+                                        <td>10,000 SP</td>
+                                        <td>
+                                            <div
+                                                style="background: #e9ecef; border-radius: 4px; width: 100px; height: 8px; display: inline-block; margin-right: 8px;">
+                                                <div
+                                                    style="background: var(--odoo-success); height: 100%; border-radius: 4px; width: 45%;">
+                                                </div>
+                                            </div>
+                                            45%
+                                        </td>
+                                        <td><span class="badge badge-success">Bình thường</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- End content-wrapper -->
+
+                <script>
+                    // Warehouse stock data (matching product.template.xlsx)
+                    var warehouseStock = {
+                        nk: {
+                            name: 'Kho Nam Kỳ', products: 1245, value: '6.8 tỷ', lowCount: 8, capacity: '68%',
+                            items: [
+                                { sku: 'HD-TRM-001', name: 'Trầm hương nụ cao cấp', cat: 'Hương đạo', uom: 'Hộp', cost: 150000, price: 280000, qty: 45, avail: 42, min: 10, status: 'success' },
+                                { sku: 'TT-AMT-002', name: 'Ấm tử sa Nghi Hưng 200ml', cat: 'Thiền trà', uom: 'Cái', cost: 850000, price: 1650000, qty: 12, avail: 10, min: 5, status: 'success' },
+                                { sku: 'TS-VT-004', name: 'Vòng trầm hương 108 hạt', cat: 'Trang sức', uom: 'Cái', cost: 350000, price: 680000, qty: 22, avail: 20, min: 8, status: 'success' },
+                                { sku: 'MAT-FBR-005', name: 'Vải Velvet Premium', cat: 'Vật liệu', uom: 'Mét', cost: 420000, price: 850000, qty: 3, avail: 3, min: 20, status: 'danger' },
+                                { sku: 'DT-DC-003', name: 'Đèn dầu thờ bằng đồng', cat: 'Đồ thờ cúng', uom: 'Cái', cost: 120000, price: 250000, qty: 28, avail: 25, min: 10, status: 'success' },
+                            ]
+                        },
+                        bt: {
+                            name: 'Kho Bà Triệu', products: 892, value: '4.2 tỷ', lowCount: 12, capacity: '85%',
+                            items: [
+                                { sku: 'QT-TR-005', name: 'Bộ quà tặng trà đạo', cat: 'Quà tặng', uom: 'Set', cost: 450000, price: 850000, qty: 0, avail: 0, min: 5, status: 'danger' },
+                                { sku: 'HD-NH-006', name: 'Nhang trầm không tăm', cat: 'Hương đạo', uom: 'Hộp', cost: 85000, price: 165000, qty: 38, avail: 35, min: 15, status: 'success' },
+                                { sku: 'TT-CT-007', name: 'Chén trà Bát Tràng', cat: 'Thiền trà', uom: 'Cái', cost: 65000, price: 120000, qty: 94, avail: 90, min: 20, status: 'success' },
+                                { sku: 'MAT-WOD-009', name: 'Gỗ Oak Plank 2400mm', cat: 'Vật liệu', uom: 'Cây', cost: 620000, price: 1200000, qty: 5, avail: 5, min: 50, status: 'danger' },
+                                { sku: 'TS-MD-008', name: 'Mặt dây chuyền trầm', cat: 'Trang sức', uom: 'Cái', cost: 280000, price: 520000, qty: 15, avail: 14, min: 5, status: 'warning' },
+                            ]
+                        },
+                        hq: {
+                            name: 'Kho trung tâm HQ', products: 710, value: '4.2 tỷ', lowCount: 5, capacity: '45%',
+                            items: [
+                                { sku: 'DT-LH-009', name: 'Lư hương đồng Đại Bái', cat: 'Đồ thờ cúng', uom: 'Cái', cost: 450000, price: 850000, qty: 12, avail: 11, min: 3, status: 'success' },
+                                { sku: 'HD-DT-010', name: 'Đế cắm trầm gỗ bách', cat: 'Hương đạo', uom: 'Cái', cost: 180000, price: 350000, qty: 245, avail: 240, min: 50, status: 'success' },
+                                { sku: 'TT-AT-011', name: 'Ấm trà Tử sa 150ml', cat: 'Thiền trà', uom: 'Cái', cost: 620000, price: 1150000, qty: 18, avail: 16, min: 8, status: 'success' },
+                                { sku: 'MAT-GLS-014', name: 'Kính cường lực 10mm', cat: 'Vật liệu', uom: 'm²', cost: 1250000, price: 2500000, qty: 8, avail: 8, min: 30, status: 'danger' },
+                                { sku: 'QT-HQ-012', name: 'Hộp quà gỗ sơn mài', cat: 'Quà tặng', uom: 'Cái', cost: 180000, price: 350000, qty: 42, avail: 40, min: 15, status: 'success' },
+                            ]
+                        }
+                    };
+
+                    // Show warehouse detail with products
+                    function showWarehouseDetail(warehouseId) {
+                        var wh = warehouseStock[warehouseId];
+                        if (!wh) return;
+
+                        // Update header info
+                        document.getElementById('stockWarehouseName').textContent = wh.name;
+                        document.getElementById('stockProductCount').textContent = wh.products.toLocaleString() + ' sản phẩm';
+                        document.getElementById('stockTotalProducts').textContent = wh.products.toLocaleString();
+                        document.getElementById('stockTotalValue').textContent = wh.value;
+                        document.getElementById('stockLowCount').textContent = wh.lowCount;
+                        document.getElementById('stockCapacity').textContent = wh.capacity;
+
+                        // Update sidebar to show current warehouse
+                        var locationNavItem = document.querySelector('.sidebar-nav .nav-item[onclick*="locations"]');
+                        if (locationNavItem) {
+                            var spanText = locationNavItem.querySelector('span:last-child');
+                            if (spanText) spanText.textContent = 'Vị trí kho (' + wh.name.replace('Kho ', '') + ')';
+                        }
+
+                        // Fill product list
+                        var tbody = document.getElementById('stockProductList');
+                        var statusBadge = { success: '<span class="badge badge-success">Còn hàng</span>', warning: '<span class="badge badge-warning">Sắp hết</span>', danger: '<span class="badge badge-danger">Hết hàng</span>' };
+
+                        var html = '';
+                        wh.items.forEach(function (item) {
+                            html += '<tr>' +
+                                '<td><code>' + item.sku + '</code></td>' +
+                                '<td><strong>' + item.name + '</strong></td>' +
+                                '<td>' + item.cat + '</td>' +
+                                '<td>' + item.uom + '</td>' +
+                                '<td style="text-align: right">' + item.cost.toLocaleString() + '</td>' +
+                                '<td style="text-align: right">' + item.price.toLocaleString() + '</td>' +
+                                '<td style="text-align: right; font-weight: 600;">' + item.qty.toLocaleString() + '</td>' +
+                                '<td style="text-align: right">' + item.avail.toLocaleString() + '</td>' +
+                                '<td style="text-align: right">' + item.min + '</td>' +
+                                '<td>' + statusBadge[item.status] + '</td>' +
+                                '</tr>';
+                        });
+                        tbody.innerHTML = html;
+
+                        // Switch to stock view (which is now part of locations flow)
+                        switchView('locations');
+
+                        // Hide the locations table and show stock view
+                        document.querySelector('#view-locations').style.display = 'none';
+                        document.getElementById('view-stock').style.display = 'block';
+                    }
+
+                    // Show document detail
+                    function showDocDetail(docCode) {
+                        // Determine document type
+                        var docType = '';
+                        var docInfo = {};
+
+                        if (docCode.startsWith('PO')) {
+                            docType = 'receipt';
+                            docInfo = {
+                                type: '📥 Phiếu nhập kho',
+                                code: docCode,
+                                date: '13/04/2026',
+                                warehouse: 'Kho Nam Kỳ',
+                                partner: 'Trầm hương Việt Nam',
+                                createdBy: 'Trần Thị Thanh',
+                                status: 'Đã nhập',
+                                items: [
+                                    { sku: 'HD-TRM-001', name: 'Trầm hương nụ cao cấp', qty: 50, uom: 'Hộp', price: '150.000', total: '7.500.000' },
+                                    { sku: 'HD-NH-006', name: 'Nhang trầm không tăm', qty: 100, uom: 'Hộp', price: '85.000', total: '8.500.000' },
+                                    { sku: 'HD-DT-010', name: 'Đế cắm trầm gỗ bách', qty: 30, uom: 'Cái', price: '180.000', total: '5.400.000' },
+                                ]
+                            };
+                        } else if (docCode.startsWith('DO')) {
+                            docType = 'delivery';
+                            docInfo = {
+                                type: '📤 Phiếu xuất kho',
+                                code: docCode,
+                                date: '13/04/2026',
+                                warehouse: 'Kho Bà Triệu',
+                                partner: 'Cty Delta',
+                                createdBy: 'Trần Thị Mai',
+                                status: 'Đang xử lý',
+                                items: [
+                                    { sku: 'TT-AMT-002', name: 'Ấm tử sa Nghi Hưng 200ml', qty: 5, uom: 'Cái', price: '1.650.000', total: '8.250.000' },
+                                    { sku: 'TT-CT-007', name: 'Chén trà Bát Tràng', qty: 20, uom: 'Cái', price: '120.000', total: '2.400.000' },
+                                ]
+                            };
+                        } else if (docCode.startsWith('TO')) {
+                            docType = 'transfer';
+                            docInfo = {
+                                type: '🔄 Phiếu chuyển kho',
+                                code: docCode,
+                                date: '12/04/2026',
+                                fromWarehouse: 'Kho Nam Kỳ',
+                                toWarehouse: 'Kho Bà Triệu',
+                                createdBy: 'Trần Thị Thanh',
+                                status: 'Đang vận chuyển',
+                                items: [
+                                    { sku: 'TS-VT-004', name: 'Vòng trầm hương 108 hạt', qty: 20, uom: 'Cái', price: '680.000', total: '13.600.000' },
+                                    { sku: 'TS-MD-008', name: 'Mặt dây chuyền trầm', qty: 15, uom: 'Cái', price: '520.000', total: '7.800.000' },
+                                ]
+                            };
+                        } else if (docCode.startsWith('SH')) {
+                            docType = 'shipping';
+                            docInfo = {
+                                type: '🚚 Đơn giao hàng',
+                                code: docCode,
+                                date: '13/04/2026',
+                                customer: 'Nguyễn Văn An',
+                                address: '123 Lê Lợi, Q.1, TP.HCM',
+                                carrier: 'GiaoHangNhanh (GHN)',
+                                status: 'Đang giao',
+                                items: [
+                                    { sku: 'DT-DC-003', name: 'Đèn dầu thờ bằng đồng', qty: 2, uom: 'Cái', price: '250.000', total: '500.000' },
+                                ]
+                            };
+                        } else if (docCode.startsWith('IA')) {
+                            docType = 'adjustment';
+                            docInfo = {
+                                type: '📝 Phiếu kiểm kê',
+                                code: docCode,
+                                date: '13/04/2026',
+                                warehouse: 'Kho Nam Kỳ',
+                                createdBy: 'Trần Thị Thanh',
+                                status: 'Chờ duyệt',
+                                items: [
+                                    { sku: 'MAT-FBR-005', name: 'Vải Velvet Premium', systemQty: 20, actualQty: 3, uom: 'Mét', diff: -17 },
+                                    { sku: 'MAT-WOD-009', name: 'Gỗ Oak Plank 2400mm', systemQty: 50, actualQty: 5, uom: 'Cây', diff: -45 },
+                                ]
+                            };
+                        }
+
+                        // Update title
+                        document.getElementById('docDetailTitle').textContent = docInfo.type + ': ' + docCode;
+
+                        // Build content HTML
+                        var html = '<div class="stats-grid" style="margin-bottom: 20px;">';
+                        html += '<div class="stat-card"><div class="stat-icon blue">' + (docType === 'transfer' ? '🔄' : docType === 'shipping' ? '🚚' : docType === 'adjustment' ? '📝' : docType === 'receipt' ? '📥' : '📤') + '</div>';
+                        html += '<div class="stat-info"><div class="stat-value">' + docCode + '</div><div class="stat-label">Mã phiếu</div></div></div>';
+                        html += '<div class="stat-card"><div class="stat-icon green">📅</div>';
+                        html += '<div class="stat-info"><div class="stat-value">' + docInfo.date + '</div><div class="stat-label">Ngày lập</div></div></div>';
+                        html += '<div class="stat-card"><div class="stat-icon orange">👤</div>';
+                        html += '<div class="stat-info"><div class="stat-value">' + (docInfo.createdBy || 'N/A') + '</div><div class="stat-label">Người lập</div></div></div>';
+                        html += '</div>';
+
+                        // Info table
+                        html += '<div class="table-container" style="margin-bottom: 20px;"><table class="table"><tbody>';
+                        if (docType === 'transfer') {
+                            html += '<tr><td><strong>Kho gửi</strong></td><td>' + docInfo.fromWarehouse + '</td></tr>';
+                            html += '<tr><td><strong>Kho nhận</strong></td><td>' + docInfo.toWarehouse + '</td></tr>';
+                        } else if (docType === 'shipping') {
+                            html += '<tr><td><strong>Khách hàng</strong></td><td>' + docInfo.customer + '</td></tr>';
+                            html += '<tr><td><strong>Địa chỉ giao</strong></td><td>' + docInfo.address + '</td></tr>';
+                            html += '<tr><td><strong>Đơn vị vận chuyển</strong></td><td>' + docInfo.carrier + '</td></tr>';
+                        } else if (docType === 'adjustment') {
+                            html += '<tr><td><strong>Kho kiểm kê</strong></td><td>' + docInfo.warehouse + '</td></tr>';
+                        } else {
+                            html += '<tr><td><strong>Đối tác</strong></td><td>' + docInfo.partner + '</td></tr>';
+                            html += '<tr><td><strong>Kho</strong></td><td>' + docInfo.warehouse + '</td></tr>';
+                        }
+                        html += '<tr><td><strong>Trạng thái</strong></td><td><span class="badge badge-success">' + docInfo.status + '</span></td></tr>';
+                        html += '</tbody></table></div>';
+
+                        // Items table
+                        html += '<div class="table-container"><div class="table-header"><h3 class="card-title">📋 Danh sách sản phẩm</h3></div>';
+                        html += '<table class="table"><thead><tr>';
+                        if (docType === 'adjustment') {
+                            html += '<th>Mã SKU</th><th>Tên sản phẩm</th><th>ĐVT</th><th class="right">SL hệ thống</th><th class="right">SL thực tế</th><th class="right">Chênh lệch</th>';
+                        } else {
+                            html += '<th>Mã SKU</th><th>Tên sản phẩm</th><th>ĐVT</th><th class="right">Số lượng</th><th class="right">Đơn giá</th><th class="right">Thành tiền</th>';
+                        }
+                        html += '</tr></thead><tbody>';
+
+                        docInfo.items.forEach(function (item) {
+                            html += '<tr><td><code>' + item.sku + '</code></td><td>' + item.name + '</td><td>' + item.uom + '</td>';
+                            if (docType === 'adjustment') {
+                                var diffColor = item.diff < 0 ? 'var(--odoo-danger)' : 'var(--odoo-success)';
+                                html += '<td style="text-align: right">' + item.systemQty + '</td>';
+                                html += '<td style="text-align: right">' + item.actualQty + '</td>';
+                                html += '<td style="text-align: right; color: ' + diffColor + '">' + (item.diff > 0 ? '+' : '') + item.diff + '</td>';
+                            } else {
+                                html += '<td style="text-align: right">' + item.qty.toLocaleString() + '</td>';
+                                html += '<td style="text-align: right">' + item.price + ' ₫</td>';
+                                html += '<td style="text-align: right">' + item.total + ' ₫</td>';
+                            }
+                            html += '</tr>';
+                        });
+
+                        html += '</tbody></table></div>';
+
+                        // Action buttons
+                        html += '<div style="margin-top: 20px; display: flex; gap: 8px;">';
+                        if (docInfo.status.includes('Chờ') || docInfo.status.includes('Xử lý')) {
+                            html += '<button class="btn btn-primary btn-sm" onclick="showToast(\'Đã duyệt phiếu\', \'success\')">✅ Duyệt phiếu</button>';
+                        }
+                        html += '<button class="btn btn-secondary btn-sm" onclick="showToast(\'Đã in phiếu\', \'info\')">🖨️ In phiếu</button>';
+                        html += '<button class="btn btn-secondary btn-sm" onclick="showToast(\'Đã xuất file\', \'info\')">📥 Xuất Excel</button>';
+                        html += '</div>';
+
+                        document.getElementById('docDetailContent').innerHTML = html;
+
+                        // Hide ALL inventory views first
+                        document.querySelectorAll('.inventory-view').forEach(v => v.style.display = 'none');
+
+                        // Show document detail view
+                        document.getElementById('view-doc-detail').style.display = 'block';
+                    }
+
+                    // Go back from document detail
+                    function goBackFromDocDetail() {
+                        document.getElementById('view-doc-detail').style.display = 'none';
+                        var prevView = document.getElementById('view-' + currentViewName);
+                        if (prevView) prevView.style.display = 'block';
+                    }
+
+                    // View Switching for Inventory
+                    var currentViewName = 'dashboard';
+
+                    function switchView(viewName, navEl) {
+                        // Hide all views
+                        document.querySelectorAll('.inventory-view').forEach(v => v.style.display = 'none');
+                        // Show selected view
+                        var view = document.getElementById('view-' + viewName);
+                        if (view) view.style.display = 'block';
+                        // Track current view
+                        currentViewName = viewName;
+                        // Update sidebar active state
+                        if (navEl) {
+                            document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => item.classList.remove('active'));
+                            navEl.classList.add('active');
+                            // Reset sidebar text when clicking on "Vị trí kho"
+                            if (viewName === 'locations') {
+                                var locationNavItem = navEl.querySelector('span:last-child');
+                                if (locationNavItem) locationNavItem.textContent = 'Vị trí kho';
+                                // Show locations table, hide stock view
+                                document.querySelector('#view-locations').style.display = 'block';
+                                document.getElementById('view-stock').style.display = 'none';
+                            }
+                        }
+                    }
+
+                    function showTransferWizard() {
+                        document.getElementById('transferModal').classList.add('show');
+                    }
+
+                    function closeModal(id) {
+                        document.getElementById(id).classList.remove('show');
+                    }
+
+                    // Navigation
+                    function navigate(module) {
+                        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                        event.currentTarget.classList.add('active');
+                        if (module !== 'inventory') {
+                            showToast('Module "' + module + '" is available in main index.html', 'info');
+                        } else {
+                            showView('inventory');
+                        }
+                    }
+
+                    // Entity Switcher
+                    function switchEntity(entity) {
+                        const names = { hq: 'HQ Backoffice', nk: 'Store Nam Kỳ', bt: 'Store Bà Triệu' };
+                        showToast('Switched to: ' + names[entity], 'success');
+                    }
+
+                    // Toast Notifications
+                    function showToast(message, type) {
+                        var colors = { success: '#28a745', error: '#dc3545', info: '#17a2b8', warning: '#ffc107' };
+                        var toast = document.createElement('div');
+                        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 18px;background:' + (colors[type] || colors.info) + ';color:white;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:10000;font-size:12px;animation:slideIn 0.3s ease;';
+                        toast.textContent = message;
+                        document.body.appendChild(toast);
+                        setTimeout(function () { toast.remove(); }, 3000);
+                    }
+                </script>
+
+                <!-- ===== VIEW: DOCUMENT DETAIL ===== -->
+                <div id="view-doc-detail" class="inventory-view" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <button class="btn btn-secondary btn-sm" onclick="goBackFromDocDetail()"
+                                style="margin-bottom: 8px;">← Quay lại</button>
+                            <h1 class="page-title" id="docDetailTitle">📄 Chi tiết phiếu</h1>
+                        </div>
+                    </div>
+                    <div id="docDetailContent">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+            </div>
+            <!-- End content-wrapper -->
+        </div>
+    </div>
+
+    <div class="page-pattern"></div>
+</body>
+
+</html>

@@ -1,0 +1,3219 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quy trình tiếp thị & khách hàng tiềm năng - DTA Space - Odoo 19</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #212529;
+            font-size: 13px;
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+
+        /* Top Navigation Bar */
+        .o_navbar {
+            background: linear-gradient(135deg, #8B2500 0%, #6B1C00 100%);
+            color: #fff;
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 48px;
+            padding: 0 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(139, 37, 0, 0.2);
+        }
+
+        .o_navbar_brand {
+            font-size: 18px;
+            font-weight: 700;
+            margin-right: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .o_navbar_brand span {
+            color: #F5E6CC;
+        }
+
+        .o_navbar_menus {
+            display: flex;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .o_navbar_menu {
+            color: rgba(255, 255, 255, 0.85);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .o_navbar_menu:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        .o_navbar_menu.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .o_navbar_right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: auto;
+        }
+
+        .o_navbar_icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .o_navbar_icon:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .o_user_avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #F5E6CC;
+            color: #8B2500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* Bảng điều khiển */
+        .o_control_panel {
+            background: #fff;
+            border-bottom: 1px solid #dee2e6;
+            padding: 12px 24px;
+            margin-top: 46px;
+            position: sticky;
+            top: 46px;
+            z-index: 100;
+        }
+
+        .o_breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 0px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .o_breadcrumb a {
+            color: #8B2500;
+            text-decoration: none;
+        }
+
+        .o_breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .o_cp_top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .o_cp_title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .o_cp_buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .o_cp_views {
+            display: flex;
+            gap: 4px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .o_cp_view_btn {
+            padding: 6px 12px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .o_cp_view_btn:hover {
+            background: #e9ecef;
+        }
+
+        .o_cp_view_btn.active {
+            background: #8B2500;
+            color: #fff;
+        }
+
+        .o_cp_bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            gap: 12px;
+        }
+
+        .o_search_view {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .o_search_input {
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 13px;
+            flex: 1;
+        }
+
+        .o_search_input:focus {
+            outline: none;
+            border-color: #8B2500;
+            box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.15);
+        }
+
+        .o_filter_btn {
+            padding: 5px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            color: #495057;
+        }
+
+        .o_filter_btn:hover {
+            border-color: #8B2500;
+            color: #8B2500;
+        }
+
+        .o_group_by {
+            padding: 5px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            color: #495057;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8B2500 0%, #9D2900 100%);
+            color: #fff;
+            border-color: #8B2500;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #6B1C00 0%, #8B2500 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #212529;
+            border: 1px solid #DEE2E6;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-outline {
+            background: #fff;
+            border-color: #ced4da;
+            color: #495057;
+        }
+
+        .btn-outline:hover {
+            border-color: #8B2500;
+            color: #8B2500;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+
+        /* Entity Switcher */
+        .o_entity_switcher {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 24px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .o_entity {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #6c757d;
+            border: 1px solid transparent;
+        }
+
+        .o_entity:hover {
+            color: #8B2500;
+        }
+
+        .o_entity.active {
+            background: #8B2500;
+            color: #fff;
+        }
+
+        /* Layout */
+        .o_main {
+            display: flex;
+            min-height: calc(100vh - 46px);
+            margin-top: 46px;
+        }
+
+        /* Layout */
+        .app-layout {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        /* STANDARD SIDEBAR CLASSES */
+        .sidebar {
+            position: relative;
+            width: 240px;
+            background: #FFFFFF;
+            color: #212529;
+            border-right: 1px solid #E5E7EB;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: #8B2500;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .logo-text {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .entity-switcher {
+            padding: 8px 16px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .entity-switcher select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #E5E7EB;
+            border-radius: 4px;
+            background: #F9FAFB;
+            color: #212529;
+            font-size: 11px;
+        }
+
+        .entity-switcher select option {
+            color: #212529;
+            background: white;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 0px;
+        }
+
+        .nav-section-title {
+            padding: 4px 16px;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #9CA3AF;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            color: #4B5563;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .nav-item:hover {
+            background: #F3F4F6;
+            color: #111827;
+        }
+
+        .nav-item.active {
+            background: #FEF2F2;
+            color: #8B2500;
+            font-weight: 500;
+            border-left: 3px solid #8B2500;
+        }
+
+        .nav-icon {
+            width: 18px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .o_sidebar {
+            width: 240px;
+            background: #FFFFFF;
+            border-right: 1px solid #E5E7EB;
+            border-right: none;
+            padding: 0;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 8px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 0px;
+        }
+
+        .nav-section-title {
+            padding: 4px 16px;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #9CA3AF;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            color: #4B5563;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .nav-item:hover {
+            background: #F3F4F6;
+            color: #111827;
+        }
+
+        .nav-item.active {
+            background: #FEF2F2;
+            color: #8B2500;
+            font-weight: 500;
+            border-left: 3px solid #8B2500;
+        }
+
+        .nav-icon {
+            width: 18px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            overflow-x: hidden;
+        }
+
+        .top-header {
+            height: 46px;
+            background: white;
+            border-bottom: 1px solid #DEE2E6;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 16px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #8B2500;
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            color: #6C757D;
+        }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: 5px 12px;
+            border: 1px solid #DEE2E6;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 200px;
+        }
+
+        /* Search icon removed - using standard styling */
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #8B2500;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .page-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px 24px;
+        }
+
+        /* Stats Cards */
+        .o_stats_row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 0px;
+        }
+
+        .o_stat_card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 18px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .o_stat_card .o_stat_label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 0px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .o_stat_card .o_stat_value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .o_stat_card .o_stat_sub {
+            font-size: 12px;
+            color: #28a745;
+            margin-top: 4px;
+        }
+
+        .o_stat_card .o_stat_sub.negative {
+            color: #dc3545;
+        }
+
+        .o_stat_icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-bottom: 0px;
+        }
+
+        .o_stat_icon.blue {
+            background: #e7f5ff;
+            color: #0066cc;
+        }
+
+        .o_stat_icon.green {
+            background: #e6f7ed;
+            color: #28a745;
+        }
+
+        .o_stat_icon.orange {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .o_stat_icon.purple {
+            background: #f3eaf1;
+            color: #8B2500;
+        }
+
+        /* Tables */
+        .o_table_wrapper {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+            margin-bottom: 0px;
+        }
+
+        .o_table_header {
+            padding: 14px 18px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .o_table_header h3 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .o_table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .o_table thead {
+            background: #f8f9fa;
+        }
+
+        .o_table th {
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .o_table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .o_table tbody tr:hover {
+            background: #fafbfc;
+        }
+
+        .o_table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .o_table .o_link {
+            color: #8B2500;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .o_table .o_link:hover {
+            text-decoration: underline;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-secondary {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .badge-primary {
+            background: #f3eaf1;
+            color: #8B2500;
+        }
+
+        /* Kanban Board */
+        .o_kanban {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding-bottom: 0px;
+        }
+
+        .o_kanban_column {
+            min-width: 280px;
+            max-width: 320px;
+            background: #f1f3f5;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .o_kanban_col_header {
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid;
+        }
+
+        .o_kanban_col_header h4 {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .o_kanban_col_header .o_count {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .o_kanban_col_body {
+            padding: 8px;
+            flex: 1;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .o_kanban_card {
+            background: #fff;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 0px;
+            border: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: box-shadow 0.15s;
+        }
+
+        .o_kanban_card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .o_kanban_card .o_card_title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 0px;
+            color: #212529;
+        }
+
+        .o_kanban_card .o_stat_label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 0px;
+        }
+
+        .o_kanban_card .o_card_tags {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .o_kanban_card .o_stat_value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #8B2500;
+            margin-top: 6px;
+        }
+
+        .o_score_hot {
+            color: #dc3545;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .o_score_warm {
+            color: #f57c00;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .o_score_cold {
+            color: #17a2b8;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        /* Kanban column colors */
+        .col-new {
+            border-color: #007bff;
+        }
+
+        .col-contacted {
+            border-color: #17a2b8;
+        }
+
+        .col-qualified {
+            border-color: #ffc107;
+        }
+
+        .col-proposal {
+            border-color: #6f42c1;
+        }
+
+        .col-won {
+            border-color: #28a745;
+        }
+
+        .col-lost {
+            border-color: #dc3545;
+        }
+
+        /* Chart placeholder */
+        .o_chart_wrapper {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            padding: 20px;
+            margin-bottom: 0px;
+            overflow: hidden;
+            max-width: 100%;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .o_chart_title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #212529;
+        }
+        }
+
+        .o_pie_chart {
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            position: relative;
+            background: conic-gradient(#0066cc 0deg 60deg, #4285f4 60deg 120deg, #f57c00 120deg 180deg, #28a745 180deg 240deg, #9c27b0 240deg 300deg, #e91e63 300deg 360deg);
+        }
+
+        .o_pie_chart::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #fff;
+        }
+
+        .o_chart_legend {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 20px;
+        }
+
+        .o_legend_item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .o_legend_color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        /* Bar chart placeholder */
+        .o-bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 16px;
+            height: 220px;
+            padding: 16px 24px;
+            border-bottom: 1px solid #dee2e6;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .o_bar {
+            flex: 1;
+            min-width: 50px;
+            max-width: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .o-bar-fill {
+            width: 100%;
+            max-width: 45px;
+            border-radius: 6px 6px 0 0;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .o_bar:hover .o-bar-fill {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .o_bar:hover .o-bar-value {
+            color: #8B2500;
+            font-weight: 700;
+        }
+
+        .o-bar-label {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .o-bar-value {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 0px;
+        }
+
+        /* Campaign detail */
+        .o_form_sheet {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            padding: 20px;
+            margin-bottom: 0px;
+        }
+
+        .o_form_sheet_bg {
+            background: #f8f9fa;
+            padding: 24px 0;
+        }
+
+        .o_form_title_row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 0px;
+        }
+
+        .o_form_title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .o_form_subtitle {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        .o_form_statusbar {
+            display: flex;
+            gap: 4px;
+        }
+
+        .o_status_btn {
+            padding: 5px 14px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            color: #495057;
+        }
+
+        .o_status_btn.active {
+            background: #8B2500;
+            color: #fff;
+            border-color: #8B2500;
+        }
+
+        .o_status_btn.highlight {
+            background: #8B2500;
+            color: #fff;
+            border-color: #8B2500;
+        }
+
+        .o_form_grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 40px;
+            margin-top: 16px;
+        }
+
+        .o_form_group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .o_form_group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: uppercase;
+            margin-bottom: 0px;
+            letter-spacing: 0.3px;
+        }
+
+        .o_form_group .o_field {
+            padding: 6px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        .o_form_group .o_field:focus {
+            outline: none;
+            border-color: #8B2500;
+        }
+
+        .o_form_group .o_field_value {
+            font-size: 13px;
+            color: #212529;
+            padding: 6px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .o_field.readonly {
+            border: none;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 0;
+            background: transparent;
+        }
+
+        /* Progress bar */
+        .o_progress {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .o_progress_bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .o_progress_bar.green {
+            background: #28a745;
+        }
+
+        .o_progress_bar.blue {
+            background: #0066cc;
+        }
+
+        .o_progress_bar.orange {
+            background: #f57c00;
+        }
+
+        .o_progress_bar.red {
+            background: #dc3545;
+        }
+
+        /* Tabs */
+        .o_tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 0px;
+        }
+
+        .o_tab {
+            padding: 10px 18px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #6c757d;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            font-weight: 500;
+        }
+
+        .o_tab:hover {
+            color: #8B2500;
+        }
+
+        .o_tab.active {
+            color: #8B2500;
+            border-bottom-color: #8B2500;
+        }
+
+        /* Modal */
+        .o_modal_overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .o_modal_overlay.show {
+            display: flex;
+        }
+
+        .o_modal {
+            background: #fff;
+            border-radius: 8px;
+            width: 560px;
+            max-width: 90vw;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .o_modal_header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .o_modal_header h3 {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .o_modal_close {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 20px;
+            color: #6c757d;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .o_modal_close:hover {
+            background: #f0f0f0;
+        }
+
+        .o_modal_body {
+            padding: 20px;
+        }
+
+        .o_modal_footer {
+            padding: 14px 20px;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .o_form_row {
+            margin-bottom: 0px;
+        }
+
+        .o_form_row label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0px;
+        }
+
+        .o_form_row input,
+        .o_form_row select,
+        .o_form_row textarea {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .o_form_row input:focus,
+        .o_form_row select:focus,
+        .o_form_row textarea:focus {
+            outline: none;
+            border-color: #8B2500;
+            box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.12);
+        }
+
+        /* Toast */
+        .o_toast_container {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .o_toast {
+            background: #fff;
+            border-radius: 6px;
+            padding: 12px 18px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .o_toast.success {
+            border-left-color: #28a745;
+        }
+
+        .o_toast.error {
+            border-left-color: #dc3545;
+        }
+
+        .o_toast.info {
+            border-left-color: #0066cc;
+        }
+
+        .o_toast_message {
+            font-size: 13px;
+            flex: 1;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* View sections */
+        .o_view {
+            display: none;
+        }
+
+        .o_view.active {
+            display: block;
+        }
+
+        /* ROI card */
+        .o_roi_card {
+            background: linear-gradient(135deg, #8B2500 0%, #9c6b8f 100%);
+            color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 0px;
+        }
+
+        .o_roi_card .o_roi_label {
+            font-size: 13px;
+            opacity: 0.85;
+            margin-bottom: 0px;
+        }
+
+        .o_roi_card .o_roi_value {
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .o_roi_card .o_roi_sub {
+            font-size: 12px;
+            opacity: 0.75;
+            margin-top: 4px;
+        }
+
+        .o_roi_grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        /* Lead score indicator */
+        .o_lead_score {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .o_lead_dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .o_lead_dot.hot {
+            background: #dc3545;
+        }
+
+        .o_lead_dot.warm {
+            background: #f57c00;
+        }
+
+        .o_lead_dot.cold {
+            background: #17a2b8;
+        }
+
+        /* Source tag */
+        .o_source_tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .o_source_tag.zalo {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .o_source_tag.facebook {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .o_source_tag.google {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .o_source_tag.referral {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .o_source_tag.event {
+            background: #fce4ec;
+            color: #c62828;
+        }
+
+        .o_source_tag.website {
+            background: #e0f2f1;
+            color: #00695c;
+        }
+
+        /* Budget bar */
+        .o_budget_row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 0px;
+        }
+
+        .o_budget_label {
+            font-size: 12px;
+            color: #6c757d;
+            min-width: 60px;
+        }
+
+        .o_budget_bar {
+            flex: 1;
+        }
+
+        .o_budget_value {
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        /* Responsive helpers */
+        .o_grid_2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .o_grid_3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-muted {
+            color: #6c757d;
+        }
+
+        .mt-2 {
+            margin-top: 12px;
+        }
+
+        .mt-3 {
+            margin-top: 20px;
+        }
+
+        .mb-2 {
+            margin-bottom: 0px;
+        }
+
+        .mb-3 {
+            margin-bottom: 0px;
+        }
+
+        /* Avatar for leads */
+        .o_lead_avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            color: #fff;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .avatar-1 {
+            background: #0066cc;
+        }
+
+        .avatar-2 {
+            background: #f57c00;
+        }
+
+        .avatar-3 {
+            background: #28a745;
+        }
+
+        .avatar-4 {
+            background: #9c27b0;
+        }
+
+        .avatar-5 {
+            background: #e91e63;
+        }
+
+        .avatar-6 {
+            background: #17a2b8;
+        }
+
+        .avatar-7 {
+            background: #795548;
+        }
+
+        .avatar-8 {
+            background: #607d8b;
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .tooltip::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+
+        /* Pattern decoration */
+        .sidebar-pattern {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background-image: url('../Media/pattern.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+
+        .page-pattern {
+            position: fixed;
+            bottom: 0px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            background-image: url('../Media/pattern.png');
+            background-size: contain;
+            margin-bottom: -20px;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== MARKETING TAB BUTTONS ===== */
+        .mkt-tab {
+          padding: 6px 14px;
+          font-size: 13px;
+          font-weight: 500;
+          border: 1px solid #dee2e6;
+          border-radius: 6px;
+          background: #fff;
+          color: #6c757d;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          white-space: nowrap;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .mkt-tab:hover {
+          background: #f8f9fa;
+          color: #495057;
+          border-color: #8B2500;
+        }
+        .mkt-tab.active {
+          background: #8B2500;
+          color: #fff;
+          border-color: #8B2500;
+          font-weight: 600;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-pattern"></div>
+                <div class="sidebar-logo">
+                    <img src="../Media/DTA-LOGO.png" alt="DTA Space" style="height: 32px; width: auto;">
+                    <div class="logo-text">DTA Space</div>
+                </div>
+            </div>
+            <div class="entity-switcher">
+                <select onchange="switchEntity(this.value)">
+                    <option value="hq">🏢 HQ - Trụ sở chính</option>
+                    <option value="nk">🏪 NK - Cửa hàng Nguyễn Kiệm</option>
+                    <option value="bt">🏪 BT - Cửa Hàng Bà Triệu</option>
+                </select>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Tổng quan</div>
+                    <a class="nav-item" href="../index.html"><span class="nav-icon">📊</span><span>Bảng điều
+                            khiển</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Marketing</div>
+                    <a class="nav-item active" id="mktNav-campaign-dashboard" href="#" onclick="navToMktView('campaign-dashboard'); return false;"><span class="nav-icon">&#128202;</span><span>Chiến dịch</span></a>
+                    <a class="nav-item" id="mktNav-lead-pipeline" href="#" onclick="navToMktView('lead-pipeline'); return false;"><span class="nav-icon">&#127919;</span><span>Phễu Lead</span></a>
+                    <a class="nav-item" id="mktNav-lead-source-breakdown" href="#" onclick="navToMktView('lead-source-breakdown'); return false;"><span class="nav-icon">&#128200;</span><span>Nguồn Lead</span></a>
+                    <a class="nav-item" id="mktNav-content-calendar" href="#" onclick="navToMktView('content-calendar'); return false;"><span class="nav-icon">&#128197;</span><span>Lịch nội dung</span></a>
+                    <a class="nav-item" id="mktNav-roi-report" href="#" onclick="navToMktView('roi-report'); return false;"><span class="nav-icon">&#128176;</span><span>Báo cáo ROI</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Modules</div>
+                    <a class="nav-item" href="inventory.html"><span class="nav-icon">📦</span><span>Quản lý
+                            kho</span></a>
+                    <a class="nav-item" href="events.html"><span class="nav-icon">🎨</span><span>Sự kiện</span></a>
+                    <a class="nav-item" href="sales.html"><span class="nav-icon">💼</span><span>Bán hàng</span></a>
+                    <a class="nav-item" href="design_studio.html"><span class="nav-icon">✏️</span><span>Thiết
+                            kế</span></a>
+                    <a class="nav-item" href="accounting.html"><span class="nav-icon">💰</span><span>Kế toán</span></a>
+                    <a class="nav-item" href="misa.html"><span class="nav-icon">🔄</span><span>Đồng bộ MISA</span></a>
+                    <a class="nav-item" href="reports.html"><span class="nav-icon">📈</span><span>Báo cáo</span></a>
+                    <a class="nav-item" href="projects.html"><span class="nav-icon">🏗️</span><span>Dự án</span></a>
+                    <a class="nav-item" href="products.html"><span class="nav-icon">📦</span><span>Sản phẩm</span></a>
+                    <a class="nav-item" href="hr.html"><span class="nav-icon">👥</span><span>Nhân sự</span></a>
+                    <a class="nav-item" href="marketing.html"><span class="nav-icon">📢</span><span>Marketing</span></a>
+                    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span>Cài đặt</span></a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- TOP HEADER -->
+            <header class="top-header">
+                <div class="breadcrumb">
+                    <a href="../index.html">Bảng điều khiển</a>
+                    <span>/</span>
+                    <strong>Marketing</strong>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" placeholder="Tìm kiếm... (Ctrl+K)" id="globalSearch">
+                    </div>
+                    <span class="tooltip" data-tip="Notifications">🔔</span>
+                    <span class="tooltip" data-tip="Messages">💬</span>
+                    <div class="user-menu">
+                        <div class="user-avatar">NA</div>
+                        <span>Nguyễn Admin</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT -->
+            <div class="page-content" style="padding: 0;">
+
+              <!-- CONTROL PANEL – 2-ROW LAYOUT -->
+              <div style="background:var(--o-white,#fff); border-bottom:2px solid #e9ecef; padding:0; position:sticky; top:0; z-index:100;">
+                <!-- Row 1: Breadcrumb / Entity -->
+                <div style="display:flex; align-items:center; gap:16px; padding:10px 24px 8px; border-bottom:1px solid #e9ecef; flex-wrap:nowrap; overflow-x:auto;">
+                  <div style="font-size:13px; color:#6c757d; white-space:nowrap;">
+                    <a href="../index.html" style="color:#8B2500; text-decoration:none;">Bảng điều khiển</a>
+                    <span style="margin:0 4px;">&#47;</span>
+                    <span>Marketing</span>
+                  </div>
+                  <div style="width:1px; height:16px; background:#e9ecef; flex-shrink:0;"></div>
+                  <div style="position:relative; flex-shrink:0;" id="mktEntityBtn" onclick="document.getElementById('mktEntityDD').style.display=document.getElementById('mktEntityDD').style.display==='block'?'none':'block'; event.stopPropagation();">
+                    <div style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border:1px solid #dee2e6; border-radius:20px; font-size:13px; cursor:pointer; background:#f8f9fa;">
+                      <span style="width:8px;height:8px;border-radius:50%;background:#28a745;display:inline-block;"></span>
+                      <span id="mktEntityLabel">HQ – Trụ sở chính</span> &#9662;
+                    </div>
+                    <div id="mktEntityDD" style="display:none; position:absolute; top:100%; left:0; margin-top:4px; background:#fff; border:1px solid #dee2e6; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.12); min-width:200px; z-index:300;">
+                      <div onclick="mktSwitchEntity('HQ – Trụ sở chính','#28a745',this)" style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; background:rgba(40,167,69,.08); font-weight:600;"><span style="width:8px;height:8px;border-radius:50%;background:#28a745;display:inline-block;"></span>HQ – Trụ sở chính</div>
+                      <div onclick="mktSwitchEntity('NK – Nguyễn Kiệm','#FF6B35',this)" style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px;"><span style="width:8px;height:8px;border-radius:50%;background:#FF6B35;display:inline-block;"></span>NK – Nguyễn Kiệm</div>
+                      <div onclick="mktSwitchEntity('BT – Bà Triệu','#6F42C1',this)" style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px;"><span style="width:8px;height:8px;border-radius:50%;background:#6F42C1;display:inline-block;"></span>BT – Bà Triệu</div>
+                    </div>
+                  </div>
+                  <div style="flex:1;"></div>
+                  <div style="font-size:13px; color:#6c757d; white-space:nowrap;"><span id="mktCampaignCount">12</span> chiến dịch</div>
+                </div>
+                <!-- Row 2: Title / Actions / Tabs -->
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 24px; gap:12px; flex-wrap:nowrap;">
+                  <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+                    <h1 style="font-size:18px; font-weight:700; margin:0;">&#128226; Marketing</h1>
+                    <button style="padding:6px 14px; background:#8B2500; color:#fff; border:none; border-radius:6px; font-size:13px; cursor:pointer; font-weight:600;" onclick="openModal()">&#10010; Tạo chiến dịch</button>
+                    <button style="padding:6px 14px; background:#f8f9fa; color:#495057; border:1px solid #dee2e6; border-radius:6px; font-size:13px; cursor:pointer;" onclick="showToast('Đã xuất báo cáo Excel!','success')">&#128229; Xuất Excel</button>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:4px; flex-shrink:0; flex-wrap:nowrap;" id="mktTabBar">
+                    <button class="mkt-tab active" data-view="campaign-dashboard" onclick="switchMktView(this)">&#128202; Chiến dịch</button>
+                    <button class="mkt-tab" data-view="lead-pipeline" onclick="switchMktView(this)">&#127919; Phễu Lead</button>
+                    <button class="mkt-tab" data-view="lead-source-breakdown" onclick="switchMktView(this)">&#128200; Nguồn Lead</button>
+                    <button class="mkt-tab" data-view="content-calendar" onclick="switchMktView(this)">&#128197; Lịch nội dung</button>
+                    <button class="mkt-tab" data-view="roi-report" onclick="switchMktView(this)">&#128176; Báo cáo ROI</button>
+                    <button class="mkt-tab" id="mktDetailTab" data-view="campaign-detail" onclick="switchMktView(this)" style="display:none;">&#128269; Chi tiết</button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="padding: 20px 24px;">
+
+                <!-- ==================== VIEW 1: CAMPAIGN DASHBOARD ==================== -->
+                <div id="view-campaign-dashboard" class="o_view active">
+                    <div class="o_cp_top" style="margin-bottom: 0px;">
+                        <div>
+                            <div style="font-size: 12px; color: #6c757d; margin-bottom: 0px;">Marketing / Bảng điều
+                                khiển
+                            </div>
+                            <h1 style="font-size: 22px; font-weight: 600;">Dashboard Marketing dịch vụ</h1>
+                        </div>
+                        <div class="o_cp_buttons">
+                            <button class="btn btn-primary" onclick="openModal()">+ Tạo chiến dịch</button>
+                            <button class="btn btn-outline"
+                                onclick="showToast('Đã xuất báo cáo Excel!', 'success')">Xuất
+                                Excel</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="o_stats_row">
+                        <div class="o_stat_card">
+                            <div class="o_stat_icon blue">&#128202;</div>
+                            <div class="o_stat_label">Tổng chi tiêu</div>
+                            <div class="o_stat_value">12</div>
+                            <div class="o_stat_sub">+3 so với quý trước</div>
+                        </div>
+                        <div class="o_stat_card">
+                            <div class="o_stat_icon green">&#128101;</div>
+                            <div class="o_stat_label">Khách hàng tiềm năng</div>
+                            <div class="o_stat_value">487</div>
+                            <div class="o_stat_sub">+18% so với tháng trước</div>
+                        </div>
+                        <div class="o_stat_card">
+                            <div class="o_stat_icon orange">&#128176;</div>
+                            <div class="o_stat_label">Chi phí mỗi Lead</div>
+                            <div class="o_stat_value">125K</div>
+                            <div class="o_stat_sub negative">-5% cải thiện</div>
+                        </div>
+                        <div class="o_stat_card">
+                            <div class="o_stat_icon purple">&#127942;</div>
+                            <div class="o_stat_label">Chuyển đổi tỷ lệ</div>
+                            <div class="o_stat-value">28.5%</div>
+                            <div class="o_stat_sub">+2,3% so với mục tiêu</div>
+                        </div>
+                    </div>
+
+<!-- Campaign Performance Chart -->
+                    <div class="o_chart_wrapper">
+                        <div class="o_chart_title">Thực hiện chiến dịch trong tháng</div>
+                        <div class="o-bar-chart">
+                            <div class="o_bar">
+                                <div class="o-bar-value">32</div>
+                                <div class="o-bar-fill" style="height: 64px; background: linear-gradient(180deg, #2563EB 0%, #3B82F6 100%);"></div>
+                                <div class="o_bar-label">T1</div>
+                            </div>
+                            <div class="o_bar">
+                                <div class="o-bar-value">45</div>
+                                <div class="o-bar-fill" style="height: 90px; background: linear-gradient(180deg, #2563EB 0%, #3B82F6 100%);"></div>
+                                <div class="o_bar-label">T2</div>
+                            </div>
+                            <div class="o_bar">
+                                <div class="o-bar-value">58</div>
+                                <div class="o-bar-fill" style="height: 116px; background: linear-gradient(180deg, #0D9488 0%, #14B8A6 100%);"></div>
+                                <div class="o_bar-label">T3</div>
+                            </div>
+                            <div class="o_bar">
+                                <div class="o-bar-value">72</div>
+                                <div class="o-bar-fill" style="height: 144px; background: linear-gradient(180deg, #8B2500 0%, #9D2900 100%);"></div>
+                                <div class="o_bar-label">T4</div>
+                            </div>
+                            <div class="o_bar">
+                                <div class="o-bar-value">85</div>
+                                <div class="o-bar-fill" style="height: 170px; background: linear-gradient(180deg, #D97706 0%, #F59E0B 100%); opacity: 0.7;"></div>
+                                <div class="o_bar-label">T5*</div>
+                            </div>
+                            <div class="o_bar">
+                                <div class="o-bar-value">78</div>
+                                <div class="o-bar-fill" style="height: 156px; background: linear-gradient(180deg, #059669 0%, #10B981 100%); opacity: 0.6;"></div>
+                                <div class="o_bar-label">T6*</div>
+                            </div>
+                            <div class="o_bar">
+                                <div class="o-bar-value">65</div>
+                                <div class="o-bar-fill" style="height: 130px; background: linear-gradient(180deg, #7C3AED 0%, #8B5CF6 100%); opacity: 0.5;"></div>
+                                <div class="o_bar-label">T7*</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 11px; color: #6c757d; text-align: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: rgba(0,0,0,0.2); border-radius: 50%; margin-right: 4px;"></span>
+                            * Dự báo &nbsp;|&nbsp; Đơn vị: Số lượng Lead mới &nbsp;|&nbsp; Ngày cập nhật: 17/04/2026
+                        </div>
+                    </div>
+
+                    <!-- Campaign List Table -->
+                    <div class="o_table_wrapper">
+                        <div class="o_table_header">
+                            <h3>Danh sách chiến dịch</h3>
+                            <div style="display: flex; gap: 8px;">
+                                <select class="o_group_by" onchange="showToast('Đã lọc theo: ' + this.value, 'info')">
+                                    <option>All status</option>
+                                    <option>Đang chạy</option>
+                                    <option>Complete</option>
+                                    <option>Tạm dừng</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table class="o_table">
+                            <thead>
+                                <tr>
+                                    <th>Mã</th>
+                                    <th>Dịch tên</th>
+                                    <th>Kênh</th>
+                                    <th>Ngân sách</th>
+                                    <th>Đã chi</th>
+                                    <th>Khách hàng tiềm năng</th>
+                                    <th>Chi phí/Dẫn đầu</th>
+                                    <th>Chuyển đổi</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="text-muted">CMP-001</span></td>
+                                    <td><a class="o_link" onclick="switchView('campaign-detail')">Giảm giá mùa hè
+                                            2026</a>
+                                    </td>
+                                    <td><span class="o_source_tag facebook">Facebook</span></td>
+                                    <td style="font-weight: 600;">50.000.000 &#8363;</td>
+                                    <td style="font-weight: 600;">42.500.000 &#8363;</td>
+                                    <td><strong>156</strong></td>
+                                    <td>85.000 &#8363;</td>
+                                    <td><span class="badge badge-success">35%</span></td>
+                                    <td><span class="badge badge-success">Đang chạy</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="text-muted">CMP-002</span></td>
+                                    <td><a class="o_link" onclick="switchView('campaign-detail')">Khuyến mại
+                                            VietBuild</a>
+                                    </td>
+                                    <td><span class="o_source_tag event">Sự kiện</span></td>
+                                    <td style="font-weight: 600;">100.000.000 &#8363;</td>
+                                    <td style="font-weight: 600;">95.200.000 &#8363;</td>
+                                    <td><strong>89</strong></td>
+                                    <td>150.000 &#8363;</td>
+                                    <td><span class="badge badge-success">42%</span></td>
+                                    <td><span class="badge badge-info">Complete</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="text-muted">CMP-003</span></td>
+                                    <td><a class="o_link" onclick="switchView('campaign-detail')">Quảng cáo Facebook quý
+                                            2</a>
+                                    </td>
+                                    <td><span class="o_source_tag facebook">Facebook</span></td>
+                                    <td style="font-weight: 600;">30.000.000 &#8363;</td>
+                                    <td style="font-weight: 600;">18.750.000 &#8363;</td>
+                                    <td><strong>98</strong></td>
+                                    <td>65.000 &#8363;</td>
+                                    <td><span class="badge badge-warning">22%</span></td>
+                                    <td><span class="badge badge-success">Đang chạy</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="text-muted">CMP-004</span></td>
+                                    <td><a class="o_link" onclick="switchView('campaign-detail')">Nội dung Google Ads
+                                            thất bại</a></td>
+                                    <td><span class="o_source_tag google">Google</span></td>
+                                    <td style="font-weight: 600;">25.000.000 &#8363;</td>
+                                    <td style="font-weight: 600;">22.100.000 &#8363;</td>
+                                    <td><strong>72</strong></td>
+                                    <td>110.000 &#8363;</td>
+                                    <td><span class="badge badge-warning">18%</span></td>
+                                    <td><span class="badge badge-success">Đang chạy</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="text-muted">CMP-005</span></td>
+                                    <td><a class="o_link" onclick="switchView('campaign-detail')">Marketing Zalo OA</a>
+                                    </td>
+                                    <td><span class="o_source_tag zalo">Zalo</span></td>
+                                    <td style="font-weight: 600;">15.000.000 &#8363;</td>
+                                    <td style="font-weight: 600;">12.800.000 &#8363;</td>
+                                    <td><strong>45</strong></td>
+                                    <td>55.000 &#8363;</td>
+                                    <td><span class="badge badge-success">31%</span></td>
+                                    <td><span class="badge badge-success">Đang chạy</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="text-muted">CMP-006</span></td>
+                                    <td><a class="o_link" onclick="switchView('campaign-detail')">Chương trình giới
+                                            thiệu
+                                            Q1</a></td>
+                                    <td><span class="o_source_tag referral">Giới thiệu</span></td>
+                                    <td style="font-weight: 600;">10.000.000 &#8363;</td>
+                                    <td style="font-weight: 600;">8.500.000 &#8363;</td>
+                                    <td><strong>27</strong></td>
+                                    <td>50.000 &#8363;</td>
+                                    <td><span class="badge badge-success">45%</span></td>
+                                    <td><span class="badge badge-info">Complete</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 2: LEAD PIPELINE ==================== -->
+                <div id="view-lead-pipeline" class="o_view">
+                    <div class="o_cp_top" style="margin-bottom: 0px;">
+                        <div>
+                            <div style="font-size: 12px; color: #6c757d; margin-bottom: 0px;">Marketing / Đường ống
+                            </div>
+                            <h1 style="font-size: 22px; font-weight: 600;">Pipeline Khách hàng Tiềm Năng</h1>
+                        </div>
+                        <div class="o_cp_buttons">
+                            <button class="btn btn-primary" onclick="openModal()">+ Thêm chì</button>
+                            <button class="btn btn-outline"
+                                onclick="showToast('Đã làm mới pipeline!', 'success')">&#8635;
+                                Làm
+                                mới</button>
+                        </div>
+                    </div>
+
+                    <!-- Pipeline Summary -->
+                    <div class="o_stats_row" style="grid-template-columns: repeat(6, 1fr);">
+                        <div class="o_stat_card" style="text-align: center; border-top: 3px solid #007bff;">
+                            <div class="o_stat_label">Mới</div>
+                            <div class="o_stat_value" style="font-size: 24px;">6</div>
+                            <div class="text-muted" style="font-size: 11px;">~180M &#8363;</div>
+                        </div>
+                        <div class="o_stat_card" style="text-align: center; border-top: 3px solid #17a2b8;">
+                            <div class="o_stat_label">Đã có liên hệ</div>
+                            <div class="o_stat_value" style="font-size: 24px;">5</div>
+                            <div class="text-muted" style="font-size: 11px;">~150M &#8363;</div>
+                        </div>
+                        <div class="o_stat_card" style="text-align: center; border-top: 3px solid #ffc107;">
+                            <div class="o_stat_label">Đủ điều kiện</div>
+                            <div class="o_stat_value" style="font-size: 24px;">4</div>
+                            <div class="text-muted" style="font-size: 11px;">~200M &#8363;</div>
+                        </div>
+                        <div class="o_stat_card" style="text-align: center; border-top: 3px solid #6f42c1;">
+                            <div class="o_stat_label">Báo giá</div>
+                            <div class="o_stat_value" style="font-size: 24px;">4</div>
+                            <div class="text-muted" style="font-size: 11px;">~320M &#8363;</div>
+                        </div>
+                        <div class="o_stat_card" style="text-align: center; border-top: 3px solid #28a745;">
+                            <div class="o_stat_label">Thắng</div>
+                            <div class="o_stat_value" style="font-size: 24px;">3</div>
+                            <div class="text-muted" style="font-size: 11px;">~250M &#8363;</div>
+                        </div>
+                        <div class="o_stat_card" style="text-align: center; border-top: 3px solid #dc3545;">
+                            <div class="o_stat_label">Thừa</div>
+                            <div class="o_stat_value" style="font-size: 24px;">2</div>
+                            <div class="text-muted" style="font-size: 11px;">~120M &#8363;</div>
+                        </div>
+                    </div>
+
+                    <!-- Kanban Board -->
+                    <div class="o_kanban">
+                        <!-- NEW Column -->
+                        <div class="o_kanban_column">
+                            <div class="o_kanban_col_header col-new">
+                                <h4>&#128308; Mới</h4>
+                                <span class="o_count">6</span>
+                            </div>
+                            <div class="o_kanban_col_body">
+                                <div class="o_kanban_card" onclick="switchView('campaign-detail')">
+                                    <div class="o_card_title">Anh Phong - Vinhome Grand Park</div>
+                                    <div class="o_stat_label">Quảng cáo trên Facebook &bull; 2 ngày trước</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span>
+                                        <span class="o_source_tag facebook">Facebook</span>
+                                    </div>
+                                    <div class="o_stat_value">~85.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card" onclick="switchView('campaign-detail')">
+                                    <div class="o_card_title">Chị Mai - Nhà phố Q.7</div>
+                                    <div class="o_stat_label">Quảng cáo Zalo &bull; 3 ngày trước</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot warm"></span> Ấm</span>
+                                        <span class="o_source_tag zalo">Zalo</span>
+                                    </div>
+                                    <div class="o_stat_value">~45.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card" onclick="switchView('campaign-detail')">
+                                    <div class="o_card_title">Anh Hùng - Biệt thư Quân 9</div>
+                                    <div class="o_stat_label">Quảng cáo Google &bull; 5 ngày trước</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span>
+                                        <span class="o_source_tag google">Google</span>
+                                    </div>
+                                    <div class="o_stat_value">~120.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Chi Lan - Cần Hồ Masteri</div>
+                                    <div class="o_stat_label">Trang web & bull; 1 tuần trước</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot cold"></span> Lạnh lẽo</span>
+                                        <span class="o_source_tag website">Trang web</span>
+                                    </div>
+                                    <div class="o_stat_value">~30.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Anh Tuấn - Văn phòng 45 Nguyễn Huệ</div>
+                                    <div class="o_stat_label">Giới thiệu & bull; 1 tuần trước</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot warm"></span> Ấm</span>
+                                        <span class="o_source_tag referral">Giới thiệu</span>
+                                    </div>
+                                    <div class="o_stat_value">~55.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Chí Hương - Cửa hàng Q.3</div>
+                                    <div class="o_stat_label">Sự kiện VietBuild &bull; 2 tuần trước</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot cold"></span> Lạnh lẽo</span>
+                                        <span class="o_source_tag event">Sự kiện</span>
+                                    </div>
+                                    <div class="o_stat_value">~25.000.000 &#8363;</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contacted Column -->
+                        <div class="o_kanban_column">
+                            <div class="o_kanban_col_header col-contacted">
+                                <h4>&#128222; Đã có liên hệ</h4>
+                                <span class="o_count">5</span>
+                            </div>
+                            <div class="o_kanban_col_body">
+                                <div class="o_kanban_card" onclick="switchView('campaign-detail')">
+                                    <div class="o_card_title">Anh Dũng - Vinhome Central Park</div>
+                                    <div class="o_stat_label">Quảng cáo trên Facebook &bull; Gọi điện lần 1</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span>
+                                        <span class="o_source_tag facebook">Facebook</span>
+                                    </div>
+                                    <div class="o_stat_value">~95.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Chí Thảo - Nhà Riêng Q.Bình Thạnh</div>
+                                    <div class="o_stat_label">Quảng cáo Google &bull; Đã gửi email</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot warm"></span> Ấm</span>
+                                        <span class="o_source_tag google">Google</span>
+                                    </div>
+                                    <div class="o_stat_value">~60.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Anh Long - Penhouse Q.1</div>
+                                    <div class="o_stat_label">Giới thiệu & bull; Đã khảo sát</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span>
+                                        <span class="o_source_tag referral">Giới thiệu</span>
+                                    </div>
+                                    <div class="o_stat_value">~150.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Chi Nga - Nhà phở Him Lam</div>
+                                    <div class="o_stat_label">Zalo OA &bull; Đã nhắn tin</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot warm"></span> Ấm</span>
+                                        <span class="o_source_tag zalo">Zalo</span>
+                                    </div>
+                                    <div class="o_stat_value">~40.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Anh Việt - Cafe Q.Thủ Đức</div>
+                                    <div class="o_stat_label">Trang web & bull; Gọi điện lần 1</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot cold"></span> Lạnh lẽo</span>
+                                        <span class="o_source_tag website">Trang web</span>
+                                    </div>
+                                    <div class="o_stat_value">~35.000.000 &#8363;</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Qualified Column -->
+                        <div class="o_kanban_column">
+                            <div class="o_kanban_col_header col-qualified">
+                                <h4>&#10003; Đủ điều kiện</h4>
+                                <span class="o_count">4</span>
+                            </div>
+                            <div class="o_kanban_col_body">
+                                <div class="o_kanban_card" onclick="switchView('campaign-detail')">
+                                    <div class="o_card_title">Anh Khoa - Biệt thư Q.2</div>
+                                    <div class="o_stat_label">Sự kiện VietBuild &bull; Đã trực tiếp</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span>
+                                        <span class="o_source_tag event">Sự kiện</span>
+                                    </div>
+                                    <div class="o_stat_value">~180.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Chí Vỹ - Shop 52 Lê Lợi</div>
+                                    <div class="o_stat_label">Quảng cáo trên Facebook &bull; Đã khảo sát</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot warm"></span> Ấm</span>
+                                        <span class="o_source_tag facebook">Facebook</span>
+                                    </div>
+                                    <div class="o_stat_value">~50.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Anh Thành - Văn phòng Q.3</div>
+                                    <div class="o_stat_label">Quảng cáo Google &bull; Đã gửi bộ báo giá</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span>
+                                        <span class="o_source_tag google">Google</span>
+                                    </div>
+                                    <div class="o_stat_value">~70.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Chi Trang - Nhà phố Q.9</div>
+                                    <div class="o_stat_label">Giới thiệu & bull; Đã xác nhận nhu cầu</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot warm"></span> Ấm</span>
+                                        <span class="o_source_tag referral">Giới thiệu</span>
+                                    </div>
+                                    <div class="o_stat_value">~65.000.000 &#8363;</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Proposal Column -->
+                        <div class="o_kanban_column">
+                            <div class="o_kanban_col_header col-proposal">
+                                <h4>&#128203; Báo giá</h4>
+                                <span class="o_count">4</span>
+                            </div>
+                            <div class="o_kanban_col_body">
+                                <div class="o_kanban_card" onclick="switchView('campaign-detail')">
+                                    <div class="o_card_title">Anh Minh - Vinhome Q.9</div>
+                                    <div class="o_stat_label">Đã gửi báo giá chi tiết &bull; Chờ phản hồi</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span>
+                                        <span class="o_source_tag facebook">Facebook</span>
+                                    </div>
+                                    <div class="o_stat_value">~110.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Chí Hạnh - Cafe Q.1</div>
+                                    <div class="o_stat_label">Đã báo giá &bull; Đang thương lượng</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot warm"></span> Ấm</span>
+                                        <span class="o_source_tag zalo">Zalo</span>
+                                    </div>
+                                    <div class="o_stat_value">~45.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Ánh Quang - Showroom Q.7</div>
+                                    <div class="o_stat_label">Đã gửi HD &bull; Chờ ký hiệu</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span>
+                                        <span class="o_source_tag google">Google</span>
+                                    </div>
+                                    <div class="o_stat_value">~95.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card">
+                                    <div class="o_card_title">Chí Đạo - Nhà phố Q.Bình Tân</div>
+                                    <div class="o_stat_label">Đã báo giá &bull; Cần thêm thời gian</div>
+                                    <div class="o_card_tags">
+                                        <span class="o_lead_score"><span class="o_lead_dot warm"></span> Ấm</span>
+                                        <span class="o_source_tag referral">Giới thiệu</span>
+                                    </div>
+                                    <div class="o_stat_value">~70.000.000 &#8363;</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WON Column -->
+                        <div class="o_kanban_column">
+                            <div class="o_kanban_col_header col-won">
+                                <h4>&#127881; Thắng</h4>
+                                <span class="o_count">3</span>
+                            </div>
+                            <div class="o_kanban_col_body">
+                                <div class="o_kanban_card" style="border-left: 3px solid #28a745;">
+                                    <div class="o_card_title">Anh Tài - Nhà Riêng Q.5</div>
+                                    <div class="o_stat_label">Đã ký HĐ &bull; Giới thiệu VietBuild</div>
+                                    <div class="o_card_tags">
+                                        <span class="badge badge-success">Đã ký</span>
+                                        <span class="o_source_tag referral">Giới thiệu</span>
+                                    </div>
+                                    <div class="o_stat_value">~90.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card" style="border-left: 3px solid #28a745;">
+                                    <div class="o_card_title">Chí Linh - Văn phòng Q.4</div>
+                                    <div class="o_stat_label">Đã ký HĐ &bull; Quảng cáo trên Facebook</div>
+                                    <div class="o_card_tags">
+                                        <span class="badge badge-success">Đã ký</span>
+                                        <span class="o_source_tag facebook">Facebook</span>
+                                    </div>
+                                    <div class="o_stat_value">~65.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card" style="border-left: 3px solid #28a745;">
+                                    <div class="o_card_title">Anh Nam - Cửa hàng Q.10</div>
+                                    <div class="o_stat_label">Đã ký HĐ &bull; Quảng cáo Google</div>
+                                    <div class="o_card_tags">
+                                        <span class="badge badge-success">Đã ký</span>
+                                        <span class="o_source_tag google">Google</span>
+                                    </div>
+                                    <div class="o_stat_value">~95.000.000 &#8363;</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LOST Column -->
+                        <div class="o_kanban_column">
+                            <div class="o_kanban_col_header col-lost">
+                                <h4>&#10060; Thừa</h4>
+                                <span class="o_count">2</span>
+                            </div>
+                            <div class="o_kanban_col_body">
+                                <div class="o_kanban_card" style="border-left: 3px solid #dc3545; opacity: 0.8;">
+                                    <div class="o_card_title">Anh Cường - Biết thu Q.2</div>
+                                    <div class="o_stat_label">Giá quá cao &bull; Quảng cáo Zalo</div>
+                                    <div class="o_card_tags">
+                                        <span class="badge badge-danger">Mất</span>
+                                        <span class="o_source_tag zalo">Zalo</span>
+                                    </div>
+                                    <div class="o_stat_value" style="color: #6c757d;">~75.000.000 &#8363;</div>
+                                </div>
+                                <div class="o_kanban_card" style="border-left: 3px solid #dc3545; opacity: 0.8;">
+                                    <div class="o_card_title">Chí Thoa - Nhà phố Q.6</div>
+                                    <div class="o_stat_label">Choose đối thủ &bull; Trang web</div>
+                                    <div class="o_card_tags">
+                                        <span class="badge badge-danger">Mất</span>
+                                        <span class="o_source_tag website">Trang web</span>
+                                    </div>
+                                    <div class="o_stat_value" style="color: #6c757d;">~45.000.000 &#8363;</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 3: LEAD SOURCE BREAKDOWN ==================== -->
+                <div id="view-lead-source-breakdown" class="o_view">
+                    <div class="o_cp_top" style="margin-bottom: 0px;">
+                        <div>
+                            <div style="font-size: 12px; color: #6c757d; margin-bottom: 0px;">Marketing / Nguồn khách
+                                hàng tiềm năng
+                            </div>
+                            <h1 style="font-size: 22px; font-weight: 600;">Phân tích Nguồn khách hàng Tiềm năng</h1>
+                        </div>
+                        <div class="o_cp_buttons">
+                            <select class="o_filter_btn" onchange="showToast('Đã lọc theo ' + this.value, 'info')">
+                                <option>30 ngày qua</option>
+                                <option selected>Quý này (Q2/2026)</option>
+                                <option>Năm 2026</option>
+                            </select>
+                            <button class="btn btn-outline" onclick="showToast('Đã xuất báo cáo!', 'success')">Xuất
+                                thông báo
+                                báo cáo</button>
+                        </div>
+                    </div>
+
+                    <div class="o_grid_2">
+                        <!-- Pie Chart -->
+                        <div class="o_chart_wrapper">
+                            <div class="o_chart_title">Phân vùng dẫn theo nguồn</div>
+                            <div class="o_pie_chart"></div>
+                            <div class="o_chart_legend">
+                                <div class="o_legend_item">
+                                    <div class="o_legend_color" style="background: #0066cc;"></div>
+                                    <span>Quảng Cáo Facebook - <strong>32%</strong> (156 đạo trình)</span>
+                                </div>
+                                <div class="o_legend_item">
+                                    <div class="o_legend_color" style="background: #4285f4;"></div>
+                                    <span>Quảng cáo Google - <strong>20%</strong> (98 đạo trình)</span>
+                                </div>
+                                <div class="o_legend_item">
+                                    <div class="o_legend_color" style="background: #f57c00;"></div>
+                                    <span>Quảng cáo Zalo - <strong>17%</strong> (82 đạo trình)</span>
+                                </div>
+                                <div class="o_legend_item">
+                                    <div class="o_legend_color" style="background: #28a745;"></div>
+                                    <span>Giới thiệu - <strong>14%</strong> (68 đạo trình)</span>
+                                </div>
+                                <div class="o_legend_item">
+                                    <div class="o_legend_color" style="background: #9c27b0;"></div>
+                                    <span>Sự kiện - <strong>10%</strong> (49 đạo trình)</span>
+                                </div>
+                                <div class="o_legend_item">
+                                    <div class="o_legend_color" style="background: #e91e63;"></div>
+                                    <span>Trang web - <strong>7%</strong> (34 đạo trình)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Channel Performance Table -->
+                        <div class="o_table_wrapper">
+                            <div class="o_table_header">
+                                <h3>Hiệu quả theo Kênh</h3>
+                            </div>
+                            <table class="o_table">
+                                <thead>
+                                    <tr>
+                                        <th>Kênh</th>
+                                        <th>Khách hàng tiềm năng</th>
+                                        <th>Chi phí</th>
+                                        <th>Chi phí/Dẫn đầu</th>
+                                        <th>Chuyển đổi</th>
+                                        <th>ROI</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="o_source_tag facebook">Quảng cáo trên Facebook</span></td>
+                                        <td><strong>156</strong></td>
+                                        <td>80.000.000 &#8363;</td>
+                                        <td>85.000 &#8363;</td>
+                                        <td><span class="badge badge-success">35%</span></td>
+                                        <td><strong style="color: #28a745;">380%</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="o_source_tag google">Quảng cáo Google</span></td>
+                                        <td><strong>98</strong></td>
+                                        <td>55.000.000 &#8363;</td>
+                                        <td>110.000 &#8363;</td>
+                                        <td><span class="badge badge-warning">18%</span></td>
+                                        <td><strong style="color: #28a745;">210%</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="o_source_tag zalo">Quảng cáo Zalo</span></td>
+                                        <td><strong>82</strong></td>
+                                        <td>27.800.000 &#8363;</td>
+                                        <td>55.000 &#8363;</td>
+                                        <td><span class="badge badge-success">31%</span></td>
+                                        <td><strong style="color: #28a745;">450%</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="o_source_tag referral">Giới thiệu</span></td>
+                                        <td><strong>68</strong></td>
+                                        <td>18.500.000 &#8363;</td>
+                                        <td>50.000 &#8363;</td>
+                                        <td><span class="badge badge-success">45%</span></td>
+                                        <td><strong style="color: #28a745;">520%</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="o_source_tag event">Sự kiện</span></td>
+                                        <td><strong>49</strong></td>
+                                        <td>120.000.000 &#8363;</td>
+                                        <td>150.000 &#8363;</td>
+                                        <td><span class="badge badge-success">42%</span></td>
+                                        <td><strong style="color: #f57c00;">165%</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="o_source_tag website">Trang web</span></td>
+                                        <td><strong>34</strong></td>
+                                        <td>12.000.000 &#8363;</td>
+                                        <td>65.000 &#8363;</td>
+                                        <td><span class="badge badge-warning">15%</span></td>
+                                        <td><strong style="color: #28a745;">280%</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Conversion Funnel -->
+                    <div class="o_chart_wrapper mt-3">
+                        <div class="o_chart_title">Phễu Chuyển đổi Marketing</div>
+                        <div
+                            style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 20px 0;">
+                            <div
+                                style="width: 100%; max-width: 700px; background: #e7f5ff; padding: 14px 20px; border-radius: 6px; text-align: center;">
+                                <strong>Số lần hiển thị / Hiển thị:</strong> 45.000 &nbsp;|&nbsp; <span
+                                    class="text-muted">Tổng
+                                    hiển thị
+                                    quảng cáo</span>
+                            </div>
+                            <div style="color: #6c757d;">&#11015;</div>
+                            <div
+                                style="width: 85%; max-width: 600px; background: #d1ecf1; padding: 14px 20px; border-radius: 6px; text-align: center;">
+                                <strong>Nhấp chuột / nhấp chuột:</strong> 2.700 &nbsp;|&nbsp; <span
+                                    class="text-muted">TLB
+                                    6,0%</span>
+                            </div>
+                            <div style="color: #6c757d;">&#11015;</div>
+                            <div
+                                style="width: 70%; max-width: 500px; background: #d4edda; padding: 14px 20px; border-radius: 6px; text-align: center;">
+                                <strong>Gửi biểu mẫu / Đăng ký:</strong> 487 &nbsp;|&nbsp; <span class="text-muted">Tỷ
+                                    lệ
+                                    quy tắc
+                                    chuyển đổi 18,0%</span>
+                            </div>
+                            <div style="color: #6c757d;">&#11015;</div>
+                            <div
+                                style="width: 55%; max-width: 400px; background: #fff3cd; padding: 14px 20px; border-radius: 6px; text-align: center;">
+                                <strong>Khách hàng tiềm năng đủ điều kiện / Đủ điều kiện:</strong> 139 &nbsp;|&nbsp;
+                                <span class="text-muted">28,5% MQL &#8594; SQL</span>
+                            </div>
+                            <div style="color: #6c757d;">&#11015;</div>
+                            <div
+                                style="width: 40%; max-width: 300px; background: #f3eaf1; padding: 14px 20px; border-radius: 6px; text-align: center; color: #8B2500;">
+                                <strong>Giành được ưu đãi / Thắng:</strong> 39 &nbsp;|&nbsp; <span class="text-muted">Tỷ
+                                    lệ
+                                    thắng
+                                    28,1%</span>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 8px;">
+                            <span class="badge badge-primary" style="font-size: 13px; padding: 6px 16px;">Tổng tỷ lệ
+                                chuyển đổi:
+                                0,087%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 4: CAMPAIGN DETAIL ==================== -->
+                <div id="view-campaign-detail" class="o_view">
+                    <!-- Breadcrumb -->
+                    <div style="margin-bottom: 0px;">
+                        <a class="o_link" style="font-size: 12px;" onclick="switchView('campaign-dashboard')">&#8592;
+                            Quay lại
+                            Bảng điều khiển dịch</a>
+                    </div>
+
+                    <div class="o_form_title_row">
+                        <div>
+                            <div class="o_form_title">Giảm giá mùa hè 2026</div>
+                            <div class="o_form_subtitle">Mã: CMP-001 &bull; Tạo: 01/05/2026 &bull; Người tạo: Quản trị
+                                viên
+                            </div>
+                        </div>
+                        <div class="o_form_statusbar">
+                            <div class="o_status_btn">Nháp</div>
+                            <div class="o_status_btn active">Đang chạy</div>
+                            <div class="o_status_btn">Complete</div>
+                            <div class="o_status_btn highlight" onclick="showToast('Đã gửi email báo cáo!', 'success')">
+                                Gửi thông báo
+                                báo cáo</div>
+                        </div>
+                    </div>
+
+                    <div class="o_grid_2">
+                        <!-- Left: Campaign Info -->
+                        <div class="o_form_sheet">
+                            <div class="o_tabs">
+                                <div class="o_tab active" onclick="switchTab(this)">Thông tin</div>
+                                <div class="o_tab" onclick="switchTab(this)">Dẫn (156)</div>
+                                <div class="o_tab" onclick="switchTab(this)">Ngân sách</div>
+                                <div class="o_tab" onclick="switchTab(this)">Ghi chú</div>
+                            </div>
+
+                            <!-- Info Tab Content -->
+                            <div class="o_form_grid">
+                                <div class="o_form_group">
+                                    <label>Dịch tên</label>
+                                    <div class="o_field_value">Giảm giá mùa hè 2026</div>
+                                </div>
+                                <div class="o_form_group">
+                                    <label>Kênh</label>
+                                    <div class="o_field_value"><span class="o_source_tag facebook">Quảng cáo trên
+                                            Facebook</span>
+                                    </div>
+                                </div>
+                                <div class="o_form_group">
+                                    <label>Ngày bắt đầu</label>
+                                    <div class="o-field_value">01/05/2026</div>
+                                </div>
+                                <div class="o_form_group">
+                                    <label>Ngày kết thúc</label>
+                                    <div class="o-field_value">31/07/2026</div>
+                                </div>
+                                <div class="o_form-group">
+                                    <label>Champion Champion</label>
+                                    <div class="o-field_value">Nguyễn Thị Hương - Trưởng nhóm tiếp thị</div>
+                                </div>
+                                <div class="o_form-group">
+                                    <label>Mục Tiêu Dẫn</label>
+                                    <div class="o-field_value">200 khách hàng tiềm năng</div>
+                                </div>
+                                <div class="o_form-group" style="grid-column: span 2;">
+                                    <label>Description</label>
+                                    <div class="o-field_value" style="min-height: 60px;">Quảng cáo chiến dịch Facebook
+                                        Mùa quảng cáo
+                                        mùa hè 2026, ngọc vào đối tượng nhà mới, cư dân Vinhome và các khu đô thị mới
+                                        tại
+                                        TP.HCM. Tập trung vào gói nội thất thiết kế gói với mức ưu đãi giảm 15%.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Budget & ROI -->
+                        <div>
+                            <!-- ROI Card -->
+                            <div class="o_roi_card">
+                                <div class="o_roi_label">Lợi tức đầu tư (ROI)</div>
+                                <div class="o_roi_value">380%</div>
+                                <div class="o_roi_sub">Lợi nhuận: 247.000.000 &#8363; trên chi phí 50.000.000 &#8363;
+                                </div>
+                                <div class="o_roi_grid">
+                                    <div>
+                                        <div style="font-size: 12px; opacity: 0.85;">Ngân sách</div>
+                                        <div style="font-size: 20px; font-weight: 600;">50.000.000 &#8363;</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; opacity: 0.85;">Doanh thu</div>
+                                        <div style="font-size: 20px; font-weight: 600;">297.000.000 &#8363;</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; opacity: 0.85;">Lợi nhuận</div>
+                                        <div style="font-size: 20px; font-weight: 600;">247.000.000 &#8363;</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Budget Tracking -->
+                            <div class="o_form_sheet">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 0px;">Theo dõi Ngân sách
+                                </h4>
+                                <div class="o_budget_row">
+                                    <div class="o_budget-label">Đã chi</div>
+                                    <div class="o-budget-bar">
+                                        <div class="o-progress">
+                                            <div class="o-progress-bar orange" style="width: 85%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="o-budget-value">42.500.000 &#8363;</div>
+                                </div>
+                                <div class="o-budget-row">
+                                    <div class="o-budget-label">Còn lại</div>
+                                    <div class="o-budget-bar">
+                                        <div class="o-progress">
+                                            <div class="o-progress-bar green" style="width: 15%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="o-budget-value">7.500.000 &#8363;</div>
+                                </div>
+                                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef;">
+                                    <div
+                                        style="display: flex; justify-content: space-between; font-size: 12px; color: #6c757d;">
+                                        <span>Tổng ngân sách:</span>
+                                        <strong>50.000.000 &#8363;</strong>
+                                    </div>
+                                    <div
+                                        style="display: flex; justify-content: space-between; font-size: 12px; color: #6c757d; margin-top: 6px;">
+                                        <span>Tỷ lệ sử dụng:</span>
+                                        <strong style="color: #f57c00;">85%</strong>
+                                    </div>
+                                    <div
+                                        style="display: flex; justify-content: space-between; font-size: 12px; color: #6c757d; margin-top: 6px;">
+                                        <span>Chi phí mỗi Lead:</span>
+                                        <strong>85.000 &#8363;</strong>
+                                    </div>
+                                    <div
+                                        style="display: flex; justify-content: space-between; font-size: 12px; color: #6c757d; margin-top: 6px;">
+                                        <span>Chi phí / Deal thắng:</span>
+                                        <strong>780.000 &#8363;</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Khách hàng tiềm năng Generated from this Campaign -->
+                    <div class="o-form-sheet mt-3">
+                        <div class="o-form-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0px;">
+                            <h3 style="font-size: 15px; font-weight: 600;">Dẫn từ Chiến dịch này (156)</h3>
+                            <button class="btn btn-sm btn-outline"
+                                onclick="showToast('Đã mở danh sách leads!', 'info')">Xem
+                                Tất cả
+                                cả &#8594;</button>
+                        </div>
+                        <table class="o_table">
+                            <thead>
+                                <tr>
+                                    <th>Chỉ huy</th>
+                                    <th>Liên hệ</th>
+                                    <th>Giai đoạn</th>
+                                    <th>Điểm</th>
+                                    <th>Ước tính giá trị</th>
+                                    <th>Ngày tạo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <span class="o_lead_avatar avatar-1">P</span>
+                                        <a class="o_link">Anh Phong - Vinhome Grand Park</a>
+                                    </td>
+                                    <td>0901 234 567</td>
+                                    <td><span class="badge badge-info">Mới</span></td>
+                                    <td><span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span></td>
+                                    <td style="font-weight: 600;">85.000.000 &#8363;</td>
+                                    <td>08/07/2026</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="o_lead_avatar avatar-3">L</span>
+                                        <a class="o_link">Chí Linh - Văn phòng Q.4</a>
+                                    </td>
+                                    <td>0932 876 543</td>
+                                    <td><span class="badge badge-success">Thắng</span></td>
+                                    <td><span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span></td>
+                                    <td style="font-weight: 600;">65.000.000 &#8363;</td>
+                                    <td>22/06/2026</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="o_lead_avatar avatar-5">H</span>
+                                        <a class="o_link">Chí Hạnh - Cafe Q.1</a>
+                                    </td>
+                                    <td>0918 345 678</td>
+                                    <td><span class="badge badge-warning">Báo giá</span></td>
+                                    <td><span class="o_lead_score"><span class="o_lead_dot warm"></span> Ấm</span>
+                                    </td>
+                                    <td style="font-weight: 600;">45.000.000 &#8363;</td>
+                                    <td>15/06/2026</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="o_lead_avatar avatar-6">M</span>
+                                        <a class="o_link">Anh Minh - Vinhome Q.9</a>
+                                    </td>
+                                    <td>0977 654 321</td>
+                                    <td><span class="badge badge-warning">Báo giá</span></td>
+                                    <td><span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span></td>
+                                    <td style="font-weight: 600;">110.000.000 &#8363;</td>
+                                    <td>10/06/2026</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="o_lead_avatar avatar-2">D</span>
+                                        <a class="o_link">Anh Dũng - Vinhome Central Park</a>
+                                    </td>
+                                    <td>0903 789 012</td>
+                                    <td><span class="badge badge-secondary">Đã có liên hệ</span></td>
+                                    <td><span class="o_lead_score"><span class="o_lead_dot hot"></span> Nóng</span></td>
+                                    <td style="font-weight: 600;">95.000.000 &#8363;</td>
+                                    <td>05/06/2026</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="o_lead-avatar avatar-4">V.</span>
+                                        <a class="o_link">Chí Vỹ - Shop 52 Lê Lợi</a>
+                                    </td>
+                                    <td>0965 432 109</td>
+                                    <td><span class="badge badge-info">Đủ điều kiện</span></td>
+                                    <td><span class="o_lead_score"><span class="o_lead_dot warm"></span> Ấm</span>
+                                    </td>
+                                    <td style="font-weight: 600;">50.000.000 &#8363;</td>
+                                    <td>01/06/2026</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Campaign Timeline -->
+                    <div class="o-form-sheet mt-3">
+                        <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 0px;">Tiến độ dịch</h3>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 120px; font-size: 12px; color: #6c757d;">01/05/2026</div>
+                                <div
+                                    style="width: 12px; height: 12px; border-radius: 50%; background: #28a745; position: relative;">
+                                    <div
+                                        style="position: absolute; top: 16px; left: 5px; width: 2px; height: 40px; background: #dee2e6;">
+                                    </div>
+                                </div>
+                                <div style="flex: 1; font-size: 13px;"><strong>Khởi động chiến dịch</strong> - Start
+                                    run
+                                    Quảng cáo trên Facebook</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 120px; font-size: 12px; color: #6c757d;">15/05/2026</div>
+                                <div
+                                    style="width: 12px; height: 12px; border-radius: 50%; background: #0066cc; position: relative;">
+                                    <div
+                                        style="position: absolute; top: 16px; left: 5px; width: 2px; height: 40px; background: #dee2e6;">
+                                    </div>
+                                </div>
+                                <div style="flex: 1; font-size: 13px;"><strong>50 khách hàng tiềm năng đầu tiên</strong>
+                                    - Vượt 50
+                                    dẫn
+                                    đăng ký</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 120px; font-size: 12px; color: #6c757d;">10/06/2026</div>
+                                <div
+                                    style="width: 12px; height: 12px; border-radius: 50%; background: #0066cc; position: relative;">
+                                    <div
+                                        style="position: absolute; top: 16px; left: 5px; width: 2px; height: 40px; background: #dee2e6;">
+                                    </div>
+                                </div>
+                                <div style="flex: 1; font-size: 13px;"><strong>Giao dịch giành chiến thắng đầu
+                                        tiên</strong> - Chí Linh
+                                    hợp lệ
+                                    kế hoạch đồng tiền</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 120px; font-size: 12px; color: #6c757d;">01/07/2026</div>
+                                <div
+                                    style="width: 12px; height: 12px; border-radius: 50%; background: #f57c00; position: relative;">
+                                    <div
+                                        style="position: absolute; top: 16px; left: 5px; width: 2px; height: 40px; background: #dee2e6;">
+                                    </div>
+                                </div>
+                                <div style="flex: 1; font-size: 13px;"><strong>Cảnh báo ngân sách</strong> - Đã sử dụng
+                                    ngân sách 85%
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 120px; font-size: 12px; color: #6c757d;">31/07/2026</div>
+                                <div style="width: 12px; height: 12px; border-radius: 50%; background: #dee2e6;"></div>
+                                <div style="flex: 1; font-size: 13px; color: #6c757d;"><strong>Kết thúc dự kiến</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end o_content -->
+
+            <!-- ==================== VIEW 5: CONTENT CALENDAR ==================== -->
+                <div id="view-content-calendar" class="o_view">
+                  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px;">
+                    <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #e9ecef; border-top:4px solid #8B2500;">
+                      <div style="font-size:12px; color:#6c757d; margin-bottom:4px;">Bài sắp xuất bản</div>
+                      <div style="font-size:28px; font-weight:700; color:#8B2500;">8</div>
+                      <div style="font-size:11px; color:#6c757d;">Trong 7 ngày tới</div>
+                    </div>
+                    <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #e9ecef; border-top:4px solid #28a745;">
+                      <div style="font-size:12px; color:#6c757d; margin-bottom:4px;">Đã xuất bản tháng này</div>
+                      <div style="font-size:28px; font-weight:700; color:#28a745;">24</div>
+                      <div style="font-size:11px; color:#28a745;">&#9650; +6 so với tháng trước</div>
+                    </div>
+                    <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #e9ecef; border-top:4px solid #ffc107;">
+                      <div style="font-size:12px; color:#6c757d; margin-bottom:4px;">Đang soạn thảo</div>
+                      <div style="font-size:28px; font-weight:700; color:#f57c00;">5</div>
+                      <div style="font-size:11px; color:#6c757d;">Chờ phê duyệt</div>
+                    </div>
+                    <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #e9ecef; border-top:4px solid #17a2b8;">
+                      <div style="font-size:12px; color:#6c757d; margin-bottom:4px;">Kênh hoạt động</div>
+                      <div style="font-size:28px; font-weight:700; color:#17a2b8;">6</div>
+                      <div style="font-size:11px; color:#6c757d;">FB, Zalo, Google, TikTok...</div>
+                    </div>
+                  </div>
+
+                  <div style="background:#fff; border-radius:8px; border:1px solid #e9ecef; overflow:hidden;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #e9ecef;">
+                      <h3 style="margin:0; font-size:16px;">&#128197; Lịch xuất bản nội dung – Tháng 04/2026</h3>
+                      <div style="display:flex; gap:8px;">
+                        <select style="padding:6px 10px; border:1px solid #dee2e6; border-radius:6px; font-size:13px;">
+                          <option>Tất cả kênh</option>
+                          <option>Facebook</option>
+                          <option>Zalo OA</option>
+                          <option>Google</option>
+                          <option>TikTok</option>
+                        </select>
+                        <button style="padding:6px 14px; background:#8B2500; color:#fff; border:none; border-radius:6px; font-size:13px; cursor:pointer;" onclick="showToast('Thêm nội dung','Mở form soạn thảo bài đăng mới','success')">&#10010; Thêm bài</button>
+                      </div>
+                    </div>
+                    <table style="width:100%; border-collapse:collapse;">
+                      <thead>
+                        <tr style="background:#f8f9fa;">
+                          <th style="padding:10px 16px; text-align:left; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">NGÀY</th>
+                          <th style="padding:10px 16px; text-align:left; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">TIÊU ĐỀ NỘI DUNG</th>
+                          <th style="padding:10px 16px; text-align:left; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">KÊNH</th>
+                          <th style="padding:10px 16px; text-align:left; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">LOẠI</th>
+                          <th style="padding:10px 16px; text-align:left; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">NGƯỜI PHỤ TRÁCH</th>
+                          <th style="padding:10px 16px; text-align:left; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">TRẠNG THÁI</th>
+                          <th style="padding:10px 16px; text-align:left; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">THAO TÁC</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr style="border-bottom:1px solid #f1f3f5;">
+                          <td style="padding:12px 16px; font-weight:600; color:#8B2500;">18/04</td>
+                          <td style="padding:12px 16px; font-weight:600;">5 xu hướng nội thất 2026 – Phòng khách hiện đại</td>
+                          <td style="padding:12px 16px;"><span style="background:#e3f2fd; color:#1565c0; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:500;">Facebook</span></td>
+                          <td style="padding:12px 16px; font-size:13px;">Bài viết Blog</td>
+                          <td style="padding:12px 16px; font-size:13px;">Nguyễn Linh</td>
+                          <td style="padding:12px 16px;"><span style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:12px; font-size:12px;">&#9989; Đã lên lịch</span></td>
+                          <td style="padding:12px 16px;"><button style="padding:4px 10px; border:1px solid #dee2e6; border-radius:4px; font-size:12px; cursor:pointer; background:#fff;" onclick="showToast('Chỉnh sửa','Mở editor nội dung','info')">&#9998; Sửa</button></td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #f1f3f5; background:#fffde7;">
+                          <td style="padding:12px 16px; font-weight:600; color:#f57c00;">19/04</td>
+                          <td style="padding:12px 16px; font-weight:600;">Video Showroom mới Q.7 – Tour nội thất 3D</td>
+                          <td style="padding:12px 16px;"><span style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:500;">Zalo OA</span></td>
+                          <td style="padding:12px 16px; font-size:13px;">Video Reel</td>
+                          <td style="padding:12px 16px; font-size:13px;">Trần Minh</td>
+                          <td style="padding:12px 16px;"><span style="background:#fff3e0; color:#e65100; padding:3px 8px; border-radius:12px; font-size:12px;">&#9201; Chờ duyệt</span></td>
+                          <td style="padding:12px 16px;"><button style="padding:4px 10px; border:1px solid #dee2e6; border-radius:4px; font-size:12px; cursor:pointer; background:#fff;" onclick="showToast('Phê duyệt','Đã duyệt nội dung video','success')">&#10003; Duyệt</button></td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #f1f3f5;">
+                          <td style="padding:12px 16px; font-weight:600;">20/04</td>
+                          <td style="padding:12px 16px; font-weight:600;">Google Ads – Từ khóa "thiết kế nội thất chung cư"</td>
+                          <td style="padding:12px 16px;"><span style="background:#fff3e0; color:#e65100; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:500;">Google</span></td>
+                          <td style="padding:12px 16px; font-size:13px;">Quảng cáo tìm kiếm</td>
+                          <td style="padding:12px 16px; font-size:13px;">Lê Hương</td>
+                          <td style="padding:12px 16px;"><span style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:12px; font-size:12px;">&#9989; Đã lên lịch</span></td>
+                          <td style="padding:12px 16px;"><button style="padding:4px 10px; border:1px solid #dee2e6; border-radius:4px; font-size:12px; cursor:pointer; background:#fff;" onclick="showToast('Chỉnh sửa','Mở editor quảng cáo','info')">&#9998; Sửa</button></td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #f1f3f5;">
+                          <td style="padding:12px 16px; font-weight:600;">22/04</td>
+                          <td style="padding:12px 16px; font-weight:600;">TikTok – Before &amp; After cải tạo nhà phố 80m²</td>
+                          <td style="padding:12px 16px;"><span style="background:#fce4ec; color:#c62828; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:500;">TikTok</span></td>
+                          <td style="padding:12px 16px; font-size:13px;">Video Short</td>
+                          <td style="padding:12px 16px; font-size:13px;">Phạm Đức</td>
+                          <td style="padding:12px 16px;"><span style="background:#e3f2fd; color:#1565c0; padding:3px 8px; border-radius:12px; font-size:12px;">&#9998; Đang soạn</span></td>
+                          <td style="padding:12px 16px;"><button style="padding:4px 10px; border:1px solid #dee2e6; border-radius:4px; font-size:12px; cursor:pointer; background:#fff;" onclick="showToast('Chỉnh sửa','Mở editor nội dung','info')">&#9998; Sửa</button></td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #f1f3f5;">
+                          <td style="padding:12px 16px; font-weight:600;">25/04</td>
+                          <td style="padding:12px 16px; font-weight:600;">Email Newsletter – Ưu đãi tháng 5: Giảm 15% thiết kế</td>
+                          <td style="padding:12px 16px;"><span style="background:#f3e5f5; color:#7b1fa2; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:500;">Email</span></td>
+                          <td style="padding:12px 16px; font-size:13px;">Email Marketing</td>
+                          <td style="padding:12px 16px; font-size:13px;">Hoàng Lan</td>
+                          <td style="padding:12px 16px;"><span style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:12px; font-size:12px;">&#9989; Đã lên lịch</span></td>
+                          <td style="padding:12px 16px;"><button style="padding:4px 10px; border:1px solid #dee2e6; border-radius:4px; font-size:12px; cursor:pointer; background:#fff;" onclick="showToast('Chỉnh sửa','Mở editor email','info')">&#9998; Sửa</button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- ==================== VIEW 6: ROI REPORT ==================== -->
+                <div id="view-roi-report" class="o_view">
+                  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px;">
+                    <div style="background:linear-gradient(135deg,#8B2500,#9c6b8f); color:#fff; border-radius:8px; padding:20px;">
+                      <div style="font-size:12px; opacity:.85; margin-bottom:4px;">ROI Tổng thể</div>
+                      <div style="font-size:36px; font-weight:700;">3.2x</div>
+                      <div style="font-size:11px; opacity:.75; margin-top:4px;">&#9650; +0.4x so với quý trước</div>
+                    </div>
+                    <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #e9ecef; border-top:4px solid #28a745;">
+                      <div style="font-size:12px; color:#6c757d; margin-bottom:4px;">Tổng doanh thu từ Marketing</div>
+                      <div style="font-size:24px; font-weight:700; color:#28a745;">732 triệu</div>
+                      <div style="font-size:11px; color:#28a745;">&#9650; +22% so với tháng trước</div>
+                    </div>
+                    <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #e9ecef; border-top:4px solid #8B2500;">
+                      <div style="font-size:12px; color:#6c757d; margin-bottom:4px;">Tổng chi phí Marketing</div>
+                      <div style="font-size:24px; font-weight:700; color:#8B2500;">228 triệu</div>
+                      <div style="font-size:11px; color:#6c757d;">6 kênh đang chạy</div>
+                    </div>
+                    <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #e9ecef; border-top:4px solid #17a2b8;">
+                      <div style="font-size:12px; color:#6c757d; margin-bottom:4px;">Tỷ lệ chuyển đổi</div>
+                      <div style="font-size:24px; font-weight:700; color:#17a2b8;">28.5%</div>
+                      <div style="font-size:11px; color:#28a745;">&#9650; +2.3% so với mục tiêu</div>
+                    </div>
+                  </div>
+
+                  <div style="background:#fff; border-radius:8px; border:1px solid #e9ecef; overflow:hidden; margin-bottom:20px;">
+                    <div style="padding:16px 20px; border-bottom:1px solid #e9ecef; display:flex; align-items:center; justify-content:space-between;">
+                      <h3 style="margin:0; font-size:16px;">&#128200; Hiệu quả từng kênh Marketing</h3>
+                      <button style="padding:6px 14px; background:#f8f9fa; color:#495057; border:1px solid #dee2e6; border-radius:6px; font-size:13px; cursor:pointer;" onclick="showToast('Xuất báo cáo','Đang xuất file Excel ROI...','success')">&#128229; Xuất Excel</button>
+                    </div>
+                    <table style="width:100%; border-collapse:collapse;">
+                      <thead>
+                        <tr style="background:#f8f9fa;">
+                          <th style="padding:10px 16px; text-align:left; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">KÊNH</th>
+                          <th style="padding:10px 16px; text-align:right; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">CHI PHÍ</th>
+                          <th style="padding:10px 16px; text-align:right; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">DOANH THU</th>
+                          <th style="padding:10px 16px; text-align:right; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">ROI</th>
+                          <th style="padding:10px 16px; text-align:right; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">LEADS</th>
+                          <th style="padding:10px 16px; text-align:right; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">CHI PHÍ/LEAD</th>
+                          <th style="padding:10px 16px; text-align:right; font-size:12px; color:#6c757d; border-bottom:1px solid #e9ecef;">CHUYỂN ĐỔI</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr style="border-bottom:1px solid #f1f3f5;">
+                          <td style="padding:12px 16px;"><span style="background:#e3f2fd; color:#1565c0; padding:4px 10px; border-radius:4px; font-size:12px; font-weight:600;">Facebook Ads</span></td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600;">92,5M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600; color:#28a745;">312M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right;"><span style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:12px; font-size:12px; font-weight:700;">3.37x</span></td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:700;">254</td>
+                          <td style="padding:12px 16px; text-align:right;">90K &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600; color:#28a745;">35%</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #f1f3f5;">
+                          <td style="padding:12px 16px;"><span style="background:#e8f5e9; color:#2e7d32; padding:4px 10px; border-radius:4px; font-size:12px; font-weight:600;">Zalo OA</span></td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600;">28M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600; color:#28a745;">102M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right;"><span style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:12px; font-size:12px; font-weight:700;">3.64x</span></td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:700;">72</td>
+                          <td style="padding:12px 16px; text-align:right;">56K &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600; color:#28a745;">31%</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #f1f3f5;">
+                          <td style="padding:12px 16px;"><span style="background:#fff3e0; color:#e65100; padding:4px 10px; border-radius:4px; font-size:12px; font-weight:600;">Google Ads</span></td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600;">47,1M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600; color:#28a745;">170M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right;"><span style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:12px; font-size:12px; font-weight:700;">3.61x</span></td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:700;">170</td>
+                          <td style="padding:12px 16px; text-align:right;">110K &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600; color:#f57c00;">22%</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #f1f3f5;">
+                          <td style="padding:12px 16px;"><span style="background:#fce4ec; color:#c62828; padding:4px 10px; border-radius:4px; font-size:12px; font-weight:600;">TikTok Ads</span></td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600;">18M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600; color:#28a745;">45M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right;"><span style="background:#fff3e0; color:#e65100; padding:3px 8px; border-radius:12px; font-size:12px; font-weight:700;">2.5x</span></td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:700;">38</td>
+                          <td style="padding:12px 16px; text-align:right;">145K &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600; color:#f57c00;">18%</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #f1f3f5;">
+                          <td style="padding:12px 16px;"><span style="background:#f3e5f5; color:#7b1fa2; padding:4px 10px; border-radius:4px; font-size:12px; font-weight:600;">Giới thiệu</span></td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600;">10M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600; color:#28a745;">85M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right;"><span style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:12px; font-size:12px; font-weight:700;">8.5x</span></td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:700;">27</td>
+                          <td style="padding:12px 16px; text-align:right;">50K &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; font-weight:600; color:#28a745;">45%</td>
+                        </tr>
+                        <tr style="background:#f8f9fa; font-weight:700;">
+                          <td style="padding:12px 16px; color:#8B2500;">TỔNG CỘNG</td>
+                          <td style="padding:12px 16px; text-align:right; color:#8B2500;">228M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; color:#28a745;">732M &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right;"><span style="background:#28a745; color:#fff; padding:3px 8px; border-radius:12px; font-size:12px;">3.21x</span></td>
+                          <td style="padding:12px 16px; text-align:right;">487</td>
+                          <td style="padding:12px 16px; text-align:right;">125K &#8363;</td>
+                          <td style="padding:12px 16px; text-align:right; color:#28a745;">28.5%</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- ==================== MODAL: Create Campaign ==================== -->
+            <div class="o_modal_overlay" id="modal-create-campaign">
+                <div class="o_modal">
+                    <div class="o_modal_header">
+                        <h3>Tạo mới chiến dịch</h3>
+                        <button class="o_modal_close" onclick="closeModal()">& lần;</button>
+                    </div>
+                    <div class="o_modal_body">
+                        <div class="o_form_row">
+                            <label>Dịch tên *</label>
+                            <input type="text" placeholder="VD: Quảng cáo Facebook quý 3 năm 2026" id="campaign-name">
+                        </div>
+                        <div class="o_form_row">
+                            <label>Kênh *</label>
+                            <select id="campaign-channel">
+                                <option value="">--Chọn kênh --</option>
+                                <option value="facebook">Quảng cáo trên Facebook</option>
+                                <option value="google">Quảng cáo Google</option>
+                                <option value="zalo">Quảng cáo Zalo</option>
+                                <option value="referral">Chương trình giới thiệu</option>
+                                <option value="event">Sự kiện/Sự kiện</option>
+                                <option value="website">Trang web / SEO</option>
+                            </select>
+                        </div>
+                        <div class="o-form-row">
+                            <label>Ngân sách (&#8363;) *</label>
+                            <input type="number" placeholder="VĐ: 30000000" id="campaign-budget">
+                        </div>
+                        <div class="o-form-row">
+                            <label>Ngày bắt đầu</label>
+                            <input type="date" id="campaign-start">
+                        </div>
+                        <div class="o-form-row">
+                            <label>Ngày kết thúc</label>
+                            <input type="date" id="campaign-end">
+                        </div>
+                        <div class="o-form-row">
+                            <label>Mục Tiêu Dẫn</label>
+                            <input type="number" placeholder="VĐ: 100" id="campaign-target">
+                        </div>
+                        <div class="o-form-row">
+                            <label>Champion Champion</label>
+                            <select id="campaign-owner">
+                                <option value="">-- Choose người phụ trách --</option>
+                                <option>Nguyễn Thị Hương - Trưởng phòng Marketing</option>
+                                <option>Trần Văn Nam - Content Creator</option>
+                                <option>Lê Thị Mai - Digital Marketer</option>
+                            </select>
+                        </div>
+                        <div class="o-form-row">
+                            <label>Description</label>
+                            <textarea rows="3" placeholder="Mô tả chi tiết chiến dịch..."
+                                id="campaign-description"></textarea>
+                        </div>
+                    </div>
+                    <div class="o_modal_footer">
+                        <button class="btn btn-outline" onclick="closeModal()">Hủy bỏ</button>
+                        <button class="btn btn-primary" onclick="saveCampaign()">&#10003; Tạo chiến dịch</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toast Container -->
+            <div class="o_toast_container" id="toast-container"></div>
+
+            <!-- ==================== JAVASCRIPT ==================== -->
+        </div>
+    </div>
+
+    <script>
+        // ===== MAIN VIEW SWITCH =====
+        function switchMktView(btn) {
+          if (!btn) return;
+          document.querySelectorAll('.mkt-tab').forEach(function(b){ b.classList.remove('active'); });
+          btn.classList.add('active');
+          var view = btn.dataset.view;
+          document.querySelectorAll('.o_view').forEach(function(v){ v.classList.remove('active'); });
+          var target = document.getElementById('view-' + view);
+          if (target) target.classList.add('active');
+          // Sync sidebar
+          document.querySelectorAll('.sidebar-nav .nav-item[id^="mktNav-"]').forEach(function(a){ a.classList.remove('active'); });
+          var si = document.getElementById('mktNav-' + view);
+          if (si) si.classList.add('active');
+          window.scrollTo(0, 0);
+        }
+        function navToMktView(view) {
+          var btn = document.querySelector('.mkt-tab[data-view="' + view + '"]');
+          if (btn) { switchMktView(btn); return; }
+          // hidden tab (e.g. detail)
+          document.querySelectorAll('.o_view').forEach(function(v){ v.classList.remove('active'); });
+          var target = document.getElementById('view-' + view);
+          if (target) target.classList.add('active');
+          window.scrollTo(0, 0);
+        }
+        // Legacy alias for inline onclick="switchView(...)"
+        function switchView(viewName) {
+            document.querySelectorAll('.o_view').forEach(function(v){ v.classList.remove('active'); });
+            var target = document.getElementById('view-' + viewName);
+            if (target) target.classList.add('active');
+            // Show detail tab if navigating there
+            if (viewName === 'campaign-detail') {
+              var dt = document.getElementById('mktDetailTab');
+              if (dt) dt.style.display = 'inline-flex';
+            }
+            document.querySelectorAll('.mkt-tab').forEach(function(b){ b.classList.remove('active'); });
+            var matchTab = document.querySelector('.mkt-tab[data-view="' + viewName + '"]');
+            if (matchTab) matchTab.classList.add('active');
+            window.scrollTo(0, 0);
+        }
+        function mktSwitchEntity(label, color, el) {
+          document.getElementById('mktEntityLabel').textContent = label;
+          document.querySelectorAll('#mktEntityDD > div').forEach(function(d){ d.style.fontWeight=''; d.style.background=''; });
+          if (el) { el.style.fontWeight='600'; el.style.background='rgba(40,167,69,.08)'; }
+          document.getElementById('mktEntityDD').style.display = 'none';
+          showToast('Chi nhánh: ' + label, 'info');
+        }
+        document.addEventListener('click', function(e) {
+          var dd = document.getElementById('mktEntityDD');
+          if (dd && !e.target.closest('#mktEntityBtn')) dd.style.display = 'none';
+        });
+
+        // Entity Switching
+        function switchEntity(el) {
+            document.querySelectorAll('.o_entity').forEach(e => e.classList.remove('active'));
+            el.classList.add('active');
+            showToast('Đã chuyển sang: ' + el.textContent, 'success');
+        }
+
+        // Tab Switching
+        function switchTab(el) {
+            el.parentElement.querySelectorAll('.o_tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            showToast('Đã chuyển tab: ' + el.textContent, 'info');
+        }
+
+        // Modal
+        function openModal() {
+            document.getElementById('modal-create-campaign').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modal-create-campaign').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on overlay click
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('o_modal_overlay')) {
+                closeModal();
+            }
+        });
+
+        // Save Campaign
+        function saveCampaign() {
+            var name = document.getElementById('campaign-name').value;
+            var channel = document.getElementById('campaign-channel').value;
+            var budget = document.getElementById('campaign-budget').value;
+            if (!name || !channel || !budget) {
+                showToast('Vui lòng điền đầy đủ thông tin bắt buộc!', 'error');
+                return;
+            }
+            closeModal();
+            showToast('Đã tạo chiến dịch: ' + name + ' thanh cong!', 'success');
+            // Clear form
+            document.getElementById('campaign-name').value = '';
+            document.getElementById('campaign-channel').value = '';
+            document.getElementById('campaign-budget').value = '';
+            document.getElementById('campaign-target').value = '';
+            document.getElementById('campaign-description').value = '';
+        }
+
+        // Toast Notifications
+        function showToast(message, type) {
+            type = type || 'info';
+            var container = document.getElementById('toast-container');
+            var icons = {
+                success: '&#10004;',
+                error: '&#10008;',
+                info: '&#9432;'
+            };
+            var toast = document.createElement('div');
+            toast.className = 'o_toast ' + type;
+            toast.innerHTML = '<span style="font-size: 16px;">' + (icons[type] || icons.info) + '</span><span class="o_toast_message">' + message + '</span>';
+            container.appendChild(toast);
+            // Auto remove after 3 seconds
+            setTimeout(function () {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(function () {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // Keyboard shortcut: Escape to close modal
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Show welcome toast on load
+        setTimeout(function () {
+            showToast('Chào mung den voi Marketing Dashboard - DTA Space!', 'info');
+        }, 500);
+    </script>
+
+    <div class="page-pattern"></div>
+</body>
+
+</html>

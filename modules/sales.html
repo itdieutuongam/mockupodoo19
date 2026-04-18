@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bán hàng - DTA Space Odoo 19</title>
+    <link rel="stylesheet" href="../assets/odoo-styles.css">
+    <style>
+        /* ===== LAYOUT ===== */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .page-content { padding: 20px 24px; flex: 1; overflow-y: auto; }
+
+        /* ===== UTILITY ===== */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); }
+        .flex-gap { display: flex; align-items: center; gap: 8px; }
+        .mt-lg { margin-top: var(--spacing-lg); }
+        .mt-md { margin-top: var(--spacing-md); }
+        .section-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: var(--spacing-sm); display: flex; align-items: center; gap: 6px; }
+
+        /* ===== BADGE EXTRA VARIANTS ===== */
+        .badge-active { background: #E3F2FD; color: #1565C0; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-completed { background: #E8F5E9; color: #2E7D32; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+
+        /* ===== PROGRESS BAR ===== */
+        .progress-bar { height: 7px; background: #E9ECEF; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 4px; }
+        .progress-fill.blue { background: linear-gradient(90deg, #1565C0, #42A5F5); }
+        .progress-fill.green { background: linear-gradient(90deg, #2E7D32, #66BB6A); }
+        .progress-fill.orange { background: linear-gradient(90deg, #E65100, #FFA726); }
+        .progress-fill.purple { background: linear-gradient(90deg, #4A148C, #AB47BC); }
+
+        /* ===== FILTER BUTTONS ===== */
+        .filter-btn { padding: 5px 14px; border: 1.5px solid var(--border-color); border-radius: 20px; background: white; font-size: 12px; cursor: pointer; transition: all 0.2s; color: var(--text-primary); }
+        .filter-btn:hover, .filter-btn.active-filter { background: var(--odoo-primary); color: white; border-color: var(--odoo-primary); }
+
+
+
+        /* ===== MODULE VIEWS ===== */
+        .module-view { display: none; }
+        .module-view.active { display: block; }
+
+        /* ===== ENTITY TAGS ===== */
+        .entity-tag { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+        .entity-nk { background: #E3F2FD; color: #1565C0; }
+        .entity-bt { background: #F3E5F5; color: #6A1B9A; }
+        .entity-hq { background: #E8F5E9; color: #2E7D32; }
+
+        /* ===== KANBAN ===== */
+        .kanban-board { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 12px; }
+        .kanban-col { min-width: 210px; flex: 1; background: var(--content-bg); border-radius: var(--radius-md); border: 1px solid var(--border-color); }
+        .kanban-col-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border-color); }
+        .kanban-col-title { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+        .kanban-col-count { background: var(--odoo-primary); color: white; border-radius: 10px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
+        .kanban-col-total { font-size: 10px; color: var(--text-secondary); padding: 2px 8px 8px; text-align: right; }
+        .kanban-cards { padding: 8px; display: flex; flex-direction: column; gap: 8px; min-height: 80px; }
+        .kanban-card { background: white; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; cursor: pointer; transition: all var(--transition-normal); position: relative; overflow: hidden; }
+        .kanban-card:hover { box-shadow: var(--shadow-md); border-color: var(--gray-300); transform: translateY(-2px); }
+        .kanban-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--odoo-primary); opacity: 0; transition: opacity var(--transition-fast); }
+        .kanban-card:hover::before { opacity: 1; }
+        .kanban-card-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+        .kanban-card-customer { font-size: 11px; color: var(--text-secondary); }
+        .kanban-card-amount { font-size: 13px; font-weight: 700; color: var(--odoo-primary); margin: 6px 0; }
+        .kanban-card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+        .kanban-card.won { border-left: 3px solid var(--odoo-success); }
+        .kanban-card.lost { border-left: 3px solid var(--odoo-danger); opacity: 0.75; }
+
+        /* ===== FORM / DETAIL ===== */
+        .back-btn { background: none; border: none; color: var(--odoo-primary); font-size: 13px; cursor: pointer; padding: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
+        .back-btn:hover { text-decoration: underline; }
+        .detail-header { background: white; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-md); }
+        .detail-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+        .detail-meta { display: flex; flex-wrap: wrap; gap: var(--spacing-lg); margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-color); }
+        .detail-meta-item { display: flex; flex-direction: column; gap: 2px; }
+        .detail-meta-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .detail-meta-value { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+        .detail-statusbar { display: flex; align-items: center; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+        .statusbar-btn { padding: 5px 14px; border: 1.5px solid var(--border-color); border-radius: 20px; background: white; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .statusbar-btn.active { background: var(--odoo-primary); color: white; border-color: var(--odoo-primary); }
+        .statusbar-btn.done { background: var(--odoo-success); color: white; border-color: var(--odoo-success); }
+
+        /* ===== COMMISSION ===== */
+        .commission-bar { height: 6px; background: #E9ECEF; border-radius: 3px; overflow: hidden; margin-top: 3px; }
+        .commission-fill { height: 100%; background: linear-gradient(90deg, var(--odoo-primary), #00A09D); border-radius: 3px; }
+
+        /* ===== ORDER PROGRESS ===== */
+        .order-progress { display: flex; gap: 0; margin: 14px 0 0; }
+        .order-step { flex: 1; text-align: center; position: relative; }
+        .order-step::after { content: ''; position: absolute; top: 13px; left: 50%; width: 100%; height: 2px; background: #E9ECEF; z-index: 0; }
+        .order-step:last-child::after { display: none; }
+        .order-step-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #E9ECEF; background: white; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 12px; position: relative; z-index: 1; transition: all 0.3s; }
+        .order-step.done .order-step-dot { background: var(--odoo-success); border-color: var(--odoo-success); color: white; }
+        .order-step.active .order-step-dot { background: var(--odoo-primary); border-color: var(--odoo-primary); color: white; box-shadow: 0 0 0 4px rgba(164,16,16,0.15); }
+        .order-step.done::after { background: var(--odoo-success); }
+        .order-step-label { font-size: 10px; color: var(--text-secondary); margin-top: 5px; }
+        .order-step.active .order-step-label, .order-step.done .order-step-label { color: var(--text-primary); font-weight: 600; }
+
+        /* ===== TABS ===== */
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border-color); margin-bottom: var(--spacing-md); }
+        .tab { padding: 8px 18px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; color: var(--text-secondary); transition: all 0.2s; }
+        .tab:hover { color: var(--odoo-primary); }
+        .tab.active { color: var(--odoo-primary); border-bottom-color: var(--odoo-primary); font-weight: 600; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ===== PATTERN ===== */
+        .sidebar-pattern { position: absolute; top: 0; right: 0; width: 60px; height: 60px; background-image: url('../Media/pattern.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.08; pointer-events: none; z-index: 1; }
+        .page-pattern { position: fixed; bottom: 0; right: 20px; width: 150px; height: 150px; background-image: url('../Media/pattern.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.08; pointer-events: none; z-index: 0; margin-bottom: -20px; }
+
+        /* ===== TOOLTIP ===== */
+        .tooltip { position: relative; cursor: pointer; font-size: 16px; }
+        .tooltip::after { content: attr(data-tip); position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+        .tooltip:hover::after { opacity: 1; }
+
+        /* ===== REPORT CHART BARS ===== */
+        .bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 160px; padding: 0 8px; }
+        .bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .bar { width: 100%; border-radius: 4px 4px 0 0; transition: all 0.3s; cursor: pointer; min-width: 20px; }
+        .bar:hover { filter: brightness(1.1); }
+        .bar-label { font-size: 10px; color: var(--text-secondary); text-align: center; }
+        .bar-value { font-size: 10px; font-weight: 600; color: var(--text-primary); }
+
+        /* ===== MODAL ===== */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 9000; align-items: center; justify-content: center; animation: fadeIn var(--transition-fast); }
+        .modal-overlay.show { display: flex; }
+        .modal { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); border-radius: var(--radius-xl); width: 600px; max-width: 95vw; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-xl); transform: translateY(20px); animation: slideUp var(--transition-normal) forwards; }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border-color); }
+        .modal-title { font-size: 15px; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-secondary); line-height: 1; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; }
+
+        /* ===== TOAST ===== */
+        #toastContainer { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 8px; }
+        .toast { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius-sm); box-shadow: 0 4px 15px rgba(0,0,0,0.15); font-size: 13px; min-width: 260px; animation: slideIn 0.3s ease; }
+        .toast.success { background: white; border-left: 4px solid var(--odoo-success); }
+        .toast.error { background: white; border-left: 4px solid var(--odoo-danger); }
+        .toast.info { background: white; border-left: 4px solid var(--odoo-info); }
+        .toast.warning { background: white; border-left: 4px solid var(--odoo-warning); }
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+        .toast-icon { font-size: 16px; }
+        .toast-message { flex: 1; color: var(--text-primary); }
+        .toast-close { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 15px; padding: 0; }
+        @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* ===== FORM STYLES ===== */
+        .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+        .form-row-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 7px 10px; font-size: 13px; background: white; color: var(--text-primary); transition: border-color 0.2s; box-sizing: border-box; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--odoo-primary); box-shadow: 0 0 0 3px rgba(164,16,16,0.08); }
+        .readonly-field { background: var(--content-bg); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 7px 10px; font-size: 13px; color: var(--text-primary); }
+    </style>
+</head>
+
+<body>
+    <div id="toastContainer"></div>
+
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-pattern"></div>
+                <div class="sidebar-logo">
+                    <img src="../Media/DTA-LOGO.png" alt="DTA Space" style="height: 32px; width: auto;">
+                    <div class="logo-text">DTA Space</div>
+                </div>
+            </div>
+            <div class="entity-switcher">
+                <select id="entitySwitcher" onchange="switchEntity(this.value)">
+                    <option value="all">🏢 Tất cả các thực thể</option>
+                    <option value="hq">🏢 Văn phòng HQ</option>
+                    <option value="nk">🏪 Cửa hàng Nam Kỳ</option>
+                    <option value="bt">🏪 Cửa hàng Bà Triệu</option>
+                </select>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Tổng quan</div>
+                    <a class="nav-item" href="../index.html"><span class="nav-icon">📊</span><span>Bảng điều khiển</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Bán hàng</div>
+                    <a class="nav-item active" id="nav-pipeline" href="#" onclick="switchViewNav('pipeline'); return false;"><span class="nav-icon">🚀</span><span>Đường ống</span></a>
+                    <a class="nav-item" id="nav-quotations" href="#" onclick="switchViewNav('quotations'); return false;"><span class="nav-icon">📋</span><span>Báo giá</span></a>
+                    <a class="nav-item" id="nav-orders" href="#" onclick="switchViewNav('orders'); return false;"><span class="nav-icon">📦</span><span>Đơn hàng</span></a>
+                    <a class="nav-item" id="nav-report" href="#" onclick="switchViewNav('report'); return false;"><span class="nav-icon">📊</span><span>Báo cáo bán hàng</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Mô-đun</div>
+                    <a class="nav-item" href="inventory.html"><span class="nav-icon">📦</span><span>Quản lý kho</span></a>
+                    <a class="nav-item" href="products.html"><span class="nav-icon">🛍️</span><span>Sản phẩm</span></a>
+                    <a class="nav-item" href="crm.html"><span class="nav-icon">👥</span><span>CRM</span></a>
+                    <a class="nav-item" href="events.html"><span class="nav-icon">🎨</span><span>Sự kiện</span></a>
+                    <a class="nav-item" href="design_studio.html"><span class="nav-icon">✏️</span><span>Thiết kế Studio</span></a>
+                    <a class="nav-item" href="accounting.html"><span class="nav-icon">💰</span><span>Kế toán</span></a>
+                    <a class="nav-item" href="misa.html"><span class="nav-icon">🔄</span><span>Đồng bộ MISA</span></a>
+                    <a class="nav-item" href="reports.html"><span class="nav-icon">📈</span><span>Báo cáo</span></a>
+                    <a class="nav-item" href="projects.html"><span class="nav-icon">🏗️</span><span>Dự án</span></a>
+                    <a class="nav-item" href="hr.html"><span class="nav-icon">👥</span><span>Nhân sự</span></a>
+                    <a class="nav-item" href="marketing.html"><span class="nav-icon">📢</span><span>Marketing</span></a>
+                    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span>Cài đặt</span></a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOP HEADER -->
+            <div class="top-header">
+                <div class="breadcrumb">
+                    <a href="../index.html">Bảng điều khiển</a>
+                    <span>/</span>
+                    <span>Bán hàng</span>
+                    <span>/</span>
+                    <strong id="breadcrumbCurrent">Đường ống</strong>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" placeholder="Tìm kiếm... (Ctrl+K)" id="globalSearch">
+                    </div>
+                    <span class="tooltip" data-tip="Thông báo">🔔</span>
+                    <span class="tooltip" data-tip="Tin nhắn">💬</span>
+                    <div class="user-menu">
+                        <div class="user-avatar">NA</div>
+                        <span>Nguyễn Admin</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-content">
+
+                <!-- ======================================================= -->
+                <!-- VIEW: PIPELINE (Đường ống - Kanban) -->
+                <!-- ======================================================= -->
+                <div class="module-view active" id="view-pipeline">
+                    <div class="page-header">
+                        <h1 class="page-title">🚀 Đường ống bán hàng</h1>
+                        <div class="btn-group">
+                            <button class="filter-btn" onclick="switchViewNav('quotations')">📋 Báo giá</button>
+                            <button class="filter-btn" onclick="switchViewNav('orders')">📦 Đơn hàng</button>
+                            <button class="btn btn-primary btn-sm" onclick="openModal('newQuotationModal')">➕ Báo giá mới</button>
+                        </div>
+                    </div>
+
+                    <!-- KPI Strip -->
+                    <div class="stats-grid" style="grid-template-columns: repeat(5,1fr); margin-bottom: var(--spacing-md);">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">💰</div>
+                            <div class="stat-info">
+                                <div class="stat-value">1,25B</div>
+                                <div class="stat-label">Doanh thu tháng 4</div>
+                            </div>
+                            <span class="stat-trend up">↑ 12%</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">📋</div>
+                            <div class="stat-info">
+                                <div class="stat-value">18</div>
+                                <div class="stat-label">Báo giá đang mở</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">✅</div>
+                            <div class="stat-info">
+                                <div class="stat-value">68%</div>
+                                <div class="stat-label">Tỷ lệ chuyển đổi</div>
+                            </div>
+                            <span class="stat-trend down">↓ 2% vs mục tiêu</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">📦</div>
+                            <div class="stat-info">
+                                <div class="stat-value">11</div>
+                                <div class="stat-label">Đơn hàng đang xử lý</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red">⏰</div>
+                            <div class="stat-info">
+                                <div class="stat-value">3</div>
+                                <div class="stat-label">Báo giá sắp hết hạn</div>
+                            </div>
+                            <span class="stat-trend down">Cần xử lý</span>
+                        </div>
+                    </div>
+
+                    <!-- Kanban Board -->
+                    <div class="kanban-board">
+                        <!-- Khách hàng mới -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header">
+                                <span class="kanban-col-title">🆕 Khách hàng mới</span>
+                                <span class="kanban-col-count">3</span>
+                            </div>
+                            <div class="kanban-col-total">Tổng: 555M đ</div>
+                            <div class="kanban-cards">
+                                <div class="kanban-card" onclick="openQuotationDetail('QT-2026-045')">
+                                    <div class="kanban-card-title">Căn hộ Vinhome Grand Park</div>
+                                    <div class="kanban-card-customer">👤 Anh Phong</div>
+                                    <div class="kanban-card-amount">85.000.000 đ</div>
+                                    <div class="kanban-card-foot">
+                                        <span style="font-size:11px;color:var(--text-secondary);">📅 06/04</span>
+                                        <span class="entity-tag entity-nk">NK</span>
+                                    </div>
+                                </div>
+                                <div class="kanban-card" onclick="openQuotationDetail('QT-2026-046')">
+                                    <div class="kanban-card-title">Nhà phố Quận 7</div>
+                                    <div class="kanban-card-customer">👤 Chị Mai</div>
+                                    <div class="kanban-card-amount">120.000.000 đ</div>
+                                    <div class="kanban-card-foot">
+                                        <span style="font-size:11px;color:var(--text-secondary);">📅 07/04</span>
+                                        <span class="entity-tag entity-nk">NK</span>
+                                    </div>
+                                </div>
+                                <div class="kanban-card" onclick="openQuotationDetail('QT-2026-047')">
+                                    <div class="kanban-card-title">Văn phòng công ty ABC</div>
+                                    <div class="kanban-card-customer">👤 Anh Tuấn - CEO</div>
+                                    <div class="kanban-card-amount">350.000.000 đ</div>
+                                    <div class="kanban-card-foot">
+                                        <span style="font-size:11px;color:var(--text-secondary);">📅 08/04</span>
+                                        <span class="entity-tag entity-bt">BT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Khảo sát & Thiết kế -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header">
+                                <span class="kanban-col-title">📐 Khảo sát & Thiết kế</span>
+                                <span class="kanban-col-count">2</span>
+                            </div>
+                            <div class="kanban-col-total">Tổng: 675M đ</div>
+                            <div class="kanban-cards">
+                                <div class="kanban-card">
+                                    <div class="kanban-card-title">Biệt thự Phú Mỹ Hưng</div>
+                                    <div class="kanban-card-customer">👤 Anh Hùng</div>
+                                    <div class="kanban-card-amount">580.000.000 đ</div>
+                                    <div class="kanban-card-foot">
+                                        <span class="badge badge-info" style="font-size:10px;">Đã đo đạc</span>
+                                        <span class="entity-tag entity-nk">NK</span>
+                                    </div>
+                                </div>
+                                <div class="kanban-card">
+                                    <div class="kanban-card-title">Căn hộ Masteri Thảo Điền</div>
+                                    <div class="kanban-card-customer">👤 Chị Lan</div>
+                                    <div class="kanban-card-amount">95.000.000 đ</div>
+                                    <div class="kanban-card-foot">
+                                        <span class="badge badge-warning" style="font-size:10px;">Chờ 3D</span>
+                                        <span class="entity-tag entity-bt">BT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Đang báo giá -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header">
+                                <span class="kanban-col-title">📤 Đã gửi báo giá</span>
+                                <span class="kanban-col-count">3</span>
+                            </div>
+                            <div class="kanban-col-total">Tổng: 1,195B đ</div>
+                            <div class="kanban-cards">
+                                <div class="kanban-card">
+                                    <div class="kanban-card-title">Chung cư Vinhome Central Park</div>
+                                    <div class="kanban-card-customer">👤 Anh Dũng</div>
+                                    <div class="kanban-card-amount">165.000.000 đ</div>
+                                    <div class="kanban-card-foot">
+                                        <span style="font-size:10px;color:var(--odoo-warning);font-weight:600;">⏰ Còn 3 ngày</span>
+                                        <span class="entity-tag entity-nk">NK</span>
+                                    </div>
+                                </div>
+                                <div class="kanban-card">
+                                    <div class="kanban-card-title">Showroom thời trang Q.1</div>
+                                    <div class="kanban-card-customer">👤 Chị Thảo</div>
+                                    <div class="kanban-card-amount">280.000.000 đ</div>
+                                    <div class="kanban-card-foot">
+                                        <span style="font-size:10px;color:var(--text-secondary);">📅 Gửi 01/04</span>
+                                        <span class="entity-tag entity-bt">BT</span>
+                                    </div>
+                                </div>
+                                <div class="kanban-card">
+                                    <div class="kanban-card-title">Biệt thự Quận 2</div>
+                                    <div class="kanban-card-customer">👤 Anh Kiệt</div>
+                                    <div class="kanban-card-amount">750.000.000 đ</div>
+                                    <div class="kanban-card-foot">
+                                        <span class="badge badge-warning" style="font-size:10px;">Cần chỉnh sửa</span>
+                                        <span class="entity-tag entity-nk">NK</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Đàm phán -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header">
+                                <span class="kanban-col-title">🤝 Đàm phán</span>
+                                <span class="kanban-col-count">2</span>
+                            </div>
+                            <div class="kanban-col-total">Tổng: 1,62B đ</div>
+                            <div class="kanban-cards">
+                                <div class="kanban-card">
+                                    <div class="kanban-card-title">Penthouse Landmark 81</div>
+                                    <div class="kanban-card-customer">👤 Chị Yến - Premium</div>
+                                    <div class="kanban-card-amount">1.200.000.000 đ</div>
+                                    <div class="kanban-card-foot">
+                                        <span class="badge badge-info" style="font-size:10px;">Chờ ký HĐ</span>
+                                        <span class="entity-tag entity-bt">BT</span>
+                                    </div>
+                                </div>
+                                <div class="kanban-card">
+                                    <div class="kanban-card-title">Nhà mặt tiền Nguyễn Trãi</div>
+                                    <div class="kanban-card-customer">👤 Anh Bình</div>
+                                    <div class="kanban-card-amount">420.000.000 đ</div>
+                                    <div class="kanban-card-foot">
+                                        <span class="badge badge-warning" style="font-size:10px;">Thương lượng giá</span>
+                                        <span class="entity-tag entity-nk">NK</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thắng -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header">
+                                <span class="kanban-col-title">✅ Thắng</span>
+                                <span class="kanban-col-count">4</span>
+                            </div>
+                            <div class="kanban-col-total" style="color:var(--odoo-success);">Tổng: 1,38B đ</div>
+                            <div class="kanban-cards">
+                                <div class="kanban-card won" onclick="openOrderDetail('SO-2026-012')">
+                                    <div class="kanban-card-title">Nhà phố Quận 9</div>
+                                    <div class="kanban-card-customer">👤 Anh Tâm · Đã cọc 30%</div>
+                                    <div class="kanban-card-amount" style="color:var(--odoo-success);">380.000.000 đ</div>
+                                    <div class="kanban-card-foot"><span class="entity-tag entity-nk">NK</span></div>
+                                </div>
+                                <div class="kanban-card won" onclick="openOrderDetail('SO-2026-011')">
+                                    <div class="kanban-card-title">Căn hộ Sunrise City</div>
+                                    <div class="kanban-card-customer">👤 Chị Ngọc · Full nội thất</div>
+                                    <div class="kanban-card-amount" style="color:var(--odoo-success);">220.000.000 đ</div>
+                                    <div class="kanban-card-foot"><span class="entity-tag entity-bt">BT</span></div>
+                                </div>
+                                <div class="kanban-card won">
+                                    <div class="kanban-card-title">Biệt thự Thảo Điền</div>
+                                    <div class="kanban-card-customer">👤 Anh Phúc</div>
+                                    <div class="kanban-card-amount" style="color:var(--odoo-success);">680.000.000 đ</div>
+                                    <div class="kanban-card-foot"><span class="entity-tag entity-nk">NK</span></div>
+                                </div>
+                                <div class="kanban-card won">
+                                    <div class="kanban-card-title">Văn phòng Quận 1</div>
+                                    <div class="kanban-card-customer">👤 Chị Ngân</div>
+                                    <div class="kanban-card-amount" style="color:var(--odoo-success);">98.000.000 đ</div>
+                                    <div class="kanban-card-foot"><span class="entity-tag entity-hq">HQ</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mất -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header">
+                                <span class="kanban-col-title">❌ Bị mất</span>
+                                <span class="kanban-col-count">2</span>
+                            </div>
+                            <div class="kanban-col-total" style="color:var(--odoo-danger);">Tổng: 360M đ</div>
+                            <div class="kanban-cards">
+                                <div class="kanban-card lost">
+                                    <div class="kanban-card-title">Văn phòng Bình Thạnh</div>
+                                    <div class="kanban-card-customer">👤 Anh Sơn · Chọn nhà cung cấp khác</div>
+                                    <div class="kanban-card-amount" style="color:var(--odoo-danger);">180.000.000 đ</div>
+                                    <div class="kanban-card-foot"><span class="entity-tag entity-nk">NK</span></div>
+                                </div>
+                                <div class="kanban-card lost">
+                                    <div class="kanban-card-title">Nhà phố Nhà Bè</div>
+                                    <div class="kanban-card-customer">👤 Chị Hà · Tạm hoãn dự án</div>
+                                    <div class="kanban-card-amount" style="color:var(--odoo-danger);">180.000.000 đ</div>
+                                    <div class="kanban-card-foot"><span class="entity-tag entity-bt">BT</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ======================================================= -->
+                <!-- VIEW: BÁO GIÁ (Quotations List + Detail) -->
+                <!-- ======================================================= -->
+                <div class="module-view" id="view-quotations">
+                    <!-- Sub state: list vs detail -->
+                    <div id="quotations-list">
+                        <div class="page-header">
+                            <h1 class="page-title">📋 Danh sách báo giá</h1>
+                            <div class="btn-group">
+                                <button class="filter-btn active-filter" id="qf-all" onclick="filterQuotations('all')">Tất cả <span style="background:var(--odoo-primary);color:white;padding:0 5px;border-radius:8px;font-size:10px;margin-left:3px;">18</span></button>
+                                <button class="filter-btn" id="qf-draft" onclick="filterQuotations('draft')">Nháp</button>
+                                <button class="filter-btn" id="qf-sent" onclick="filterQuotations('sent')">Đã gửi</button>
+                                <button class="filter-btn" id="qf-won" onclick="filterQuotations('won')">Đã thắng</button>
+                                <button class="filter-btn" id="qf-cancelled" onclick="filterQuotations('cancelled')">Đã hủy</button>
+                                <button class="btn btn-primary btn-sm" onclick="openModal('newQuotationModal')">➕ Báo giá mới</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <div class="table-header">
+                                <span style="font-weight:600;">18 báo giá</span>
+                                <div class="flex-gap">
+                                    <select style="font-size:12px;padding:3px 8px;border:1px solid var(--border-color);border-radius:4px;">
+                                        <option>Tất cả chi nhánh</option><option>NK Store</option><option>BT Store</option>
+                                    </select>
+                                    <button class="btn btn-secondary btn-sm" onclick="showToast('Xuất Excel...','info')">📥 Xuất</button>
+                                </div>
+                            </div>
+                            <table class="table" id="quotationsTable">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox"></th>
+                                        <th>Mã báo giá</th>
+                                        <th>Khách hàng</th>
+                                        <th>Nhân viên</th>
+                                        <th>Chi nhánh</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Hết hạn</th>
+                                        <th style="text-align:right;">Tổng tiền</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-status="draft">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" onclick="openQuotationDetail('QT-2026-047');return false;" style="color:var(--odoo-primary);font-weight:600;">QT-2026-047</a></td>
+                                        <td>Anh Tuấn - Cty ABC</td>
+                                        <td>Lê Thị Hương</td>
+                                        <td><span class="entity-tag entity-bt">BT</span></td>
+                                        <td>08/04/2026</td>
+                                        <td>22/04/2026</td>
+                                        <td style="text-align:right;font-weight:600;">350.000.000</td>
+                                        <td><span class="badge badge-secondary">Nháp</span></td>
+                                        <td><button class="btn btn-secondary btn-sm" onclick="openQuotationDetail('QT-2026-047')">Xem</button></td>
+                                    </tr>
+                                    <tr data-status="draft">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" onclick="openQuotationDetail('QT-2026-046');return false;" style="color:var(--odoo-primary);font-weight:600;">QT-2026-046</a></td>
+                                        <td>Chị Mai - Nhà phố Q7</td>
+                                        <td>Trần Văn Minh</td>
+                                        <td><span class="entity-tag entity-nk">NK</span></td>
+                                        <td>07/04/2026</td>
+                                        <td>21/04/2026</td>
+                                        <td style="text-align:right;font-weight:600;">120.000.000</td>
+                                        <td><span class="badge badge-secondary">Nháp</span></td>
+                                        <td><button class="btn btn-secondary btn-sm" onclick="openQuotationDetail('QT-2026-046')">Xem</button></td>
+                                    </tr>
+                                    <tr data-status="draft">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" onclick="openQuotationDetail('QT-2026-045');return false;" style="color:var(--odoo-primary);font-weight:600;">QT-2026-045</a></td>
+                                        <td>Anh Phong - Vinhome GP</td>
+                                        <td>Nguyễn Thị Thanh</td>
+                                        <td><span class="entity-tag entity-nk">NK</span></td>
+                                        <td>06/04/2026</td>
+                                        <td><span style="color:var(--odoo-warning);font-weight:600;">20/04/2026 ⚠️</span></td>
+                                        <td style="text-align:right;font-weight:600;">98.340.000</td>
+                                        <td><span class="badge badge-secondary">Nháp</span></td>
+                                        <td><button class="btn btn-secondary btn-sm" onclick="openQuotationDetail('QT-2026-045')">Xem</button></td>
+                                    </tr>
+                                    <tr data-status="sent">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" style="color:var(--odoo-primary);font-weight:600;">QT-2026-043</a></td>
+                                        <td>Anh Dũng - Vinhome CP</td>
+                                        <td>Nguyễn Thị Thanh</td>
+                                        <td><span class="entity-tag entity-nk">NK</span></td>
+                                        <td>03/04/2026</td>
+                                        <td><span style="color:var(--odoo-danger);font-weight:600;">17/04/2026 🔴</span></td>
+                                        <td style="text-align:right;font-weight:600;">165.000.000</td>
+                                        <td><span class="badge badge-info">Đã gửi</span></td>
+                                        <td><button class="btn btn-secondary btn-sm">Xem</button></td>
+                                    </tr>
+                                    <tr data-status="sent">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" style="color:var(--odoo-primary);font-weight:600;">QT-2026-040</a></td>
+                                        <td>Chị Thảo - Showroom Q1</td>
+                                        <td>Lê Thị Hương</td>
+                                        <td><span class="entity-tag entity-bt">BT</span></td>
+                                        <td>01/04/2026</td>
+                                        <td>15/04/2026</td>
+                                        <td style="text-align:right;font-weight:600;">280.000.000</td>
+                                        <td><span class="badge badge-info">Đã gửi</span></td>
+                                        <td><button class="btn btn-secondary btn-sm">Xem</button></td>
+                                    </tr>
+                                    <tr data-status="sent">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" style="color:var(--odoo-primary);font-weight:600;">QT-2026-039</a></td>
+                                        <td>Anh Kiệt - Biệt thự Q2</td>
+                                        <td>Trần Văn Minh</td>
+                                        <td><span class="entity-tag entity-nk">NK</span></td>
+                                        <td>28/03/2026</td>
+                                        <td>11/04/2026</td>
+                                        <td style="text-align:right;font-weight:600;">750.000.000</td>
+                                        <td><span class="badge badge-info">Đã gửi</span></td>
+                                        <td><button class="btn btn-secondary btn-sm">Xem</button></td>
+                                    </tr>
+                                    <tr data-status="won">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" onclick="switchViewNav('orders');return false;" style="color:var(--odoo-primary);font-weight:600;">QT-2026-037</a></td>
+                                        <td>Anh Tâm - Nhà phố Q9</td>
+                                        <td>Trần Văn Minh</td>
+                                        <td><span class="entity-tag entity-nk">NK</span></td>
+                                        <td>28/03/2026</td>
+                                        <td>11/04/2026</td>
+                                        <td style="text-align:right;font-weight:600;">380.000.000</td>
+                                        <td><span class="badge badge-success">✅ Thắng</span></td>
+                                        <td><button class="btn btn-secondary btn-sm" onclick="switchViewNav('orders')">Xem ĐH</button></td>
+                                    </tr>
+                                    <tr data-status="won">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" style="color:var(--odoo-primary);font-weight:600;">QT-2026-035</a></td>
+                                        <td>Chị Ngọc - Sunrise City</td>
+                                        <td>Lê Thị Hương</td>
+                                        <td><span class="entity-tag entity-bt">BT</span></td>
+                                        <td>25/03/2026</td>
+                                        <td>08/04/2026</td>
+                                        <td style="text-align:right;font-weight:600;">220.000.000</td>
+                                        <td><span class="badge badge-success">✅ Thắng</span></td>
+                                        <td><button class="btn btn-secondary btn-sm" onclick="switchViewNav('orders')">Xem ĐH</button></td>
+                                    </tr>
+                                    <tr data-status="cancelled">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" style="color:var(--text-secondary);font-weight:600;">QT-2026-031</a></td>
+                                        <td>Anh Sơn - VP Bình Thạnh</td>
+                                        <td>Trần Văn Minh</td>
+                                        <td><span class="entity-tag entity-nk">NK</span></td>
+                                        <td>20/03/2026</td>
+                                        <td>03/04/2026</td>
+                                        <td style="text-align:right;font-weight:600;color:var(--text-secondary);">180.000.000</td>
+                                        <td><span class="badge badge-danger">❌ Đã hủy</span></td>
+                                        <td><button class="btn btn-secondary btn-sm">Xem</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="padding:var(--spacing-md);display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border-color);">
+                                <span style="font-size:12px;color:var(--text-secondary);">Hiển thị 1-9 trên 18</span>
+                                <div class="flex-gap">
+                                    <button class="btn btn-secondary btn-sm" disabled>◀ Trước</button>
+                                    <button class="btn btn-primary btn-sm">1</button>
+                                    <button class="btn btn-secondary btn-sm">2</button>
+                                    <button class="btn btn-secondary btn-sm">Tiếp ▶</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quotation Detail (hidden by default) -->
+                    <div id="quotations-detail" style="display:none;">
+                        <button class="back-btn" onclick="showQuotationList()">← Quay lại Báo giá</button>
+                        <div class="page-header">
+                            <h1 class="page-title" id="qtDetailTitle">QT-2026-045: Vinhomes Grand Park</h1>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary btn-sm" onclick="showToast('In báo giá...','info')">🖨️ In</button>
+                                <button class="btn btn-secondary btn-sm" onclick="showToast('Gửi email báo giá thành công!','success')">📧 Gửi Email</button>
+                                <button class="btn btn-warning btn-sm" onclick="showToast('Đã xác nhận! Tạo đơn hàng SO-2026-015','success'); switchViewNav('orders')">✓ Xác nhận → Đơn hàng</button>
+                            </div>
+                        </div>
+                        <div class="detail-header">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+                                <div>
+                                    <div class="detail-title">QT-2026-045</div>
+                                    <div style="color:var(--text-secondary);font-size:13px;margin-top:3px;">Báo giá nội thất - Anh Phong</div>
+                                </div>
+                                <span class="badge badge-secondary" style="font-size:13px;padding:5px 14px;">Nháp</span>
+                            </div>
+                            <div class="detail-meta">
+                                <div class="detail-meta-item"><span class="detail-meta-label">Khách hàng</span><span class="detail-meta-value">Anh Phong - 0903 xxx xxx</span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Địa chỉ dự án</span><span class="detail-meta-value">Vinhomes Grand Park, Q.9</span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Nhân viên</span><span class="detail-meta-value">Nguyễn Thị Thanh</span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Chi nhánh</span><span class="detail-meta-value"><span class="entity-tag entity-nk">NK Store</span></span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Ngày tạo</span><span class="detail-meta-value">06/04/2026</span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Hết hạn</span><span class="detail-meta-value" style="color:var(--odoo-warning);">20/04/2026 ⚠️</span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Tổng cộng</span><span class="detail-meta-value" style="color:var(--odoo-primary);font-size:16px;">98.340.000 đ</span></div>
+                            </div>
+                            <div class="detail-statusbar" style="margin-top:16px;">
+                                <span style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-right:8px;">Quy trình:</span>
+                                <button class="statusbar-btn active">Nháp</button>
+                                <button class="statusbar-btn">Đã gửi</button>
+                                <button class="statusbar-btn">Đã xác nhận</button>
+                                <button class="statusbar-btn">Hoàn tất</button>
+                            </div>
+                        </div>
+                        <!-- Tabs -->
+                        <div class="tabs">
+                            <div class="tab active" onclick="switchTab(this,'qt-tab-lines')">📦 Dòng sản phẩm</div>
+                            <div class="tab" onclick="switchTab(this,'qt-tab-terms')">📝 Điều khoản</div>
+                            <div class="tab" onclick="switchTab(this,'qt-tab-commission')">💰 Hoa hồng</div>
+                        </div>
+                        <div class="tab-content active" id="qt-tab-lines">
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead><tr><th>Sản phẩm</th><th>Mô tả</th><th style="text-align:center;">SL</th><th style="text-align:right;">Đơn giá</th><th style="text-align:center;">CK%</th><th style="text-align:right;">Thành tiền</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>Sofa Phòng Khách</strong></td><td style="font-size:12px;color:var(--text-secondary);">Gỗ óc chó, vải hoa cao cấp</td><td style="text-align:center;">1</td><td style="text-align:right;">25.000.000</td><td style="text-align:center;">0%</td><td style="text-align:right;font-weight:600;">25.000.000</td></tr>
+                                        <tr><td><strong>Bàn Ăn 6 Người</strong></td><td style="font-size:12px;color:var(--text-secondary);">Gỗ tự nhiên</td><td style="text-align:center;">1</td><td style="text-align:right;">12.000.000</td><td style="text-align:center;">5%</td><td style="text-align:right;font-weight:600;">11.400.000</td></tr>
+                                        <tr><td><strong>Tủ Bếp Custom</strong></td><td style="font-size:12px;color:var(--text-secondary);">MDF An Cường, phụ kiện Blum</td><td style="text-align:center;">1</td><td style="text-align:right;">35.000.000</td><td style="text-align:center;">0%</td><td style="text-align:right;font-weight:600;">35.000.000</td></tr>
+                                        <tr><td><strong>Giường Ngủ Master</strong></td><td style="font-size:12px;color:var(--text-secondary);">Gỗ óc chó, 1,8m</td><td style="text-align:center;">1</td><td style="text-align:right;">18.000.000</td><td style="text-align:center;">0%</td><td style="text-align:right;font-weight:600;">18.000.000</td></tr>
+                                        <tr style="background:var(--content-bg);"><td colspan="5" style="text-align:right;font-weight:600;">Tạm tính:</td><td style="text-align:right;font-weight:600;">89.400.000</td></tr>
+                                        <tr><td colspan="5" style="text-align:right;color:var(--text-secondary);">Thuế GTGT (10%):</td><td style="text-align:right;">8.940.000</td></tr>
+                                        <tr style="background:#FEF2F2;"><td colspan="5" style="text-align:right;font-weight:700;font-size:14px;">Tổng cộng:</td><td style="text-align:right;font-weight:700;font-size:14px;color:var(--odoo-primary);">98.340.000 đ</td></tr>
+                                    </tbody>
+                                </table>
+                                <div style="padding:var(--spacing-sm) var(--spacing-md);">
+                                    <button class="btn btn-secondary btn-sm" onclick="showToast('Thêm sản phẩm...','info')">+ Thêm sản phẩm</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="qt-tab-terms">
+                            <div class="card"><div class="card-body">
+                                <div class="form-group" style="margin-bottom:12px;"><label>Điều khoản & Điều kiện</label><textarea rows="4" style="width:100%;border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:8px;font-size:13px;">- Thanh toán: 30% khi ký hợp đồng, 40% khi giao hàng, 30% khi lắp đặt hoàn tất&#10;- Thời gian giao hàng: 30-45 ngày kể từ khi thiết kế xong&#10;- Bảo hành: 24 tháng cho cấu kiện, 12 tháng cho phụ kiện</textarea></div>
+                            </div></div>
+                        </div>
+                        <div class="tab-content" id="qt-tab-commission">
+                            <div class="card"><div class="card-body">
+                                <div style="background:var(--content-bg);border-radius:var(--radius-md);padding:16px;border-left:4px solid var(--odoo-success);">
+                                    <div style="font-weight:700;font-size:14px;margin-bottom:10px;">💰 Xem trước hoa hồng</div>
+                                    <div class="grid-2">
+                                        <div><span style="font-size:12px;color:var(--text-secondary);">Nhân viên:</span><div style="font-weight:600;">Nguyễn Thị Thanh</div></div>
+                                        <div><span style="font-size:12px;color:var(--text-secondary);">Tỷ lệ HH:</span><div style="font-weight:600;">5%</div></div>
+                                        <div><span style="font-size:12px;color:var(--text-secondary);">Hoa hồng dự kiến:</span><div style="font-weight:700;color:var(--odoo-success);font-size:16px;">4.917.000 đ</div></div>
+                                        <div><span style="font-size:12px;color:var(--text-secondary);">Mục tiêu tháng:</span><div style="font-weight:600;">85% (420M / 500M)</div></div>
+                                    </div>
+                                    <div style="margin-top:12px;"><div class="commission-bar"><div class="commission-fill" style="width:85%;"></div></div><div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">85% mục tiêu đạt được</div></div>
+                                </div>
+                            </div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ======================================================= -->
+                <!-- VIEW: ĐƠN HÀNG (Sales Orders) -->
+                <!-- ======================================================= -->
+                <div class="module-view" id="view-orders">
+                    <div id="orders-list">
+                        <div class="page-header">
+                            <h1 class="page-title">📦 Quản lý đơn hàng</h1>
+                            <div class="btn-group">
+                                <button class="filter-btn active-filter" id="of-all" onclick="filterOrders('all')">Tất cả <span style="background:var(--odoo-primary);color:white;padding:0 5px;border-radius:8px;font-size:10px;margin-left:3px;">11</span></button>
+                                <button class="filter-btn" id="of-confirmed" onclick="filterOrders('confirmed')">Đã xác nhận</button>
+                                <button class="filter-btn" id="of-production" onclick="filterOrders('production')">Đang sản xuất</button>
+                                <button class="filter-btn" id="of-delivery" onclick="filterOrders('delivery')">Đang giao</button>
+                                <button class="filter-btn" id="of-done" onclick="filterOrders('done')">Hoàn tất</button>
+                                <button class="btn btn-secondary btn-sm" onclick="showToast('Xuất danh sách đơn hàng...','info')">📥 Xuất</button>
+                            </div>
+                        </div>
+
+                        <!-- KPIs -->
+                        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+                            <div class="stat-card">
+                                <div class="stat-icon blue">📦</div>
+                                <div class="stat-info"><div class="stat-value">11</div><div class="stat-label">Tổng đơn hàng tháng 4</div></div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon orange">🔨</div>
+                                <div class="stat-info"><div class="stat-value">5</div><div class="stat-label">Đang sản xuất</div></div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">🚚</div>
+                                <div class="stat-info"><div class="stat-value">3</div><div class="stat-label">Đang giao hàng</div></div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon purple">✅</div>
+                                <div class="stat-info"><div class="stat-value">3</div><div class="stat-label">Hoàn tất tháng này</div></div>
+                                <span class="stat-trend up">↑ 1 so với T3</span>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <div class="table-header">
+                                <span style="font-weight:600;">11 đơn hàng</span>
+                                <div class="flex-gap">
+                                    <select style="font-size:12px;padding:3px 8px;border:1px solid var(--border-color);border-radius:4px;"><option>Tất cả chi nhánh</option><option>NK</option><option>BT</option></select>
+                                </div>
+                            </div>
+                            <table class="table" id="ordersTable">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox"></th>
+                                        <th>Mã đơn hàng</th>
+                                        <th>Từ báo giá</th>
+                                        <th>Khách hàng</th>
+                                        <th>Nhân viên</th>
+                                        <th>Ngày xác nhận</th>
+                                        <th>Ngày giao hẹn</th>
+                                        <th style="text-align:right;">Giá trị</th>
+                                        <th>Thanh toán</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-ostatus="confirmed">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" onclick="openOrderDetail('SO-2026-015');return false;" style="color:var(--odoo-primary);font-weight:600;">SO-2026-015</a></td>
+                                        <td style="font-size:11px;color:var(--text-secondary);">QT-2026-047</td>
+                                        <td>Anh Tuấn - Cty ABC</td>
+                                        <td>Lê Thị Hương</td>
+                                        <td>09/04/2026</td>
+                                        <td>20/05/2026</td>
+                                        <td style="text-align:right;font-weight:600;">350.000.000</td>
+                                        <td><span class="badge badge-warning">Chờ cọc</span></td>
+                                        <td><span class="badge badge-info">Đã xác nhận</span></td>
+                                        <td><button class="btn btn-secondary btn-sm" onclick="openOrderDetail('SO-2026-015')">Chi tiết</button></td>
+                                    </tr>
+                                    <tr data-ostatus="production">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" onclick="openOrderDetail('SO-2026-014');return false;" style="color:var(--odoo-primary);font-weight:600;">SO-2026-014</a></td>
+                                        <td style="font-size:11px;color:var(--text-secondary);">QT-2026-043</td>
+                                        <td>Anh Dũng - Vinhome CP</td>
+                                        <td>Nguyễn Thị Thanh</td>
+                                        <td>06/04/2026</td>
+                                        <td>12/05/2026</td>
+                                        <td style="text-align:right;font-weight:600;">165.000.000</td>
+                                        <td><span class="badge badge-success">Đã cọc 30%</span></td>
+                                        <td><span class="badge badge-warning">Đang SX</span></td>
+                                        <td><button class="btn btn-secondary btn-sm" onclick="openOrderDetail('SO-2026-014')">Chi tiết</button></td>
+                                    </tr>
+                                    <tr data-ostatus="production">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" style="color:var(--odoo-primary);font-weight:600;">SO-2026-013</a></td>
+                                        <td style="font-size:11px;color:var(--text-secondary);">QT-2026-040</td>
+                                        <td>Chị Thảo - Showroom Q1</td>
+                                        <td>Lê Thị Hương</td>
+                                        <td>03/04/2026</td>
+                                        <td>05/05/2026</td>
+                                        <td style="text-align:right;font-weight:600;">280.000.000</td>
+                                        <td><span class="badge badge-success">Đã cọc 30%</span></td>
+                                        <td><span class="badge badge-warning">Đang SX</span></td>
+                                        <td><button class="btn btn-secondary btn-sm">Chi tiết</button></td>
+                                    </tr>
+                                    <tr data-ostatus="delivery">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" onclick="openOrderDetail('SO-2026-012');return false;" style="color:var(--odoo-primary);font-weight:600;">SO-2026-012</a></td>
+                                        <td style="font-size:11px;color:var(--text-secondary);">QT-2026-037</td>
+                                        <td>Anh Tâm - Nhà phố Q9</td>
+                                        <td>Trần Văn Minh</td>
+                                        <td>28/03/2026</td>
+                                        <td>15/04/2026</td>
+                                        <td style="text-align:right;font-weight:600;">380.000.000</td>
+                                        <td><span class="badge badge-info">Đã cọc 70%</span></td>
+                                        <td><span class="badge badge-active">Đang giao</span></td>
+                                        <td><button class="btn btn-secondary btn-sm" onclick="openOrderDetail('SO-2026-012')">Chi tiết</button></td>
+                                    </tr>
+                                    <tr data-ostatus="delivery">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" style="color:var(--odoo-primary);font-weight:600;">SO-2026-011</a></td>
+                                        <td style="font-size:11px;color:var(--text-secondary);">QT-2026-035</td>
+                                        <td>Chị Ngọc - Sunrise City</td>
+                                        <td>Lê Thị Hương</td>
+                                        <td>26/03/2026</td>
+                                        <td>14/04/2026</td>
+                                        <td style="text-align:right;font-weight:600;">220.000.000</td>
+                                        <td><span class="badge badge-info">Đã cọc 40%</span></td>
+                                        <td><span class="badge badge-active">Đang giao</span></td>
+                                        <td><button class="btn btn-secondary btn-sm">Chi tiết</button></td>
+                                    </tr>
+                                    <tr data-ostatus="delivery">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" style="color:var(--odoo-primary);font-weight:600;">SO-2026-010</a></td>
+                                        <td style="font-size:11px;color:var(--text-secondary);">QT-2026-033</td>
+                                        <td>Anh Phúc - Biệt thự TD</td>
+                                        <td>Nguyễn Thị Thanh</td>
+                                        <td>20/03/2026</td>
+                                        <td>10/04/2026</td>
+                                        <td style="text-align:right;font-weight:600;">680.000.000</td>
+                                        <td><span class="badge badge-success">Đã cọc 70%</span></td>
+                                        <td><span class="badge badge-active">Lắp đặt</span></td>
+                                        <td><button class="btn btn-secondary btn-sm">Chi tiết</button></td>
+                                    </tr>
+                                    <tr data-ostatus="done">
+                                        <td><input type="checkbox"></td>
+                                        <td><a href="#" style="color:var(--odoo-primary);font-weight:600;">SO-2026-009</a></td>
+                                        <td style="font-size:11px;color:var(--text-secondary);">QT-2026-029</td>
+                                        <td>Chị Ngân - VP Q1</td>
+                                        <td>Trần Văn Minh</td>
+                                        <td>10/03/2026</td>
+                                        <td>31/03/2026</td>
+                                        <td style="text-align:right;font-weight:600;">98.000.000</td>
+                                        <td><span class="badge badge-success">Thanh toán đủ</span></td>
+                                        <td><span class="badge badge-completed">Hoàn tất</span></td>
+                                        <td><button class="btn btn-secondary btn-sm">Chi tiết</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="padding:var(--spacing-md);display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border-color);">
+                                <span style="font-size:12px;color:var(--text-secondary);">Hiển thị 1-7 trên 11</span>
+                                <div class="flex-gap">
+                                    <button class="btn btn-secondary btn-sm" disabled>◀ Trước</button>
+                                    <button class="btn btn-primary btn-sm">1</button>
+                                    <button class="btn btn-secondary btn-sm">2</button>
+                                    <button class="btn btn-secondary btn-sm">Tiếp ▶</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Detail -->
+                    <div id="orders-detail" style="display:none;">
+                        <button class="back-btn" onclick="showOrderList()">← Quay lại Đơn hàng</button>
+                        <div class="page-header">
+                            <h1 class="page-title" id="soDetailTitle">SO-2026-012: Nhà phố Quận 9</h1>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary btn-sm" onclick="showToast('In đơn hàng...','info')">🖨️ In</button>
+                                <button class="btn btn-secondary btn-sm" onclick="showToast('Xuất hợp đồng PDF...','info')">📄 HĐ PDF</button>
+                                <button class="btn btn-success btn-sm" onclick="showToast('Đã xác nhận bàn giao! Cập nhật hoàn tất.','success')">✅ Xác nhận bàn giao</button>
+                            </div>
+                        </div>
+                        <div class="detail-header">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+                                <div>
+                                    <div class="detail-title" id="soDetailCode">SO-2026-012</div>
+                                    <div style="color:var(--text-secondary);font-size:13px;margin-top:3px;">Đơn hàng nội thất trọn gói</div>
+                                </div>
+                                <span class="badge badge-active" style="font-size:13px;padding:5px 14px;">Đang giao hàng</span>
+                            </div>
+                            <div class="detail-meta">
+                                <div class="detail-meta-item"><span class="detail-meta-label">Khách hàng</span><span class="detail-meta-value">Anh Tâm - 0912 xxx xxx</span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Địa chỉ giao</span><span class="detail-meta-value">Nhà phố đường 12, P.Phước Bình, Q.9</span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Nhân viên</span><span class="detail-meta-value">Trần Văn Minh</span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Chi nhánh</span><span class="detail-meta-value"><span class="entity-tag entity-nk">NK Store</span></span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Từ báo giá</span><span class="detail-meta-value">QT-2026-037</span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Ngày xác nhận</span><span class="detail-meta-value">28/03/2026</span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Ngày giao hẹn</span><span class="detail-meta-value" style="color:var(--odoo-warning);">15/04/2026</span></div>
+                                <div class="detail-meta-item"><span class="detail-meta-label">Giá trị hợp đồng</span><span class="detail-meta-value" style="color:var(--odoo-primary);font-size:16px;">380.000.000 đ</span></div>
+                            </div>
+                            <!-- Progress Steps -->
+                            <div style="margin-top:16px;">
+                                <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:10px;">Tiến độ đơn hàng:</div>
+                                <div class="order-progress">
+                                    <div class="order-step done"><div class="order-step-dot">✓</div><div class="order-step-label">Xác nhận<br>28/03</div></div>
+                                    <div class="order-step done"><div class="order-step-dot">✓</div><div class="order-step-label">Nhận cọc<br>29/03</div></div>
+                                    <div class="order-step done"><div class="order-step-dot">✓</div><div class="order-step-label">Sản xuất<br>01/04</div></div>
+                                    <div class="order-step active"><div class="order-step-dot">🚚</div><div class="order-step-label">Giao hàng<br>13/04</div></div>
+                                    <div class="order-step"><div class="order-step-dot">🔨</div><div class="order-step-label">Lắp đặt</div></div>
+                                    <div class="order-step"><div class="order-step-dot">✅</div><div class="order-step-label">Bàn giao</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Tabs -->
+                        <div class="tabs">
+                            <div class="tab active" onclick="switchTab(this,'so-tab-items')">📦 Sản phẩm</div>
+                            <div class="tab" onclick="switchTab(this,'so-tab-payment')">💳 Thanh toán</div>
+                            <div class="tab" onclick="switchTab(this,'so-tab-delivery')">🚚 Giao hàng</div>
+                            <div class="tab" onclick="switchTab(this,'so-tab-notes')">📝 Ghi chú</div>
+                        </div>
+                        <div class="tab-content active" id="so-tab-items">
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead><tr><th>Sản phẩm</th><th style="text-align:center;">SL</th><th style="text-align:right;">Đơn giá</th><th style="text-align:right;">Thành tiền</th><th>Tiến độ SX</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>Sofa Góc L Cao Cấp</strong></td><td style="text-align:center;">1</td><td style="text-align:right;">55.000.000</td><td style="text-align:right;font-weight:600;">55.000.000</td><td><span class="badge badge-success">Hoàn tất</span></td></tr>
+                                        <tr><td><strong>Bàn Ăn Gỗ Óc Chó 8 người</strong></td><td style="text-align:center;">1</td><td style="text-align:right;">28.000.000</td><td style="text-align:right;font-weight:600;">28.000.000</td><td><span class="badge badge-success">Hoàn tất</span></td></tr>
+                                        <tr><td><strong>Tủ Bếp Inox + MDF</strong></td><td style="text-align:center;">1</td><td style="text-align:right;">85.000.000</td><td style="text-align:right;font-weight:600;">85.000.000</td><td><span class="badge badge-success">Hoàn tất</span></td></tr>
+                                        <tr><td><strong>Giường Ngủ Master 1.8m</strong></td><td style="text-align:center;">1</td><td style="text-align:right;">45.000.000</td><td style="text-align:right;font-weight:600;">45.000.000</td><td><span class="badge badge-success">Hoàn tất</span></td></tr>
+                                        <tr><td><strong>Tủ Quần Áo 4 Cánh</strong></td><td style="text-align:center;">2</td><td style="text-align:right;">22.000.000</td><td style="text-align:right;font-weight:600;">44.000.000</td><td><span class="badge badge-active">Đang vận chuyển</span></td></tr>
+                                        <tr style="background:var(--content-bg);"><td colspan="3" style="text-align:right;font-weight:700;font-size:14px;">Tổng cộng (bao gồm VAT):</td><td style="text-align:right;font-weight:700;font-size:14px;color:var(--odoo-primary);">380.000.000 đ</td><td></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="so-tab-payment">
+                            <div class="card"><div class="card-body">
+                                <div class="table-container" style="border:none;">
+                                    <table class="table">
+                                        <thead><tr><th>Đợt thanh toán</th><th>Điều kiện</th><th style="text-align:right;">Số tiền</th><th>Ngày hẹn</th><th>Trạng thái</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>Đặt cọc (30%)</td><td>Khi ký hợp đồng</td><td style="text-align:right;font-weight:600;">114.000.000</td><td>28/03/2026</td><td><span class="badge badge-success">✅ Đã nhận</span></td></tr>
+                                            <tr><td>Đợt 2 (40%)</td><td>Khi giao hàng</td><td style="text-align:right;font-weight:600;">152.000.000</td><td>13/04/2026</td><td><span class="badge badge-warning">⏳ Chờ nhận</span></td></tr>
+                                            <tr><td>Thanh lý (30%)</td><td>Khi lắp đặt xong</td><td style="text-align:right;font-weight:600;">114.000.000</td><td>18/04/2026</td><td><span class="badge badge-secondary">🕐 Chưa đến hạn</span></td></tr>
+                                            <tr style="background:var(--content-bg);">
+                                                <td colspan="2" style="font-weight:700;">Đã thu:</td>
+                                                <td style="text-align:right;font-weight:700;color:var(--odoo-success);">114.000.000</td>
+                                                <td colspan="2"></td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" style="font-weight:700;">Còn lại:</td>
+                                                <td style="text-align:right;font-weight:700;color:var(--odoo-warning);">266.000.000</td>
+                                                <td colspan="2"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <button class="btn btn-success btn-sm mt-md" onclick="showToast('Ghi nhận thanh toán 152.000.000đ từ Anh Tâm','success')">+ Ghi nhận thanh toán đợt 2</button>
+                            </div></div>
+                        </div>
+                        <div class="tab-content" id="so-tab-delivery">
+                            <div class="card"><div class="card-body">
+                                <div class="form-row">
+                                    <div class="form-group"><label>Đội giao hàng</label><div class="readonly-field">Đội 2 - Xe tải 29B-12345</div></div>
+                                    <div class="form-group"><label>Tài xế</label><div class="readonly-field">Nguyễn Văn Hùng - 0987xxx</div></div>
+                                    <div class="form-group"><label>Ngày giao thực tế</label><input type="date" value="2026-04-13"></div>
+                                </div>
+                                <div class="form-group"><label>Địa chỉ giao hàng</label><div class="readonly-field">Nhà phố đường 12, Phường Phước Bình, Quận 9, TP.HCM</div></div>
+                                <div class="form-group" style="margin-top:12px;"><label>Ghi chú giao hàng</label><textarea rows="2" style="width:100%;border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:8px;font-size:13px;">Giao vào buổi sáng. Liên hệ KH trước 1 ngày. Cần thang máy để đưa đồ lên tầng 3.</textarea></div>
+                            </div></div>
+                        </div>
+                        <div class="tab-content" id="so-tab-notes">
+                            <div class="card"><div class="card-body">
+                                <div class="form-group"><label>Ghi chú nội bộ</label><textarea rows="4" style="width:100%;border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:8px;font-size:13px;">KH yêu cầu màu gỗ óc chó đậm hơn mẫu ban đầu. Đã confirm với xưởng SX ngày 01/04. Cần kiểm tra lại màu sofa trước khi giao.</textarea></div>
+                                <div style="margin-top:12px;"><button class="btn btn-secondary btn-sm" onclick="showToast('Đã lưu ghi chú','success')">💾 Lưu ghi chú</button></div>
+                            </div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ======================================================= -->
+                <!-- VIEW: BÁO CÁO BÁN HÀNG -->
+                <!-- ======================================================= -->
+                <div class="module-view" id="view-report">
+                    <div class="page-header">
+                        <h1 class="page-title">📊 Báo cáo bán hàng</h1>
+                        <div class="btn-group">
+                            <select style="font-size:12px;padding:6px 10px;border:1px solid var(--border-color);border-radius:var(--radius-sm);">
+                                <option>Tháng 4 / 2026</option><option>Tháng 3 / 2026</option><option>Quý 1 / 2026</option>
+                            </select>
+                            <button class="btn btn-secondary btn-sm" onclick="showToast('Xuất báo cáo PDF...','info')">📊 Xuất PDF</button>
+                            <button class="btn btn-secondary btn-sm" onclick="showToast('Xuất Excel...','info')">📥 Excel</button>
+                        </div>
+                    </div>
+
+                    <!-- Top KPIs -->
+                    <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">💰</div>
+                            <div class="stat-info"><div class="stat-value">1,25B</div><div class="stat-label">Doanh thu T4</div></div>
+                            <span class="stat-trend up">↑ 12% vs T3</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">📋</div>
+                            <div class="stat-info"><div class="stat-value">18</div><div class="stat-label">Báo giá phát hành</div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">✅</div>
+                            <div class="stat-info"><div class="stat-value">68%</div><div class="stat-label">Tỷ lệ chốt sale</div></div>
+                            <span class="stat-trend down">↓ 2% vs KH</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">💸</div>
+                            <div class="stat-info"><div class="stat-value">62,5M</div><div class="stat-label">Tổng hoa hồng</div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red">📦</div>
+                            <div class="stat-info"><div class="stat-value">92M</div><div class="stat-label">Giá trị TB/đơn</div></div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">📈 Doanh thu theo tháng (2026)</span></div>
+                            <div class="card-body">
+                                <div class="bar-chart">
+                                    <div class="bar-item"><div class="bar-value">890M</div><div class="bar" style="height:72%;background:linear-gradient(180deg,#8B2500,#c0392b);"></div><div class="bar-label">T1</div></div>
+                                    <div class="bar-item"><div class="bar-value">1,05B</div><div class="bar" style="height:84%;background:linear-gradient(180deg,#8B2500,#c0392b);"></div><div class="bar-label">T2</div></div>
+                                    <div class="bar-item"><div class="bar-value">1,12B</div><div class="bar" style="height:90%;background:linear-gradient(180deg,#8B2500,#c0392b);"></div><div class="bar-label">T3</div></div>
+                                    <div class="bar-item"><div class="bar-value">1,25B</div><div class="bar" style="height:100%;background:linear-gradient(180deg,#8B2500,var(--odoo-primary));border:2px solid var(--odoo-primary);"></div><div class="bar-label"><strong>T4</strong></div></div>
+                                    <div class="bar-item"><div class="bar-value">—</div><div class="bar" style="height:10%;background:#E9ECEF;"></div><div class="bar-label">T5</div></div>
+                                    <div class="bar-item"><div class="bar-value">—</div><div class="bar" style="height:10%;background:#E9ECEF;"></div><div class="bar-label">T6</div></div>
+                                </div>
+                                <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;">
+                                    <span style="color:var(--odoo-primary);">■ Doanh thu thực tế</span>
+                                    <span style="color:#E9ECEF;border:1px solid #ccc;padding:1px 4px;">■ Kế hoạch</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">🏪 Doanh thu theo chi nhánh</span></div>
+                            <div class="card-body">
+                                <div style="margin-bottom:16px;">
+                                    <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:13px;font-weight:600;">NK Store - Nam Kỳ</span><span style="font-size:13px;font-weight:700;color:var(--odoo-primary);">720M đ</span></div>
+                                    <div class="progress-bar"><div class="progress-fill blue" style="width:58%;"></div></div>
+                                    <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">58% tổng doanh thu · Mục tiêu: 800M</div>
+                                </div>
+                                <div style="margin-bottom:16px;">
+                                    <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:13px;font-weight:600;">BT Store - Bà Triệu</span><span style="font-size:13px;font-weight:700;color:var(--odoo-success);">530M đ</span></div>
+                                    <div class="progress-bar"><div class="progress-fill green" style="width:42%;"></div></div>
+                                    <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">42% tổng doanh thu · Mục tiêu: 600M</div>
+                                </div>
+                                <div>
+                                    <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:13px;font-weight:600;">HQ Backoffice</span><span style="font-size:13px;font-weight:700;color:var(--text-secondary);">0M đ</span></div>
+                                    <div class="progress-bar"><div class="progress-fill orange" style="width:0%;"></div></div>
+                                    <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">Không có target trực tiếp</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Team Performance -->
+                    <div class="section-title mt-lg">👥 Hiệu suất nhân viên bán hàng</div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Hạng</th>
+                                    <th>Nhân viên</th>
+                                    <th>Chi nhánh</th>
+                                    <th>Báo giá</th>
+                                    <th>Đơn thắng</th>
+                                    <th>Tỷ lệ</th>
+                                    <th style="text-align:right;">Doanh thu</th>
+                                    <th>Mục tiêu</th>
+                                    <th style="text-align:right;">Hoa hồng</th>
+                                    <th>Tiến độ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-size:18px;">🥇</td>
+                                    <td><strong>Nguyễn Thị Thanh</strong></td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td>7</td><td>5</td>
+                                    <td><span style="color:var(--odoo-success);font-weight:700;">71%</span></td>
+                                    <td style="text-align:right;font-weight:700;color:var(--odoo-primary);">420.000.000</td>
+                                    <td style="font-size:12px;color:var(--text-secondary);">500M</td>
+                                    <td style="text-align:right;font-weight:600;color:var(--odoo-success);">21.000.000</td>
+                                    <td style="min-width:100px;">
+                                        <div class="progress-bar"><div class="commission-fill" style="width:84%;"></div></div>
+                                        <div style="font-size:10px;color:var(--text-secondary);">84%</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size:18px;">🥈</td>
+                                    <td><strong>Trần Văn Minh</strong></td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td>6</td><td>4</td>
+                                    <td><span style="color:var(--odoo-success);font-weight:700;">67%</span></td>
+                                    <td style="text-align:right;font-weight:700;color:var(--odoo-primary);">385.000.000</td>
+                                    <td style="font-size:12px;color:var(--text-secondary);">450M</td>
+                                    <td style="text-align:right;font-weight:600;color:var(--odoo-success);">19.250.000</td>
+                                    <td style="min-width:100px;">
+                                        <div class="progress-bar"><div class="commission-fill" style="width:76%;"></div></div>
+                                        <div style="font-size:10px;color:var(--text-secondary);">76%</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size:18px;">🥉</td>
+                                    <td><strong>Lê Thị Hương</strong></td>
+                                    <td><span class="entity-tag entity-bt">BT</span></td>
+                                    <td>5</td><td>3</td>
+                                    <td><span style="color:var(--odoo-warning);font-weight:700;">60%</span></td>
+                                    <td style="text-align:right;font-weight:700;color:var(--odoo-primary);">298.000.000</td>
+                                    <td style="font-size:12px;color:var(--text-secondary);">400M</td>
+                                    <td style="text-align:right;font-weight:600;color:var(--odoo-warning);">14.900.000</td>
+                                    <td style="min-width:100px;">
+                                        <div class="progress-bar"><div class="commission-fill" style="width:60%;"></div></div>
+                                        <div style="font-size:10px;color:var(--text-secondary);">60%</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size:16px;">4</td>
+                                    <td><strong>Phạm Thị Linh</strong></td>
+                                    <td><span class="entity-tag entity-bt">BT</span></td>
+                                    <td>4</td><td>2</td>
+                                    <td><span style="color:var(--odoo-danger);font-weight:700;">50%</span></td>
+                                    <td style="text-align:right;font-weight:700;color:var(--odoo-primary);">147.000.000</td>
+                                    <td style="font-size:12px;color:var(--text-secondary);">350M</td>
+                                    <td style="text-align:right;font-weight:600;color:var(--odoo-danger);">7.350.000</td>
+                                    <td style="min-width:100px;">
+                                        <div class="progress-bar"><div class="commission-fill" style="width:42%;"></div></div>
+                                        <div style="font-size:10px;color:var(--odoo-danger);">42% ⚠️</div>
+                                    </td>
+                                </tr>
+                                <tr style="background:var(--content-bg);font-weight:700;">
+                                    <td colspan="6">TỔNG CỘNG</td>
+                                    <td style="text-align:right;color:var(--odoo-primary);">1.250.000.000</td>
+                                    <td style="color:var(--text-secondary);">1,7B</td>
+                                    <td style="text-align:right;color:var(--odoo-success);">62.500.000</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Product Category Analysis -->
+                    <div class="grid-2 mt-lg">
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">🛋️ Doanh thu theo danh mục sản phẩm</span></div>
+                            <div class="card-body">
+                                <div style="display:flex;flex-direction:column;gap:10px;">
+                                    <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>🛋️ Sofa & Phòng khách</span><span style="font-weight:600;">380M (30%)</span></div><div class="progress-bar"><div class="commission-fill" style="width:30%;"></div></div></div>
+                                    <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>🍽️ Bàn ăn & Tủ bếp</span><span style="font-weight:600;">300M (24%)</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:24%;"></div></div></div>
+                                    <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>🛏️ Phòng ngủ</span><span style="font-weight:600;">250M (20%)</span></div><div class="progress-bar"><div class="progress-fill green" style="width:20%;"></div></div></div>
+                                    <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>🪑 Ghế & Phụ kiện</span><span style="font-weight:600;">200M (16%)</span></div><div class="progress-bar"><div class="progress-fill orange" style="width:16%;"></div></div></div>
+                                    <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>💡 Khác</span><span style="font-weight:600;">120M (10%)</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:10%;"></div></div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">📉 Tỷ lệ hủy & lý do</span></div>
+                            <div class="card-body">
+                                <div style="margin-bottom:16px;padding:12px;background:var(--content-bg);border-radius:var(--radius-md);">
+                                    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Tháng 4 / 2026</div>
+                                    <div style="display:flex;gap:24px;">
+                                        <div style="text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--odoo-danger);">2</div><div style="font-size:11px;color:var(--text-secondary);">Đơn bị hủy/mất</div></div>
+                                        <div style="text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--odoo-warning);">360M</div><div style="font-size:11px;color:var(--text-secondary);">Giá trị mất</div></div>
+                                        <div style="text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--odoo-success);">68%</div><div style="font-size:11px;color:var(--text-secondary);">Tỷ lệ thắng</div></div>
+                                    </div>
+                                </div>
+                                <div style="font-size:12px;font-weight:600;margin-bottom:8px;">Lý do mất:</div>
+                                <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+                                    <div style="display:flex;justify-content:space-between;"><span>🔴 Giá cao hơn đối thủ</span><span style="font-weight:600;color:var(--odoo-danger);">50%</span></div>
+                                    <div style="display:flex;justify-content:space-between;"><span>🟠 Khách hàng tạm hoãn dự án</span><span style="font-weight:600;color:var(--odoo-warning);">30%</span></div>
+                                    <div style="display:flex;justify-content:space-between;"><span>🟡 Không đáp ứng yêu cầu thiết kế</span><span style="font-weight:600;color:var(--text-secondary);">20%</span></div>
+                                </div>
+                                <div style="margin-top:16px;padding:10px;background:#FEF2F2;border-radius:var(--radius-sm);border-left:3px solid var(--odoo-danger);">
+                                    <div style="font-size:12px;font-weight:600;color:var(--odoo-danger);">💡 Khuyến nghị</div>
+                                    <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Xem xét chính sách giá linh hoạt hơn cho phân khúc < 200M đ để tăng tỷ lệ chuyển đổi.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end page-content -->
+        </div><!-- end main-content -->
+    </div><!-- end app-layout -->
+
+    <!-- ======================================================= -->
+    <!-- MODAL: Tạo báo giá mới -->
+    <!-- ======================================================= -->
+    <div class="modal-overlay" id="newQuotationModal">
+        <div class="modal" style="max-width:640px;">
+            <div class="modal-header">
+                <span class="modal-title">➕ Tạo báo giá mới</span>
+                <button class="modal-close" onclick="closeModal('newQuotationModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group" style="grid-column:span 3;"><label>Tên dự án / Khách hàng *</label><input type="text" placeholder="VD: Anh Tuấn - Căn hộ Vinhome Q9"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Số điện thoại *</label><input type="text" placeholder="09xx xxx xxx"></div>
+                    <div class="form-group"><label>Nhân viên bán hàng *</label>
+                        <select><option>Nguyễn Thị Thanh</option><option>Trần Văn Minh</option><option>Lê Thị Hương</option><option>Phạm Thị Linh</option></select>
+                    </div>
+                    <div class="form-group"><label>Chi nhánh *</label>
+                        <select><option>NK Store - Nam Kỳ</option><option>BT Store - Bà Triệu</option><option>HQ Backoffice</option></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="grid-column:span 2;"><label>Địa chỉ dự án</label><input type="text" placeholder="VD: Căn 05, Tòa S1, Vinhomes Grand Park, Q.9"></div>
+                    <div class="form-group"><label>Hết hạn báo giá</label><input type="date"></div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group"><label>Giá trị ước tính (đ)</label><input type="text" placeholder="VD: 150.000.000"></div>
+                    <div class="form-group"><label>Nguồn khách hàng</label>
+                        <select><option>Giới thiệu</option><option>Facebook Ads</option><option>Zalo</option><option>Showroom</option><option>Sự kiện</option><option>Website</option></select>
+                    </div>
+                </div>
+                <div class="form-group"><label>Ghi chú ban đầu</label><textarea rows="2" placeholder="Yêu cầu đặc biệt, style thiết kế, timeline..."></textarea></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('newQuotationModal')">Hủy</button>
+                <button class="btn btn-secondary" onclick="closeModal('newQuotationModal'); showToast('Đã tạo nháp QT-2026-048','info')">💾 Lưu nháp</button>
+                <button class="btn btn-primary" onclick="closeModal('newQuotationModal'); showToast('Tạo báo giá QT-2026-048 thành công!','success')">📋 Tạo & Gửi ngay</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-pattern"></div>
+
+    <script>
+        // ===== NAV MAP =====
+        const navMap = { 'pipeline': 'nav-pipeline', 'quotations': 'nav-quotations', 'orders': 'nav-orders', 'report': 'nav-report' };
+        const breadcrumbNames = { 'pipeline': 'Đường ống', 'quotations': 'Báo giá', 'orders': 'Đơn hàng', 'report': 'Báo cáo bán hàng' };
+
+        function switchViewNav(viewName) {
+            // Hide all views
+            document.querySelectorAll('.module-view').forEach(v => v.classList.remove('active'));
+            const target = document.getElementById('view-' + viewName);
+            if (target) target.classList.add('active');
+            // Scroll top
+            document.querySelector('.page-content').scrollTop = 0;
+            // Update breadcrumb
+            document.getElementById('breadcrumbCurrent').textContent = breadcrumbNames[viewName] || viewName;
+            // Update nav active
+            Object.values(navMap).forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('active'); });
+            const navId = navMap[viewName];
+            if (navId) { const navEl = document.getElementById(navId); if (navEl) navEl.classList.add('active'); }
+            // If switching to quotations/orders, make sure list is visible
+            if (viewName === 'quotations') { showQuotationList(); }
+            if (viewName === 'orders') { showOrderList(); }
+        }
+
+        // ===== QUOTATION DETAIL =====
+        function openQuotationDetail(code) {
+            document.getElementById('quotations-list').style.display = 'none';
+            document.getElementById('quotations-detail').style.display = 'block';
+            document.getElementById('qtDetailTitle').textContent = code + ': Vinhomes Grand Park';
+            document.getElementById('breadcrumbCurrent').textContent = 'Báo giá / ' + code;
+            switchViewNav_noNav('quotations');
+        }
+        function showQuotationList() {
+            document.getElementById('quotations-list').style.display = 'block';
+            document.getElementById('quotations-detail').style.display = 'none';
+            document.getElementById('breadcrumbCurrent').textContent = 'Báo giá';
+        }
+
+        // ===== ORDER DETAIL =====
+        function openOrderDetail(code) {
+            switchViewNav_noNav('orders');
+            document.getElementById('orders-list').style.display = 'none';
+            document.getElementById('orders-detail').style.display = 'block';
+            const titles = { 'SO-2026-015': 'SO-2026-015: Văn phòng Cty ABC', 'SO-2026-014': 'SO-2026-014: Vinhome Central Park', 'SO-2026-012': 'SO-2026-012: Nhà phố Quận 9' };
+            document.getElementById('soDetailTitle').textContent = titles[code] || code;
+            document.getElementById('soDetailCode').textContent = code;
+            document.getElementById('breadcrumbCurrent').textContent = 'Đơn hàng / ' + code;
+        }
+        function showOrderList() {
+            document.getElementById('orders-list').style.display = 'block';
+            document.getElementById('orders-detail').style.display = 'none';
+            document.getElementById('breadcrumbCurrent').textContent = 'Đơn hàng';
+        }
+
+        // Helper: switch view without re-routing nav (used internally)
+        function switchViewNav_noNav(viewName) {
+            document.querySelectorAll('.module-view').forEach(v => v.classList.remove('active'));
+            const t = document.getElementById('view-' + viewName);
+            if (t) t.classList.add('active');
+            Object.values(navMap).forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('active'); });
+            const navId = navMap[viewName];
+            if (navId) { const navEl = document.getElementById(navId); if (navEl) navEl.classList.add('active'); }
+        }
+
+        // ===== QUOTATION FILTER =====
+        function filterQuotations(status) {
+            document.querySelectorAll('#quotationsTable tbody tr').forEach(row => {
+                row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none';
+            });
+            ['qf-all','qf-draft','qf-sent','qf-won','qf-cancelled'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                btn.style.background = 'white'; btn.style.color = 'var(--text-primary)'; btn.style.borderColor = 'var(--border-color)';
+            });
+            const map = { 'all': 'qf-all', 'draft': 'qf-draft', 'sent': 'qf-sent', 'won': 'qf-won', 'cancelled': 'qf-cancelled' };
+            const active = document.getElementById(map[status]);
+            if (active) { active.style.background = 'var(--odoo-primary)'; active.style.color = 'white'; active.style.borderColor = 'var(--odoo-primary)'; }
+        }
+
+        // ===== ORDER FILTER =====
+        function filterOrders(status) {
+            document.querySelectorAll('#ordersTable tbody tr').forEach(row => {
+                row.style.display = (status === 'all' || row.dataset.ostatus === status) ? '' : 'none';
+            });
+            ['of-all','of-confirmed','of-production','of-delivery','of-done'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                btn.style.background = 'white'; btn.style.color = 'var(--text-primary)'; btn.style.borderColor = 'var(--border-color)';
+            });
+            const map = { 'all': 'of-all', 'confirmed': 'of-confirmed', 'production': 'of-production', 'delivery': 'of-delivery', 'done': 'of-done' };
+            const active = document.getElementById(map[status]);
+            if (active) { active.style.background = 'var(--odoo-primary)'; active.style.color = 'white'; active.style.borderColor = 'var(--odoo-primary)'; }
+        }
+
+        // ===== TABS =====
+        function switchTab(tabEl, contentId) {
+            tabEl.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tabEl.classList.add('active');
+            const section = tabEl.closest('.module-view') || document;
+            section.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const target = document.getElementById(contentId);
+            if (target) target.classList.add('active');
+        }
+
+        // ===== MODAL =====
+        function openModal(id) { const m = document.getElementById(id); if (m) m.classList.add('show'); }
+        function closeModal(id) { const m = document.getElementById(id); if (m) m.classList.remove('show'); }
+        document.querySelectorAll('.modal-overlay').forEach(o => { o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); }); });
+
+        // ===== ENTITY =====
+        function switchEntity(val) { showToast('Đã chuyển sang: ' + val.toUpperCase(), 'info'); }
+
+        // ===== TOAST =====
+        function showToast(message, type = 'info') {
+            const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML = '<span class="toast-icon">' + (icons[type] || 'ℹ️') + '</span><span class="toast-message">' + message + '</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>';
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => { if (toast.parentElement) toast.remove(); }, 4000);
+        }
+
+        // ===== KEYBOARD =====
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && e.key === 'k') { e.preventDefault(); document.getElementById('globalSearch').focus(); }
+            if (e.key === 'Escape') { document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show')); }
+        });
+
+        // ===== INIT =====
+        window.addEventListener('load', () => { showToast('Sales Module đã tải · 18 báo giá · 11 đơn hàng tháng 4', 'info'); });
+    </script>
+</body>
+</html>

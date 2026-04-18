@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô hình kế toán - DTA Space Odoo 19</title>
+    <style>
+        /* ============================================
+           EMBEDDED ODOO 19 STYLES (Self-contained)
+           ============================================ */
+        :root {
+            --odoo-primary: #8B2500;
+            --odoo-primary-light: #FFF5F2;
+            --odoo-primary-dark: #6B1C00;
+            --odoo-secondary: #0D9488;
+            --odoo-success: #059669;
+            --odoo-warning: #D97706;
+            --odoo-danger: #DC2626;
+            --odoo-info: #0891B2;
+            --accent-gold: #C49549;
+            --sidebar-bg: #FFFFFF;
+            --sidebar-hover: #F9FAFB;
+            --sidebar-active: #FFF5F2;
+            --header-bg: #FFFFFF;
+            --content-bg: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --text-light: #9CA3AF;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: linear-gradient(180deg, #F9FAFB 0%, #F3F4F6 100%);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* LAYOUT */
+        .app-layout {
+            position: relative;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: relative;
+            width: 240px;
+            background: var(--sidebar-bg);
+            color: var(--text-primary);
+            border-right: 1px solid #E5E7EB;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--odoo-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .logo-text {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .entity-switcher {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .entity-switcher select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #E5E7EB;
+            border-radius: var(--radius-sm);
+            background: #F9FAFB;
+            color: var(--text-primary);
+            font-size: 11px;
+        }
+
+        .entity-switcher select option {
+            color: var(--text-primary);
+            background: white;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-sm) 0;
+        }
+
+        .nav-section {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .nav-section-title {
+            padding: var(--spacing-xs) var(--spacing-md);
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #9CA3AF;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 8px var(--spacing-md);
+            color: #4B5563;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: var(--spacing-sm);
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .nav-item:hover {
+            background: var(--sidebar-hover);
+            color: #111827;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, var(--odoo-primary-light) 0%, rgba(255,245,242,0) 100%);
+            color: var(--odoo-primary);
+            font-weight: 500;
+            border-left: 3px solid var(--odoo-primary);
+            box-shadow: inset 0 0 0 1px rgba(139, 37, 0, 0.05);
+        }
+
+        .nav-icon {
+            width: 18px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* MAIN CONTENT - using flexbox layout, no margins needed */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .page-content {
+            padding: 20px 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* TOP HEADER */
+        .top-header {
+            height: 44px;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 var(--spacing-md);
+            gap: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 13px;
+        }
+
+        .breadcrumb a {
+            color: var(--odoo-primary);
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            width: 200px;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--odoo-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        /* PAGE CONTENT */
+        .page-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-lg);
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 8px 16px;
+            border: 1px solid transparent;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            background: white;
+            color: var(--text-primary);
+            will-change: transform;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--odoo-primary) 0%, #9D2900 100%);
+            color: white;
+            border-color: var(--odoo-primary);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--odoo-primary-dark) 0%, var(--odoo-primary) 100%);
+        }
+
+        .btn-secondary {
+            border-color: var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-300);
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        /* STAT CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--odoo-primary), var(--accent-gold));
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue {
+            background: #E3F2FD;
+        }
+
+        .stat-icon.green {
+            background: #E8F5E9;
+        }
+
+        .stat-icon.orange {
+            background: #FFF3E0;
+        }
+
+        .stat-icon.red {
+            background: #FFEBEE;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* TABLES */
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: linear-gradient(180deg, #FAFAFA 0%, #F5F5F5 100%);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 13px;
+            transition: background var(--transition-fast);
+        }
+
+        .table tr:hover {
+            background: linear-gradient(90deg, var(--gray-50) 0%, rgba(249,250,251,0) 100%);
+        }
+
+        .table tr:nth-child(even) {
+            background: rgba(249, 250, 251, 0.3);
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #E8F5E9;
+            color: #388E3C;
+        }
+
+        .badge-warning {
+            background: #FFF3E0;
+            color: #F57C00;
+        }
+
+        .badge-danger {
+            background: #FFEBEE;
+            color: #D32F2F;
+        }
+
+        .badge-info {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .badge-secondary {
+            background: #F0F0F0;
+            color: #666;
+        }
+
+        /* ENTITY TAGS */
+        .entity-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .entity-tag.nk {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .entity-tag.bt {
+            background: #F3E5F5;
+            color: #7B1FA2;
+        }
+
+        .entity-tag.hq {
+            background: #E8F5E9;
+            color: #388E3C;
+        }
+
+        /* STOCK ALERTS */
+        .stock-alert {
+            padding: 10px 14px;
+            border-left: 4px solid var(--odoo-warning);
+            background: #FFF8E1;
+            margin-bottom: 0px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+        }
+
+        .stock-alert.critical {
+            border-left-color: var(--odoo-danger);
+            background: #FFEBEE;
+        }
+
+        /* FORM STYLES */
+        .form-view {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+        }
+
+        .form-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-statusbar {
+            display: flex;
+            gap: 4px;
+        }
+
+        .statusbar-btn {
+            padding: 4px 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .statusbar-btn.active {
+            background: var(--odoo-primary);
+            color: white;
+            border-color: var(--odoo-primary);
+        }
+
+        .form-body {
+            padding: var(--spacing-lg);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--odoo-primary);
+            box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+        }
+
+        /* QR CODE PLACEHOLDER */
+        .qr-code {
+            width: 70px;
+            height: 70px;
+            background: #F0F0F0;
+            border: 1px dashed #CCC;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: #999;
+            text-align: center;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: var(--spacing-lg);
+        }
+
+        .modal-footer {
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-sm);
+        }
+
+        /* TOAST */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .tooltip::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+
+        /* Pattern decoration */
+        .sidebar-pattern {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background-image: url('../Media/pattern.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+
+        .page-pattern {
+            position: fixed;
+            bottom: 0px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            background-image: url('../Media/pattern.png');
+            background-size: contain;
+            margin-bottom: -20px;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-pattern"></div>
+                <div class="sidebar-logo">
+                    <img src="../Media/DTA-LOGO.png" alt="DTA Space" style="height: 32px; width: auto;">
+                    <div class="logo-text">DTA Space</div>
+                </div>
+            </div>
+            <div class="entity-switcher">
+                <select id="entitySwitcher" onchange="switchEntity(this.value)">
+                    <option value="hq">🏢 Văn phòng hỗ trợ HQ</option>
+                    <option value="nk">🏪 Cửa hàng Nam Kỳ</option>
+                    <option value="bt">🏪 Cửa hàng Bà Triệu</option>
+                </select>
+            </div>
+            <nav class="sidebar-nav">
+                <!-- Dashboard Link -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Tổng quan</div>
+                    <a class="nav-item" href="../index.html"><span class="nav-icon">📊</span><span>Bảng điều
+                            khiển</span></a>
+                </div>
+                <!-- Inventory Features -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Kế toán</div>
+                    <a class="nav-item active" id="nav-dashboard" href="#"
+                        onclick="showView('dashboard'); updateNav('dashboard'); return false;"><span
+                            class="nav-icon">💰</span><span>Bảng điều khiển</span></a>
+                    <a class="nav-item" id="nav-invoices" href="#"
+                        onclick="showView('invoices'); updateNav('invoices'); return false;"><span
+                            class="nav-icon">📄</span><span>Hóa đơn khách hàng</span></a>
+                    <a class="nav-item" id="nav-vendorbills" href="#"
+                        onclick="showView('vendorbills'); updateNav('vendorbills'); return false;"><span
+                            class="nav-icon">🧾</span><span>Hóa đơn nhà cung cấp</span></a>
+                    <a class="nav-item" id="nav-payments" href="#"
+                        onclick="showView('payments'); updateNav('payments'); return false;"><span
+                            class="nav-icon">💳</span><span>Thanh toán</span></a>
+                    <a class="nav-item" id="nav-coa" href="#"
+                        onclick="showView('coa'); updateNav('coa'); return false;"><span
+                            class="nav-icon">📋</span><span>Hệ thống tài khoản</span></a>
+                </div>
+                <!-- Other Modules -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Mô-đun</div>
+                    <a class="nav-item" href="inventory.html"><span class="nav-icon">📦</span><span>Quản lý
+                            kho</span></a>
+                    <a class="nav-item" href="products.html"><span class="nav-icon">📦</span><span>Sản phẩm</span></a>
+                    <a class="nav-item" href="crm.html"><span class="nav-icon">👥</span><span>CRM</span></a>
+                    <a class="nav-item" href="events.html"><span class="nav-icon">🎨</span><span>Sự kiện</span></a>
+                    <a class="nav-item" href="sales.html"><span class="nav-icon">💼</span><span>Bán hàng</span></a>
+                    <a class="nav-item" href="design_studio.html"><span class="nav-icon">✏️</span><span>Thiết kế
+                            Studio</span></a>
+                    <a class="nav-item" href="accounting.html"><span class="nav-icon">💰</span><span>Kế toán</span></a>
+                    <a class="nav-item" href="misa.html"><span class="nav-icon">🔄</span><span>Đồng bộ MISA</span></a>
+                    <a class="nav-item" href="reports.html"><span class="nav-icon">📈</span><span>Báo cáo</span></a>
+                    <a class="nav-item" href="projects.html"><span class="nav-icon">🏗️</span><span>Dự án</span></a>
+                    <a class="nav-item" href="hr.html"><span class="nav-icon">👥</span><span>Nhân sự</span></a>
+                    <a class="nav-item" href="marketing.html"><span class="nav-icon">📢</span><span>Marketing</span></a>
+                    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span>Cài đặt</span></a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOP HEADER -->
+            <div class="top-header">
+                <div class="breadcrumb">
+                    <a href="../index.html">Bảng điều khiển</a>
+                    <span>/</span>
+                    <strong>Bảng điều khiển kế toán</strong>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" placeholder="Tìm kiếm... (Ctrl+K)" id="globalSearch">
+                    </div>
+                    <span class="tooltip" data-tip="Notifications">🔔</span>
+                    <span class="tooltip" data-tip="Messages">💬</span>
+                    <div class="user-menu">
+                        <div class="user-avatar">NA</div>
+                        <span>Nguyễn Admin</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE CONTENT -->
+            <div class="page-content">
+
+                <!-- VIEW SWITCH BUTTONS (always visible) -->
+                <div id="viewSwitcher" style="margin-bottom: 0px; display: flex; gap: 8px;">
+                    <button class="btn btn-primary" id="btn-dashboard" onclick="showView('dashboard')">📊
+                        Trang tổng quan</button>
+                    <button class="btn btn-secondary" id="btn-invoices" onclick="showView('invoices')">📄
+                        Hóa đơn</button>
+                    <button class="btn btn-secondary" id="btn-vendorbills" onclick="showView('vendorbills')">🧾 Nhà cung
+                        cấp
+                        hóa đơn</button>
+                    <button class="btn btn-secondary" id="btn-payments" onclick="showView('payments')">💳
+                        Thanh toán</button>
+                    <button class="btn btn-secondary" id="btn-coa" onclick="showView('coa')">📋COA</button>
+                </div>
+
+                <!-- ACCOUNTING DASHBOARD -->
+                <div id="accountingView">
+
+                    <!-- Entity filter chips -->
+                    <div style="display: flex; gap: 8px; margin-bottom: 0px;">
+                        <div
+                            style="padding: 6px 12px; background: white; border: 1px solid #DEE2E6; border-radius: 16px; font-size: 12px;">
+                            Thực thể: <strong>HQ - Trụ sở chính</strong>
+                        </div>
+                        <div
+                            style="padding: 6px 12px; background: white; border: 1px solid #DEE2E6; border-radius: 16px; font-size: 12px;">
+                            Giai đoạn: <strong>tháng 4 năm 2026</strong>
+                        </div>
+                    </div>
+
+                    <!-- Stat Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon green">💵</div>
+                            <div class="stat-info">
+                                <div class="stat-value">2.847B ₫</div>
+                                <div class="stat-label">Tổng doanh thu (Tháng 4 năm 2026)</div>
+                                <div style="font-size: 10px; color: #6C757D; margin-top: 2px;">↑ 12,5% so với tháng
+                                    trước | ✓
+                                    MISA đã được đồng bộ hóa</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon blue">📄</div>
+                            <div class="stat-info">
+                                <div class="stat-value">1.235B ₫</div>
+                                <div class="stat-label">Các khoản phải thu</div>
+                                <div style="font-size: 10px; color: #6C757D; margin-top: 2px;">14 hóa đơn chưa thanh
+                                    toán | 3
+                                    quá hạn</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">🧾</div>
+                            <div class="stat-info">
+                                <div class="stat-value">682M ₫</div>
+                                <div class="stat-label">Khoản phải trả</div>
+                                <div style="font-size: 10px; color: #6C757D; margin-top: 2px;">8 hóa đơn nhà cung cấp
+                                    đang chờ xử lý
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon blue">🏦</div>
+                            <div class="stat-info">
+                                <div class="stat-value">3.156B ₫</div>
+                                <div class="stat-label">Số dư ngân hàng (VCB)</div>
+                                <div style="font-size: 10px; color: #6C757D; margin-top: 2px;">Hòa giải lần cuối:
+                                    04/08/2026</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Consolidation Summary -->
+                    <div style="margin-bottom: 0px;">
+                        <h3 style="margin-bottom: 0px; font-size: 15px;">📊 Xem trước hợp nhất - Tất cả các thực thể
+                        </h3>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                            <div
+                                style="background: white; border: 1px solid #DEE2E6; border-radius: 8px; padding: 18px; border-left: 4px solid #388E3C;">
+                                <h4 style="margin-bottom: 0px;"><span
+                                        style="background: #E8F5E9; color: #388E3C; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700;">HQ</span>
+                                    Trụ sở chính</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+                                    <div><span style="color: #6C757D;">Doanh thu</span><br><strong>1.520B ₫</strong>
+                                    </div>
+                                    <div><span style="color: #6C757D;">Phải thu</span><br><strong>725M ₫</strong>
+                                    </div>
+                                    <div><span style="color: #6C757D;">Phải trả</span><br><strong>340M ₫</strong></div>
+                                    <div><span style="color: #6C757D;">Hóa đơn</span><br><strong>23</strong></div>
+                                </div>
+                            </div>
+                            <div
+                                style="background: white; border: 1px solid #DEE2E6; border-radius: 8px; padding: 18px; border-left: 4px solid #1976D2;">
+                                <h4 style="margin-bottom: 0px;"><span
+                                        style="background: #E3F2FD; color: #1976D2; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700;">NK</span>
+                                    Cửa hàng NK</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+                                    <div><span style="color: #6C757D;">Doanh thu</span><br><strong>847M ₫</strong></div>
+                                    <div><span style="color: #6C757D;">Phải thu</span><br><strong>310M ₫</strong>
+                                    </div>
+                                    <div><span style="color: #6C757D;">Phải trả</span><br><strong>192M ₫</strong></div>
+                                    <div><span style="color: #6C757D;">Hóa đơn</span><br><strong>15</strong></div>
+                                </div>
+                            </div>
+                            <div
+                                style="background: white; border: 1px solid #DEE2E6; border-radius: 8px; padding: 18px; border-left: 4px solid #7B1FA2;">
+                                <h4 style="margin-bottom: 0px;"><span
+                                        style="background: #F3E5F5; color: #7B1FA2; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700;">BT</span>
+                                    Cửa hàngBT</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+                                    <div><span style="color: #6C757D;">Doanh thu</span><br><strong>480M ₫</strong></div>
+                                    <div><span style="color: #6C757D;">Phải thu</span><br><strong>200M ₫</strong>
+                                    </div>
+                                    <div><span style="color: #6C757D;">Phải trả</span><br><strong>150M ₫</strong></div>
+                                    <div><span style="color: #6C757D;">Hóa đơn</span><br><strong>9</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Invoices & Top Debtors -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <!-- Recent Invoices -->
+                        <div class="table-container">
+                            <div class="table-header">
+                                <h3 class="card-title">📄 Hóa đơn gần đây</h3>
+                                <button class="btn btn-sm btn-secondary">Xem tất cả →</button>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Hóa đơn#</th>
+                                        <th>Hàng khách</th>
+                                        <th>Số tiền</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><a href="#" onclick="return false" style="color: #8B2500;">INV-2026-0047</a>
+                                        </td>
+                                        <td>DN CP Nội thất Anh Cường</td>
+                                        <td style="text-align: right">285.000.000 ₫</td>
+                                        <td><span class="badge badge-info">Đã ghi nhận</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="return false" style="color: #8B2500;">INV-2026-0046</a>
+                                        </td>
+                                        <td>Ông Trần Văn Hoàng</td>
+                                        <td style="text-align: right">156.000.000 ₫</td>
+                                        <td><span class="badge badge-success">Đã thanh toán</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="return false" style="color: #8B2500;">INV-2026-0045</a>
+                                        </td>
+                                        <td>Công ty TNHH kiến ​​trúc NTA</td>
+                                        <td style="text-align: right">420.000.000 ₫</td>
+                                        <td><span class="badge badge-danger">Quá hạn</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="return false" style="color: #8B2500;">INV-2026-0044</a>
+                                        </td>
+                                        <td>Bà Nguyễn Thị Mai</td>
+                                        <td style="text-align: right">89.500.000 ₫</td>
+                                        <td><span class="badge badge-success">Đã thanh toán</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="return false" style="color: #8B2500;">INV-2026-0043</a>
+                                        </td>
+                                        <td>Công ty CP XD & TM Đức Minh</td>
+                                        <td style="text-align: right">675.000.000 ₫</td>
+                                        <td><span class="badge badge-warning">phần</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Top Debtors -->
+                        <div class="table-container">
+                            <div class="table-header">
+                                <h3 class="card-title">👥 Con nợ hàng đầu</h3>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Hàng khách</th>
+                                        <th>Chi nhánh</th>
+                                        <th>Nổi bật</th>
+                                        <th>Quá hạn</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Công ty TNHH kiến ​​trúc NTA</td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td style="text-align: right">420.000.000 ₫</td>
+                                        <td style="text-align: right; color: #DC3545; font-weight: 600;">420.000.000 ₫
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Công ty CP XD & TM Đức Minh</td>
+                                        <td><span class="entity-tag hq">HQ</span></td>
+                                        <td style="text-align: right">345.000.000 ₫</td>
+                                        <td style="text-align: right; color: #DC3545; font-weight: 600;">135.000.000 ₫
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>DN CP Nội thất Anh Cường</td>
+                                        <td><span class="entity-tag hq">HQ</span></td>
+                                        <td style="text-align: right">285.000.000 ₫</td>
+                                        <td style="text-align: right; color: #6C757D;">0 ₫</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ông Lê Quang Hưng</td>
+                                        <td><span class="entity-tag bt">BT</span></td>
+                                        <td style="text-align: right">178.000.000 ₫</td>
+                                        <td style="text-align: right; color: #DC3545; font-weight: 600;">45.000.000 ₫
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Công ty CP TM Việt Phong</td>
+                                        <td><span class="entity-tag nk">NK</span></td>
+                                        <td style="text-align: right">125.000.000 ₫</td>
+                                        <td style="text-align: right; color: #6C757D;">0 ₫</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+                <!-- ==================== INVOICES VIEW ==================== -->
+                <div id="view-invoices" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">📄 Hóa đơn khách hàng</h1>
+                            <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">47 hóa đơn • 14
+                                chưa thanh toán • quá hạn 3 lần</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="showToast('Export invoices', 'info')">📥
+                                Xuất khẩu</button>
+                            <button class="btn btn-primary" onclick="showToast('New invoice dialog', 'info')">➕ Mới
+                                hóa đơn</button>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div style="margin-bottom: 0px; display: flex; gap: 8px;">
+                        <input type="text" placeholder="🔍 Tìm kiếm hóa đơn..."
+                            style="flex: 1; padding: 8px 12px; border: 1px solid #DEE2E6; border-radius: 4px; font-size: 12px;">
+                        <select
+                            style="padding: 8px 12px; border: 1px solid #DEE2E6; border-radius: 4px; font-size: 12px;">
+                            <option>Tất cả trạng thái</option>
+                            <option>Nháp</option>
+                            <option>Đã ghi nhận</option>
+                            <option>Đã thanh toán</option>
+                            <option>Quá hạn</option>
+                        </select>
+                        <select
+                            style="padding: 8px 12px; border: 1px solid #DEE2E6; border-radius: 4px; font-size: 12px;">
+                            <option>Tất cả các thực thể</option>
+                            <option>HQ - Trụ sở chính</option>
+                            <option>Cửa hàng NK</option>
+                            <option>Cửa hàngBT</option>
+                        </select>
+                    </div>
+
+                    <!-- Invoices Table -->
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox"></th>
+                                    <th>Hóa đơn#</th>
+                                    <th>Hàng khách</th>
+                                    <th>Chi nhánh</th>
+                                    <th>Ngày phát hành</th>
+                                    <th>Date to limit</th>
+                                    <th style="text-align: right">Số tiền</th>
+                                    <th style="text-align: right">Thuế GTGT 10%</th>
+                                    <th style="text-align: right">Total cộng</th>
+                                    <th style="text-align: right">Đã thanh toán</th>
+                                    <th>Trạng thái</th>
+                                    <th>MISA</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">INV-2026-0047</a>
+                                    </td>
+                                    <td>DN CP Nội thất Anh Cường</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td>05/04/2026</td>
+                                    <td>05/05/2026</td>
+                                    <td style="text-align: right">259.090.909</td>
+                                    <td style="text-align: right">25.909.091</td>
+                                    <td style="text-align: right; font-weight: 600;">285.000.000</td>
+                                    <td style="text-align: right">0</td>
+                                    <td><span class="badge badge-info">Đã ghi nhận</span></td>
+                                    <td>✓</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">INV-2026-0046</a>
+                                    </td>
+                                    <td>Ông Trần Văn Hoàng</td>
+                                    <td><span class="entity-tag nk">NK</span></td>
+                                    <td>03/04/2026</td>
+                                    <td>03/05/2026</td>
+                                    <td style="text-align: right">141.818.182</td>
+                                    <td style="text-align: right">14.181.818</td>
+                                    <td style="text-align: right; font-weight: 600;">156.000.000</td>
+                                    <td style="text-align: right; color: #28A745;">156.000.000</td>
+                                    <td><span class="badge badge-success">Đã thanh toán</span></td>
+                                    <td>✓</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">INV-2026-0045</a>
+                                    </td>
+                                    <td>Công ty TNHH kiến ​​trúc NTA</td>
+                                    <td><span class="entity-tag nk">NK</span></td>
+                                    <td>15/03/2026</td>
+                                    <td style="color: #DC3545; font-weight: 600;">14/04/2026</td>
+                                    <td style="text-align: right">381.818.182</td>
+                                    <td style="text-align: right">38.181.818</td>
+                                    <td style="text-align: right; font-weight: 600;">420.000.000</td>
+                                    <td style="text-align: right">0</td>
+                                    <td><span class="badge badge-danger">Quá hạn</span></td>
+                                    <td>✓</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">INV-2026-0044</a>
+                                    </td>
+                                    <td>Bà Nguyễn Thị Mai</td>
+                                    <td><span class="entity-tag bt">BT</span></td>
+                                    <td>01/04/2026</td>
+                                    <td>01/05/2026</td>
+                                    <td style="text-align: right">81.363.636</td>
+                                    <td style="text-align: right">8.136.364</td>
+                                    <td style="text-align: right; font-weight: 600;">89.500.000</td>
+                                    <td style="text-align: right; color: #28A745;">89.500.000</td>
+                                    <td><span class="badge badge-success">Đã thanh toán</span></td>
+                                    <td>✓</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">INV-2026-0043</a>
+                                    </td>
+                                    <td>Công ty CP XD & TM Đức Minh</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td>28/03/2026</td>
+                                    <td>27/04/2026</td>
+                                    <td style="text-align: right">613.636.364</td>
+                                    <td style="text-align: right">61.363.636</td>
+                                    <td style="text-align: right; font-weight: 600;">675.000.000</td>
+                                    <td style="text-align: right; color: #FFC107;">330.000.000</td>
+                                    <td><span class="badge badge-warning">phần</span></td>
+                                    <td>✓</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div
+                        style="padding: 12px; border-top: 1px solid #DEE2E6; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; color: #6C757D;">Hiển thị 1-5 trong 47 hóa đơn</span>
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn btn-sm btn-secondary">«</button>
+                            <button class="btn btn-sm btn-primary">1</button>
+                            <button class="btn btn-sm btn-secondary">2</button>
+                            <button class="btn btn-sm btn-secondary">3</button>
+                            <button class="btn btn-sm btn-secondary">»</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== VENDOR BILLS VIEW ==================== -->
+                <div id="view-vendorbills" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">🧾 Hóa đơn của nhà cung cấp</h1>
+                            <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">28 hóa đơn nhà
+                                cung cấp •
+                                8 đang chờ thanh toán</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="showToast('New vendor bill dialog', 'info')">➕ Mới
+                                Hóa đơn</button>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div style="margin-bottom: 0px; display: flex; gap: 8px;">
+                        <input type="text" placeholder="🔍 Tìm kiếm hóa đơn nhà cung cấp..."
+                            style="flex: 1; padding: 8px 12px; border: 1px solid #DEE2E6; border-radius: 4px; font-size: 12px;">
+                        <select
+                            style="padding: 8px 12px; border: 1px solid #DEE2E6; border-radius: 4px; font-size: 12px;">
+                            <option>Tất cả trạng thái</option>
+                            <option>Nháp</option>
+                            <option>Đã ghi nhận</option>
+                            <option>Đã thanh toán</option>
+                            <option>Quá hạn</option>
+                        </select>
+                    </div>
+
+                    <!-- Vendor Bills Table -->
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox"></th>
+                                    <th>Hóa đơn#</th>
+                                    <th>Cung cấp nhà</th>
+                                    <th>Chi nhánh</th>
+                                    <th>Ngày lập hóa đơn</th>
+                                    <th>Date to limit</th>
+                                    <th style="text-align: right">Số tiền</th>
+                                    <th style="text-align: right">Thuế GTGT 10%</th>
+                                    <th style="text-align: right">Total cộng</th>
+                                    <th style="text-align: right">Đã thanh toán</th>
+                                    <th>Trạng thái</th>
+                                    <th>Sự chi trả</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">HÓA ĐƠN-2026-0028</a>
+                                    </td>
+                                    <td>Công ty TNHH Vật liệu XD Hưng Thịnh</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td>02/04/2026</td>
+                                    <td>02/06/2026</td>
+                                    <td style="text-align: right">154.545.455</td>
+                                    <td style="text-align: right">15.454.545</td>
+                                    <td style="text-align: right; font-weight: 600;">170.000.000</td>
+                                    <td style="text-align: right">0</td>
+                                    <td><span class="badge badge-info">Đã ghi nhận</span></td>
+                                    <td>Lưới 60</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">HÓA ĐƠN-2026-0027</a>
+                                    </td>
+                                    <td>Công ty CP Nội Thất Việt Long</td>
+                                    <td><span class="entity-tag nk">NK</span></td>
+                                    <td>28/03/2026</td>
+                                    <td>27/04/2026</td>
+                                    <td style="text-align: right">90.909.091</td>
+                                    <td style="text-align: right">9.090.909</td>
+                                    <td style="text-align: right; font-weight: 600;">100.000.000</td>
+                                    <td style="text-align: right">0</td>
+                                    <td><span class="badge badge-info">Đã ghi nhận</span></td>
+                                    <td>Lưới 30</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">HÓA ĐƠN-2026-0026</a>
+                                    </td>
+                                    <td>Công ty TNHH Thiết Bị Điện Phan Dũng</td>
+                                    <td><span class="entity-tag bt">BT</span></td>
+                                    <td>25/03/2026</td>
+                                    <td>24/04/2026</td>
+                                    <td style="text-align: right">63.636.364</td>
+                                    <td style="text-align: right">6.363.636</td>
+                                    <td style="text-align: right; font-weight: 600;">70.000.000</td>
+                                    <td style="text-align: right; color: #28A745;">70.000.000</td>
+                                    <td><span class="badge badge-success">Đã thanh toán</span></td>
+                                    <td>Lưới 30</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">HÓA ĐƠN-2026-0025</a>
+                                    </td>
+                                    <td>Công ty CP Sơn & Hóa Chất An Khánh</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td>20/03/2026</td>
+                                    <td>19/05/2026</td>
+                                    <td style="text-align: right">45.454.545</td>
+                                    <td style="text-align: right">4.545.455</td>
+                                    <td style="text-align: right; font-weight: 600;">50.000.000</td>
+                                    <td style="text-align: right">0</td>
+                                    <td><span class="badge badge-info">Đã ghi nhận</span></td>
+                                    <td>Lưới 60</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td>HÓA ĐƠN-2026-0024</td>
+                                    <td>Công ty TNHH Vận Tải & Logistics Trường An</td>
+                                    <td><span class="entity-tag nk">NK</span></td>
+                                    <td>15/03/2026</td>
+                                    <td style="color: #DC3545; font-weight: 600;">14/04/2026</td>
+                                    <td style="text-align: right">27.272.727</td>
+                                    <td style="text-align: right">2.727.273</td>
+                                    <td style="text-align: right; font-weight: 600;">30.000.000</td>
+                                    <td style="text-align: right">0</td>
+                                    <td><span class="badge badge-danger">Quá hạn</span></td>
+                                    <td>Lưới 30</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div
+                        style="padding: 12px; border-top: 1px solid #DEE2E6; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; color: #6C757D;">Hiển thị 1-5 trong 28 hóa đơn của nhà cung
+                            cấp</span>
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn btn-sm btn-secondary">«</button>
+                            <button class="btn btn-sm btn-primary">1</button>
+                            <button class="btn btn-sm btn-secondary">2</button>
+                            <button class="btn btn-sm btn-secondary">3</button>
+                            <button class="btn btn-sm btn-secondary">»</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== PAYMENTS VIEW ==================== -->
+                <div id="view-payments" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">💳 Thanh toán</h1>
+                            <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">89 khoản thanh
+                                toán •
+                                Lần cuối: 04/08/2026</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="showToast('Register payment dialog', 'info')">➕
+                                Đăng ký thanh toán</button>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div style="margin-bottom: 0px; display: flex; gap: 8px;">
+                        <input type="text" placeholder="🔍 Tìm kiếm thanh toán..."
+                            style="flex: 1; padding: 8px 12px; border: 1px solid #DEE2E6; border-radius: 4px; font-size: 12px;">
+                        <select
+                            style="padding: 8px 12px; border: 1px solid #DEE2E6; border-radius: 4px; font-size: 12px;">
+                            <option>Tất cả các loại</option>
+                            <option>Thanh toán của khách hàng</option>
+                            <option>Thanh toán của nhà cung cấp</option>
+                            <option>Chuyển khoản nội bộ</option>
+                        </select>
+                        <select
+                            style="padding: 8px 12px; border: 1px solid #DEE2E6; border-radius: 4px; font-size: 12px;">
+                            <option>Tất cả các thực thể</option>
+                            <option>HQ</option>
+                            <option>Cửa hàng NK</option>
+                            <option>Cửa hàngBT</option>
+                        </select>
+                    </div>
+
+                    <!-- Payments Table -->
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox"></th>
+                                    <th>Sự chi trả#</th>
+                                    <th>Ngày</th>
+                                    <th>Khách hàng/Nhà cung cấp</th>
+                                    <th>Chi nhánh</th>
+                                    <th>Type</th>
+                                    <th>Phương pháp</th>
+                                    <th>tạp chí</th>
+                                    <th style="text-align: right">Số tiền</th>
+                                    <th>Hòa giải</th>
+                                    <th>Bản ghi nhớ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">TRẢ
+                                            TIỀN-2026-0089</a>
+                                    </td>
+                                    <td>08/04/2026</td>
+                                    <td>Ông Trần Văn Hoàng</td>
+                                    <td><span class="entity-tag nk">NK</span></td>
+                                    <td style="color: #28A745;">Trong nước</td>
+                                    <td>Chuyển khoản ngân hàng</td>
+                                    <td>BIDV</td>
+                                    <td style="text-align: right; font-weight: 600; color: #28A745;">+156.000.000</td>
+                                    <td>✓ Phù hợp</td>
+                                    <td>Thanh toán INV-2026-0046</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">TRẢ
+                                            TIỀN-2026-0088</a>
+                                    </td>
+                                    <td>07/04/2026</td>
+                                    <td>Bà Nguyễn Thị Mai</td>
+                                    <td><span class="entity-tag bt">BT</span></td>
+                                    <td style="color: #28A745;">Trong nước</td>
+                                    <td>Thẻ tín dụng</td>
+                                    <td>TCB</td>
+                                    <td style="text-align: right; font-weight: 600; color: #28A745;">+89.500.000</td>
+                                    <td>✓ Phù hợp</td>
+                                    <td>Thanh toán INV-2026-0044</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">TRẢ
+                                            TIỀN-2026-0087</a>
+                                    </td>
+                                    <td>05/04/2026</td>
+                                    <td>Công ty CP XD & TM Đức Minh</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="color: #28A745;">Trong nước</td>
+                                    <td>Chuyển khoản ngân hàng</td>
+                                    <td>VCB</td>
+                                    <td style="text-align: right; font-weight: 600; color: #28A745;">+330.000.000</td>
+                                    <td>✓ Phù hợp</td>
+                                    <td>Trả trước 50% INV-2026-0043</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">TRẢ
+                                            TIỀN-2026-0086</a>
+                                    </td>
+                                    <td>04/04/2026</td>
+                                    <td>Công ty TNHH Vật liệu XD Hưng Thịnh</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="color: #DC3545;">Đi</td>
+                                    <td>Chuyển khoản ngân hàng</td>
+                                    <td>VCB</td>
+                                    <td style="text-align: right; font-weight: 600; color: #DC3545;">-170.000.000</td>
+                                    <td>✓ Phù hợp</td>
+                                    <td>Thanh toán BILL-2026-0028</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="return false" style="color: #8B2500;">TRẢ-2026-0085</a>
+                                    </td>
+                                    <td>03/04/2026</td>
+                                    <td>Công ty CP Nội Thất Việt Long</td>
+                                    <td><span class="entity-tag nk">NK</span></td>
+                                    <td style="color: #DC3545;">Đi</td>
+                                    <td>Chuyển khoản ngân hàng</td>
+                                    <td>BIDV</td>
+                                    <td style="text-align: right; font-weight: 600; color: #DC3545;">-100.000.000</td>
+                                    <td style="color: #DC3545;">✗ Vô song</td>
+                                    <td>Thanh toán tạm ứng</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td>TRẢ TIỀN-2026-0081</td>
+                                    <td>28/03/2026</td>
+                                    <td>Chuyển khoản nội bộ: HQ → NK</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="color: #6C757D;">Chuyển khoản</td>
+                                    <td>Chuyển khoản ngân hàng</td>
+                                    <td>VCB → BIDV</td>
+                                    <td style="text-align: right; font-weight: 600;">-200.000.000</td>
+                                    <td>✓ Phù hợp</td>
+                                    <td>Quỹ hoạt động của NK</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div
+                        style="padding: 12px; border-top: 1px solid #DEE2E6; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; color: #6C757D;">Hiển thị 1-6 trên 89 khoản thanh toán</span>
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn btn-sm btn-secondary">«</button>
+                            <button class="btn btn-sm btn-primary">1</button>
+                            <button class="btn btn-sm btn-secondary">2</button>
+                            <button class="btn btn-sm btn-secondary">3</button>
+                            <button class="btn btn-sm btn-secondary">»</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== COA VIEW ==================== -->
+                <div id="view-coa" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">📋 Sơ đồ tài khoản</h1>
+                            <p style="color: var(--text-secondary); font-size: 11px; margin-top: 4px;">Tiếng Việt
+                                Chuẩn mực kế toán • Chế độ xem tổng hợp</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="showToast('Import COA', 'info')">📥
+                                Nhập khẩu</button>
+                            <button class="btn btn-primary" onclick="showToast('New account dialog', 'info')">➕ Mới
+                                Tài khoản</button>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div style="margin-bottom: 0px; display: flex; gap: 8px;">
+                        <input type="text" placeholder="🔍 Tìm kiếm tài khoản..."
+                            style="flex: 1; padding: 8px 12px; border: 1px solid #DEE2E6; border-radius: 4px; font-size: 12px;">
+                        <select
+                            style="padding: 8px 12px; border: 1px solid #DEE2E6; border-radius: 4px; font-size: 12px;">
+                            <option>Tất cả các thực thể</option>
+                            <option>HQ - Trụ sở chính</option>
+                            <option>Cửa hàng NK</option>
+                            <option>Cửa hàngBT</option>
+                        </select>
+                    </div>
+
+                    <!-- COA Table -->
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px;">Mã</th>
+                                    <th>Tên tài khoản</th>
+                                    <th>Type</th>
+                                    <th>Chi nhánh</th>
+                                    <th style="text-align: right">Số dư (đồng)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- ASSETS -->
+                                <tr style="background: #F0F0F0; font-weight: 600;">
+                                    <td>1</td>
+                                    <td><strong>TÀI SẢN (TÀI SẢN)</strong></td>
+                                    <td>Tài sản</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right; font-weight: 700;">5.847.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">111</td>
+                                    <td style="padding-left: 24px;">Tiền mặt (Tiền mặt)</td>
+                                    <td>Tài sản hiện tại</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">125.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">112</td>
+                                    <td style="padding-left: 24px;">Tiền gửi ngân hàng (Tiền gửi ngân hàng)</td>
+                                    <td>Tài sản hiện tại</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">3.156.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 36px;">1121</td>
+                                    <td style="padding-left: 36px;">VCB - Vietcombank</td>
+                                    <td>Ngân hàng</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">2.450.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 36px;">1122</td>
+                                    <td style="padding-left: 36px;">Ngân hàng Bình Dương - BidViệt Nam</td>
+                                    <td>Ngân hàng</td>
+                                    <td><span class="entity-tag nk">NK</span></td>
+                                    <td style="text-align: right">506.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">131</td>
+                                    <td style="padding-left: 24px;">Phải thu khách hàng (Tài khoản phải thu)</td>
+                                    <td>Phải thu</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">1.235.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">153</td>
+                                    <td style="padding-left: 24px;">Công cụ tiện ích (Tools & Supplies)</td>
+                                    <td>Quản lý kho</td>
+                                    <td><span class="entity-tag nk">NK</span></td>
+                                    <td style="text-align: right">85.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">211</td>
+                                    <td style="padding-left: 24px;">Cố định tài sản (Tài sản cố định)</td>
+                                    <td>Tài sản cố định</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">890.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">214</td>
+                                    <td style="padding-left: 24px;">Hao mòn TSCĐ (Khấu hao lũy kế)</td>
+                                    <td>Tài sản trái ngược</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right; color: #DC3545;">-158.200.000</td>
+                                </tr>
+
+                                <!-- LIABILITIES -->
+                                <tr style="background: #F0F0F0; font-weight: 600;">
+                                    <td>2</td>
+                                    <td><strong>NỢ PHẢI TRẢ (TRÁCH NHIỆM)</strong></td>
+                                    <td>Trách nhiệm pháp lý</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right; font-weight: 700;">1.915.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">311</td>
+                                    <td style="padding-left: 24px;">Vay ngắn hạn (Vay ngắn hạn)</td>
+                                    <td>Trách nhiệm hiện tại</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">500.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">331</td>
+                                    <td style="padding-left: 24px;">Phải trả người bán (Tài khoản phải trả)</td>
+                                    <td>Phải trả</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">682.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">333</td>
+                                    <td style="padding-left: 24px;">Thuế và các khoản phải nộp NN (Thuế phải nộp)</td>
+                                    <td>Trách nhiệm hiện tại</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">95.000.000</td>
+                                </tr>
+
+                                <!-- EQUITY -->
+                                <tr style="background: #F0F0F0; font-weight: 600;">
+                                    <td>3</td>
+                                    <td><strong>VỐN CHỦ SỞ HỮU (EQUITY)</strong></td>
+                                    <td>Công bằng</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right; font-weight: 700;">3.932.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">411</td>
+                                    <td style="padding-left: 24px;">Vốn đầu tư chủ sở hữu (Owner Equity)</td>
+                                    <td>Công bằng</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">3.500.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">421</td>
+                                    <td style="padding-left: 24px;">Lợi nhuận chưa phân phối (Thu nhập giữ lại)</td>
+                                    <td>Công bằng</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">432.000.000</td>
+                                </tr>
+
+                                <!-- REVENUE -->
+                                <tr style="background: #F0F0F0; font-weight: 600;">
+                                    <td>4</td>
+                                    <td><strong>ĐOÁNH THU (DOANH THU)</strong></td>
+                                    <td>Doanh thu</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right; font-weight: 700;">2.847.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">511</td>
+                                    <td style="padding-left: 24px;">Doanh thu bán hàng (Doanh thu bán hàng)</td>
+                                    <td>Doanh thu</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">2.847.000.000</td>
+                                </tr>
+
+                                <!-- EXPENSES -->
+                                <tr style="background: #F0F0F0; font-weight: 600;">
+                                    <td>5</td>
+                                    <td><strong>CHI PHÁN ( CHI PHÍ)</strong></td>
+                                    <td>Chi phí</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right; font-weight: 700;">2.431.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">632</td>
+                                    <td style="padding-left: 24px;">Giá bán hàng (COGS)</td>
+                                    <td>Chi phí</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">1.850.000.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 24px;">642</td>
+                                    <td style="padding-left: 24px;">Chi phí quản lý doanh nghiệp (Chi phí quản lý)</td>
+                                    <td>Chi phí</td>
+                                    <td><span class="entity-tag hq">HQ</span></td>
+                                    <td style="text-align: right">581.000.000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // View Switching for Accounting
+                function showView(viewName) {
+                    // Hide all views
+                    document.getElementById('accountingView').style.display = 'none';
+                    document.getElementById('view-invoices').style.display = 'none';
+                    document.getElementById('view-vendorbills').style.display = 'none';
+                    document.getElementById('view-payments').style.display = 'none';
+                    document.getElementById('view-coa').style.display = 'none';
+
+                    // Show selected view
+                    var viewMap = {
+                        'dashboard': 'accountingView',
+                        'invoices': 'view-invoices',
+                        'vendorbills': 'view-vendorbills',
+                        'payments': 'view-payments',
+                        'coa': 'view-coa'
+                    };
+
+                    var viewId = viewMap[viewName] || 'accountingView';
+                    document.getElementById(viewId).style.display = 'block';
+
+                    // Update button states
+                    document.querySelectorAll('#viewSwitcher .btn').forEach(btn => {
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-secondary');
+                    });
+                    var activeBtn = document.getElementById('btn-' + viewName);
+                    if (activeBtn) {
+                        activeBtn.classList.remove('btn-secondary');
+                        activeBtn.classList.add('btn-primary');
+                    }
+                }
+
+                // Show dashboard by default
+                showView('dashboard');
+
+                // Update sidebar navigation active state
+                function updateNav(viewName) {
+                    document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    var navItem = document.getElementById('nav-' + viewName);
+                    if (navItem) {
+                        navItem.classList.add('active');
+                    }
+                }
+
+                function showTransferWizard() {
+                    document.getElementById('transferModal').classList.add('show');
+                }
+
+                function closeModal(id) {
+                    document.getElementById(id).classList.remove('show');
+                }
+
+                // Navigation
+                function navigate(module) {
+                    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                    event.currentTarget.classList.add('active');
+                    if (module !== 'inventory') {
+                        showToast('Module "' + module + '" is available in main index.html', 'info');
+                    } else {
+                        showView('inventory');
+                    }
+                }
+
+                // Entity Switcher
+                function switchEntity(entity) {
+                    const names = { hq: 'HQ Backoffice', nk: 'Store Nam Kỳ', bt: 'Store Bà Triệu' };
+                    showToast('Switched to: ' + names[entity], 'success');
+                }
+
+                // Toast Notifications
+                function showToast(message, type) {
+                    var colors = { success: '#28a745', error: '#dc3545', info: '#17a2b8', warning: '#ffc107' };
+                    var toast = document.createElement('div');
+                    toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 18px;background:' + (colors[type] || colors.info) + ';color:white;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:10000;font-size:12px;animation:slideIn 0.3s ease;';
+                    toast.textContent = message;
+                    document.body.appendChild(toast);
+                    setTimeout(function () { toast.remove(); }, 3000);
+                }
+            </script>
+            <div class="page-pattern"></div>
+</body>
+
+</html>

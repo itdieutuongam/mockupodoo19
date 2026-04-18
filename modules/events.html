@@ -1,0 +1,4031 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DTA Space - Events Management (Odoo 19 Mockup)</title>
+    <style>
+        /* ============================================
+           ODOO 19 CORE STYLES
+           ============================================ */
+        :root {
+            --odoo-primary: #8B2500;
+            --odoo-primary-light: #FFF5F2;
+            --odoo-primary-dark: #6B1C00;
+            --odoo-secondary: #0D9488;
+            --odoo-success: #059669;
+            --odoo-warning: #D97706;
+            --odoo-danger: #DC2626;
+            --odoo-info: #0891B2;
+            --accent-gold: #C49549;
+            --sidebar-bg: #FFFFFF;
+            --sidebar-hover: #F9FAFB;
+            --sidebar-active: #FFF5F2;
+            --header-bg: #FFFFFF;
+            --content-bg: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --text-light: #9CA3AF;
+            --sidebar-width: 260px;
+            --header-height: 48px;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            /* Entity Colors */
+            --entity-nk: #1976D2;
+            --entity-nk-light: #E3F2FD;
+            --entity-bt: #7B1FA2;
+            --entity-bt-light: #F3E5F5;
+            --entity-hq: #388E3C;
+            --entity-hq-light: #E8F5E9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: var(--content-bg);
+            overflow: hidden;
+        }
+
+        /* ============================================
+           LAYOUT
+           ============================================ */
+        .app-layout {
+            position: relative;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: relative;
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            color: var(--text-primary);
+            border-right: 1px solid #E5E7EB;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .sidebar-logo .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--odoo-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .sidebar-logo .logo-text {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* Entity Switcher */
+        .entity-switcher {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .entity-switcher select {
+            width: 100%;
+            padding: var(--spacing-sm);
+            border: 1px solid #E5E7EB;
+            border-radius: var(--radius-sm);
+            background: #F9FAFB;
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .entity-switcher select option {
+            color: var(--text-primary);
+            background: white;
+        }
+
+        /* Sidebar Nav */
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-sm) 0;
+        }
+
+        .nav-section {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .nav-section-title {
+            padding: var(--spacing-xs) var(--spacing-md);
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #9CA3AF;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-sm) var(--spacing-md);
+            color: #4B5563;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: var(--spacing-sm);
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: var(--sidebar-hover);
+            color: #111827;
+        }
+
+        .nav-item.active {
+            background: var(--sidebar-active);
+            color: #8B2500;
+            font-weight: 500;
+            border-left: 3px solid var(--odoo-primary);
+        }
+
+        .nav-item .nav-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background: var(--odoo-danger);
+            color: white;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        /* Standard overrides - NOT NEEDED with flexbox layout */
+
+        .page-content {
+            padding: 20px 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Header */
+        .top-header {
+            height: var(--header-height);
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 var(--spacing-md);
+            gap: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: var(--odoo-primary);
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            width: 200px;
+        }
+
+        /* Search icon removed - using standard styling */
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--odoo-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* Page Content (consolidated above) */
+
+        .module-view {
+            display: none;
+        }
+
+        .module-view.active {
+            display: block;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ============================================
+           COMPONENTS
+           ============================================ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--odoo-primary);
+            color: white;
+            border-color: var(--odoo-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--odoo-primary-dark);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--content-bg);
+        }
+
+        .btn-success {
+            background: var(--odoo-success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: var(--odoo-warning);
+            color: #333;
+        }
+
+        .btn-danger {
+            background: var(--odoo-danger);
+            color: white;
+        }
+
+        .btn-info {
+            background: var(--odoo-info);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: 12px;
+        }
+
+        .btn-lg {
+            padding: var(--spacing-md) var(--spacing-lg);
+            font-size: 14px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-icon.blue {
+            background: #E3F2FD;
+        }
+
+        .stat-icon.green {
+            background: #E8F5E9;
+        }
+
+        .stat-icon.orange {
+            background: #FFF3E0;
+        }
+
+        .stat-icon.purple {
+            background: #F3E5F5;
+        }
+
+        .stat-icon.red {
+            background: #FFEBEE;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .stat-trend {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .stat-trend.up {
+            background: #E8F5E9;
+            color: #388E3C;
+        }
+
+        .stat-trend.down {
+            background: #FFEBEE;
+            color: #D32F2F;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: var(--spacing-md);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-success {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .badge-warning {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .badge-danger {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+
+        .badge-info {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+
+        .badge-secondary {
+            background: #F0F0F0;
+            color: #555;
+        }
+
+        .badge-primary {
+            background: #F3E5F5;
+            color: #6A1B9A;
+        }
+
+        .badge-draft {
+            background: #ECEFF1;
+            color: #455A64;
+        }
+
+        .badge-checkout {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .badge-in-transit {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+
+        .badge-setup {
+            background: #F3E5F5;
+            color: #6A1B9A;
+        }
+
+        .badge-active {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .badge-returning {
+            background: #FFF8E1;
+            color: #F57F17;
+        }
+
+        .badge-completed {
+            background: #E0F2F1;
+            color: #00695C;
+        }
+
+        .badge-discrepancy {
+            background: #FFEBEE;
+            color: #C62828;
+            border: 1px solid #EF9A9A;
+        }
+
+        /* Entity Tags */
+        .entity-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .entity-nk {
+            background: var(--entity-nk-light);
+            color: var(--entity-nk);
+        }
+
+        .entity-bt {
+            background: var(--entity-bt-light);
+            color: var(--entity-bt);
+        }
+
+        .entity-hq {
+            background: var(--entity-hq-light);
+            color: var(--entity-hq);
+        }
+
+        /* Table */
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: var(--content-bg);
+            padding: var(--spacing-sm) var(--spacing-md);
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .table td {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+        }
+
+        .table tr:hover {
+            background: #F1F3F5;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table a {
+            color: var(--odoo-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .table a:hover {
+            text-decoration: underline;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: var(--spacing-md);
+            background: white;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            padding: 0 var(--spacing-md);
+        }
+
+        .tab {
+            padding: var(--spacing-md) var(--spacing-lg);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: -2px;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--odoo-primary);
+            border-bottom-color: var(--odoo-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Calendar Grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .calendar-header-cell {
+            background: white;
+            padding: var(--spacing-sm);
+            text-align: center;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .calendar-day {
+            background: white;
+            min-height: 100px;
+            padding: var(--spacing-xs);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.35;
+        }
+
+        .calendar-day-number {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+            padding: 2px 4px;
+        }
+
+        .calendar-event {
+            font-size: 10px;
+            padding: 3px 5px;
+            border-radius: 3px;
+            margin-bottom: 0px;
+            color: white;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        .calendar-event.draft {
+            background: #78909C;
+        }
+
+        .calendar-event.checkout {
+            background: #E65100;
+        }
+
+        .calendar-event.in-transit {
+            background: #1565C0;
+        }
+
+        .calendar-event.setup {
+            background: #6A1B9A;
+        }
+
+        .calendar-event.active {
+            background: var(--odoo-success);
+        }
+
+        .calendar-event.returning {
+            background: #F57F17;
+        }
+
+        .calendar-event.completed {
+            background: #00695C;
+        }
+
+        .calendar-event.discrepancy {
+            background: var(--odoo-danger);
+        }
+
+        .calendar-event:hover {
+            opacity: 0.85;
+        }
+
+        /* Workflow / Lifecycle */
+        .lifecycle-board {
+            display: flex;
+            gap: 0;
+            align-items: stretch;
+            margin-bottom: var(--spacing-lg);
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .lifecycle-stage {
+            flex: 1;
+            padding: var(--spacing-md);
+            text-align: center;
+            border-right: 1px solid var(--border-color);
+            position: relative;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .lifecycle-stage:last-child {
+            border-right: none;
+        }
+
+        .lifecycle-stage.completed {
+            background: linear-gradient(180deg, #E8F5E9 0%, white 100%);
+        }
+
+        .lifecycle-stage.current {
+            background: linear-gradient(180deg, #E3F2FD 0%, white 100%);
+        }
+
+        .lifecycle-stage.inactive {
+            background: var(--content-bg);
+            opacity: 0.6;
+        }
+
+        .lifecycle-stage::after {
+            content: '\279C';
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            z-index: 2;
+        }
+
+        .lifecycle-stage:last-child::after {
+            display: none;
+        }
+
+        .lifecycle-stage.completed::after {
+            color: var(--odoo-success);
+        }
+
+        .lifecycle-stage.current::after {
+            color: var(--odoo-info);
+        }
+
+        .lifecycle-stage.inactive::after {
+            color: var(--text-light);
+        }
+
+        .lifecycle-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--spacing-sm);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .lifecycle-stage.completed .lifecycle-number {
+            background: var(--odoo-success);
+            color: white;
+        }
+
+        .lifecycle-stage.current .lifecycle-number {
+            background: var(--odoo-info);
+            color: white;
+        }
+
+        .lifecycle-stage.inactive .lifecycle-number {
+            background: var(--text-light);
+            color: white;
+        }
+
+        .lifecycle-name {
+            font-weight: 700;
+            font-size: 12px;
+            margin-bottom: 0px;
+        }
+
+        .lifecycle-desc {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .lifecycle-count {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: var(--spacing-xs);
+        }
+
+        /* Cards in Lifecycle columns */
+        .lifecycle-cards {
+            margin-top: var(--spacing-lg);
+        }
+
+        .lifecycle-column-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .lifecycle-column {
+            background: var(--content-bg);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            min-height: 200px;
+        }
+
+        .lifecycle-column-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 3px solid var(--border-color);
+        }
+
+        .lifecycle-column-title {
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .lifecycle-column-count {
+            background: var(--border-color);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .lifecycle-column.stage-completed .lifecycle-column-header {
+            border-bottom-color: var(--odoo-success);
+        }
+
+        .lifecycle-column.stage-current .lifecycle-column-header {
+            border-bottom-color: var(--odoo-info);
+        }
+
+        .lifecycle-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            cursor: pointer;
+            transition: box-shadow 0.2s, transform 0.1s;
+        }
+
+        .lifecycle-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .lifecycle-card-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .lifecycle-card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+        }
+
+        /* View Switcher */
+        .view-switcher {
+            display: flex;
+            gap: 0;
+        }
+
+        .view-btn {
+            padding: var(--spacing-xs) var(--spacing-md);
+            border: 1px solid var(--border-color);
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .view-btn:first-child {
+            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+        }
+
+        .view-btn:last-child {
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            border-left: none;
+        }
+
+        .view-btn.active {
+            background: var(--odoo-primary);
+            color: white;
+            border-color: var(--odoo-primary);
+        }
+
+        .view-btn:hover:not(.active) {
+            background: var(--content-bg);
+        }
+
+        /* Filter Buttons */
+        .filter-btn {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .filter-btn:hover {
+            background: var(--content-bg);
+        }
+
+        /* Detail View */
+        .detail-header {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .detail-title-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .detail-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .detail-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .detail-meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .detail-meta-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .detail-meta-value {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .detail-statusbar {
+            display: flex;
+            gap: var(--spacing-xs);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .statusbar-btn {
+            padding: var(--spacing-xs) var(--spacing-md);
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .statusbar-btn:hover {
+            background: var(--content-bg);
+        }
+
+        .statusbar-btn.active {
+            background: var(--odoo-primary);
+            color: white;
+            border-color: var(--odoo-primary);
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--odoo-primary);
+            box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.15);
+        }
+
+        .form-group .readonly-value {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--content-bg);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            border: 1px solid transparent;
+        }
+
+        /* QR Code placeholder */
+        .qr-code {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* Discrepancy Table */
+        .discrepancy-row {
+            border-left: 3px solid var(--odoo-danger);
+            background: #FFF5F5;
+        }
+
+        .discrepancy-row td {
+            padding: var(--spacing-sm) var(--spacing-md);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            max-width: 700px;
+            width: 92%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: var(--spacing-lg);
+        }
+
+        .modal-footer {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-sm);
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .toast {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            min-width: 300px;
+            max-width: 420px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--odoo-success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--odoo-danger);
+        }
+
+        .toast.info {
+            border-left: 4px solid var(--odoo-info);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--odoo-warning);
+        }
+
+        .toast-icon {
+            font-size: 18px;
+        }
+
+        .toast-message {
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        /* Checkbox list */
+        .checkbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .checkbox-item:hover {
+            background: var(--content-bg);
+        }
+
+        .checkbox-item.checked {
+            background: #F3E5F5;
+            border-color: var(--odoo-primary);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            accent-color: var(--odoo-primary);
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Items table in detail */
+        .items-table .item-thumb {
+            width: 40px;
+            height: 40px;
+            background: var(--content-bg);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .condition-select {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        .condition-btn {
+            padding: 3px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.15s;
+        }
+
+        .condition-btn:hover {
+            background: var(--content-bg);
+        }
+
+        .condition-btn.selected-good {
+            background: var(--odoo-success);
+            color: white;
+            border-color: var(--odoo-success);
+        }
+
+        .condition-btn.selected-damaged {
+            background: var(--odoo-danger);
+            color: white;
+            border-color: var(--odoo-danger);
+        }
+
+        .condition-btn.selected-missing {
+            background: var(--odoo-warning);
+            color: #333;
+            border-color: var(--odoo-warning);
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            height: 6px;
+            background: var(--content-bg);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        .progress-fill.green {
+            background: var(--odoo-success);
+        }
+
+        .progress-fill.blue {
+            background: var(--odoo-info);
+        }
+
+        .progress-fill.orange {
+            background: var(--odoo-warning);
+        }
+
+        .progress-fill.red {
+            background: var(--odoo-danger);
+        }
+
+        .progress-fill.purple {
+            background: var(--odoo-primary);
+        }
+
+        /* Back button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            color: var(--odoo-primary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            background: none;
+            border: none;
+            padding: var(--spacing-xs) 0;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Section title */
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        /* Misc */
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-muted {
+            color: var(--text-secondary);
+        }
+
+        .text-sm {
+            font-size: 11px;
+        }
+
+        .mt-md {
+            margin-top: var(--spacing-md);
+        }
+
+        .mt-lg {
+            margin-top: var(--spacing-lg);
+        }
+
+        .mb-md {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .mb-lg {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .flex-between {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .flex-gap {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .sidebar .logo-text,
+            .sidebar .nav-item span:not(.nav-icon),
+            .sidebar .nav-section-title {
+                display: none;
+            }
+
+            .lifecycle-column-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .tooltip::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+
+        /* Pattern decoration */
+        .sidebar-pattern {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background-image: url('../Media/pattern.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+
+        .page-pattern {
+            position: fixed;
+            bottom: 0px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            background-image: url('../Media/pattern.png');
+            background-size: contain;
+            margin-bottom: -20px;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="app-layout">
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-pattern"></div>
+                <div class="sidebar-logo">
+                    <img src="../Media/DTA-LOGO.png" alt="DTA Space" style="height: 32px; width: auto;">
+                    <div class="logo-text">DTA Space</div>
+                </div>
+            </div>
+            <div class="entity-switcher">
+                <select id="entitySelect" onchange="switchEntity(this.value)">
+                    <option value="hq">HQ - Trụ Sở Chính</option>
+                    <option value="nk" selected>NK Store - Nguyễn Kiệm</option>
+                    <option value="bt">BT Store - Bình Tân</option>
+                </select>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Tổng quan</div>
+                    <a class="nav-item" href="../index.html"><span class="nav-icon">📊</span><span>Bảng điều
+                            khiển</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Sự kiện</div>
+                    <a class="nav-item active" id="nav-lifecycle" href="#" onclick="switchViewNav('lifecycle'); return false;"><span class="nav-icon">🎨</span><span>Tổng quan</span></a>
+                    <a class="nav-item" id="nav-calendar" href="#" onclick="switchViewNav('calendar'); return false;"><span class="nav-icon">📅</span><span>Lịch</span></a>
+                    <a class="nav-item" id="nav-transactions" href="#" onclick="switchViewNav('transactions'); return false;"><span class="nav-icon">🔄</span><span>Thanh toán/Trả lại</span></a>
+                    <a class="nav-item" id="nav-items-master" href="#" onclick="switchViewNav('items-master'); return false;"><span class="nav-icon">📦</span><span>Mặt hàng</span></a>
+                    <a class="nav-item" id="nav-budget" href="#" onclick="switchViewNav('budget'); return false;"><span class="nav-icon">💰</span><span>Ngân sách</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Mô-đun</div>
+                    <a class="nav-item" href="inventory.html"><span class="nav-icon">📦</span><span>Quản lý
+                            kho</span></a>
+                    <a class="nav-item" href="products.html"><span class="nav-icon">📦</span><span>Sản phẩm</span></a>
+                    <a class="nav-item" href="crm.html"><span class="nav-icon">👥</span><span>CRM</span></a>
+                    <a class="nav-item" href="events.html"><span class="nav-icon">🎨</span><span>Sự kiện</span></a>
+                    <a class="nav-item" href="sales.html"><span class="nav-icon">💼</span><span>Bán hàng</span></a>
+                    <a class="nav-item" href="design_studio.html"><span class="nav-icon">✏️</span><span>Thiết kế
+                            Studio</span></a>
+                    <a class="nav-item" href="accounting.html"><span class="nav-icon">💰</span><span>Kế toán</span></a>
+                    <a class="nav-item" href="misa.html"><span class="nav-icon">🔄</span><span>Đồng bộ MISA</span></a>
+                    <a class="nav-item" href="reports.html"><span class="nav-icon">📈</span><span>Báo cáo</span></a>
+                    <a class="nav-item" href="projects.html"><span class="nav-icon">🏗️</span><span>Dự án</span></a>
+                    <a class="nav-item" href="hr.html"><span class="nav-icon">👥</span><span>Nhân sự</span></a>
+                    <a class="nav-item" href="marketing.html"><span class="nav-icon">📢</span><span>Marketing</span></a>
+                    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span>Cài đặt</span></a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="breadcrumb">
+                    <a href="../index.html">Bảng điều khiển</a>
+                    <span>/</span>
+                    <strong>VietBuild 2026 Q1</strong>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" placeholder="Tìm kiếm... (Ctrl+K)" id="globalSearch">
+                    </div>
+                    <span class="tooltip" data-tip="Notifications">🔔</span>
+                    <span class="tooltip" data-tip="Messages">💬</span>
+                    <div class="user-menu">
+                        <div class="user-avatar">NA</div>
+                        <span>Nguyễn Admin</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+
+                <!-- ============================================ -->
+                <!-- VIEW: LIFECYCLE -->
+                <!-- ============================================ -->
+                <div class="module-view active" id="view-lifecycle">
+                    <div class="page-header">
+                        <h1 class="page-title">🏛️ Quản lý sự kiện</h1>
+                        <div class="btn-group">
+                            <div class="view-switcher">
+                                <button class="view-btn active" onclick="switchView('lifecycle')">📊 Vòng đời</button>
+                                <button class="view-btn" onclick="switchView('calendar')">📅 Lịch</button>
+                                <button class="view-btn" onclick="switchView('list')">📋 Danh sách</button>
+                            </div>
+                            <button class="btn btn-secondary btn-sm"
+                                onclick="showToast('Exporting events report...', 'info')">📊 Báo cáo</button>
+                            <button class="btn btn-primary btn-sm" onclick="openModal('newEventsModal')">➕ Mới
+                                Sự kiện</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon purple">🏛️</div>
+                            <div class="stat-info">
+                                <div class="stat-value">5</div>
+                                <div class="stat-label">Hoạt động trong tháng này</div>
+                            </div>
+                            <span class="stat-trend up">+2 so với tháng 3</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon blue">🚚</div>
+                            <div class="stat-info">
+                                <div class="stat-value">23</div>
+                                <div class="stat-label">Các mặt hàng đang trong quá trình vận chuyển</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">✅</div>
+                            <div class="stat-info">
+                                <div class="stat-value">3</div>
+                                <div class="stat-label">Hiện đang hoạt động</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">↩️</div>
+                            <div class="stat-info">
+                                <div class="stat-value">8</div>
+                                <div class="stat-label">Đang chờ trả lại</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lifecycle Workflow Board -->
+                    <div class="section-title">
+                        <span>Quy trình làm việc sự kiện</span>
+                        <span class="text-sm text-muted">(Click vào thẻ để xem chi tiết)</span>
+                    </div>
+
+                    <!-- Visual Stage Indicator -->
+                    <div class="lifecycle-board">
+                        <div class="lifecycle-stage completed">
+                            <div class="lifecycle-number">1</div>
+                            <div class="lifecycle-name">Chuẩn bị</div>
+                            <div class="lifecycle-desc">Kiểm tra hàng tồn & đóng gói</div>
+                            <div class="lifecycle-count" style="color: var(--odoo-success)">2 cuộc sự kiện</div>
+                        </div>
+                        <div class="lifecycle-stage completed">
+                            <div class="lifecycle-number">2</div>
+                            <div class="lifecycle-name">Thanh toán</div>
+                            <div class="lifecycle-desc">Các mục được quét và đăng xuất</div>
+                            <div class="lifecycle-count" style="color: var(--odoo-success)">1 cuộc sự kiện</div>
+                        </div>
+                        <div class="lifecycle-stage current">
+                            <div class="lifecycle-number">3</div>
+                            <div class="lifecycle-name">Đang chuyển tiếp</div>
+                            <div class="lifecycle-desc">Vận chuyển tận nơi</div>
+                            <div class="lifecycle-count" style="color: var(--odoo-info)">1 cuộc sự kiện</div>
+                        </div>
+                        <div class="lifecycle-stage inactive">
+                            <div class="lifecycle-number">4</div>
+                            <div class="lifecycle-name">Cài đặt</div>
+                            <div class="lifecycle-desc">Địa điểm tập kết</div>
+                            <div class="lifecycle-count text-muted">0</div>
+                        </div>
+                        <div class="lifecycle-stage inactive">
+                            <div class="lifecycle-number">5</div>
+                            <div class="lifecycle-name">Đang hoạt động</div>
+                            <div class="lifecycle-desc">Sự kiện trực tiếp</div>
+                            <div class="lifecycle-count text-muted">0</div>
+                        </div>
+                        <div class="lifecycle-stage inactive">
+                            <div class="lifecycle-number">6</div>
+                            <div class="lifecycle-name">Trở lại</div>
+                            <div class="lifecycle-desc">Vận chuyển trở lại</div>
+                            <div class="lifecycle-count text-muted">0</div>
+                        </div>
+                        <div class="lifecycle-stage inactive">
+                            <div class="lifecycle-number">7</div>
+                            <div class="lifecycle-name">Hòa giải</div>
+                            <div class="lifecycle-desc">Kiểm tra & kiểm tra tình trạng</div>
+                            <div class="lifecycle-count text-muted">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Kanban-style columns with events cards -->
+                    <div class="lifecycle-column-grid">
+                        <!-- Prepare Column -->
+                        <div class="lifecycle-column stage-completed">
+                            <div class="lifecycle-column-header">
+                                <div class="lifecycle-column-title">
+                                    <span style="color: var(--odoo-success)">●</span> Chuẩn bị
+                                </div>
+                                <span class="lifecycle-column-count">2</span>
+                            </div>
+                            <div class="lifecycle-card" onclick="switchView('detail')">
+                                <div class="lifecycle-card-title">VietBuild 2026 Quý 2</div>
+                                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 0px;">
+                                    SECC Quân 7 | 20-25 tháng 4 năm 2026
+                                </div>
+                                <div class="flex-between">
+                                    <span class="entity-tag entity-nk">NK</span>
+                                    <span style="font-size: 11px; font-weight: 600; color: var(--odoo-primary);">350M
+                                        đồng</span>
+                                </div>
+                                <div class="lifecycle-card-meta">
+                                    <span>📦 18 sản phẩm</span>
+                                    <span>👤 Trần Văn Minh</span>
+                                </div>
+                            </div>
+                            <div class="lifecycle-card" onclick="switchView('detail')">
+                                <div class="lifecycle-card-title">Thiết Kế Nhà Đẹp 2026</div>
+                                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 0px;">
+                                    Phú Thọ | 28 tháng 4 - 3 tháng 5 năm 2026
+                                </div>
+                                <div class="flex-between">
+                                    <span class="entity-tag entity-bt">BT</span>
+                                    <span style="font-size: 11px; font-weight: 600; color: var(--odoo-primary);">200M
+                                        đồng</span>
+                                </div>
+                                <div class="lifecycle-card-meta">
+                                    <span>📦 12 sản phẩm</span>
+                                    <span>👤 Lê Thị Hồng</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Checkout Column -->
+                        <div class="lifecycle-column stage-completed">
+                            <div class="lifecycle-column-header">
+                                <div class="lifecycle-column-title">
+                                    <span style="color: var(--odoo-success)">●</span> Thanh toán
+                                </div>
+                                <span class="lifecycle-column-count">1</span>
+                            </div>
+                            <div class="lifecycle-card" onclick="switchView('detail')">
+                                <div class="lifecycle-card-title">Hội chợ Nội Thất Hiển Đại</div>
+                                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 0px;">
+                                    Tân Bình | 18-22 tháng 4 năm 2026
+                                </div>
+                                <div class="flex-between">
+                                    <span class="entity-tag entity-hq">HQ</span>
+                                    <span style="font-size: 11px; font-weight: 600; color: var(--odoo-primary);">420M
+                                        đồng</span>
+                                </div>
+                                <div class="lifecycle-card-meta">
+                                    <span>📦 24 mặt hàng</span>
+                                    <span>👤 Phạm Ngọc Anh</span>
+                                </div>
+                                <div class="mt-md">
+                                    <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 0px;">
+                                        Thanh toán
+                                        Tiến độ</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill green" style="width: 100%"></div>
+                                    </div>
+                                    <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">24/24
+                                        đã kiểm tra</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- In-Transit Column -->
+                        <div class="lifecycle-column stage-current">
+                            <div class="lifecycle-column-header">
+                                <div class="lifecycle-column-title">
+                                    <span style="color: var(--odoo-info)">●</span> Đang chuyển tiếp
+                                </div>
+                                <span class="lifecycle-column-count">1</span>
+                            </div>
+                            <div class="lifecycle-card" onclick="switchView('detail')">
+                                <div class="lifecycle-card-title">VietBuild 2026 Q1</div>
+                                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 0px;">
+                                    SECC Quân 7 | 10-15 tháng 4 năm 2026
+                                </div>
+                                <div class="flex-between">
+                                    <span class="entity-tag entity-nk">NK</span>
+                                    <span style="font-size: 11px; font-weight: 600; color: var(--odoo-primary);">500M
+                                        đồng</span>
+                                </div>
+                                <div class="lifecycle-card-meta">
+                                    <span>📦 32 sản phẩm</span>
+                                    <span>👤 Hoàng Văn Đức</span>
+                                </div>
+                                <div class="mt-md">
+                                    <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 0px;">🚚
+                                        ETA:
+                                        Ngày 12 tháng 4 năm 2026, 14:00</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill blue" style="width: 60%"></div>
+                                    </div>
+                                    <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">En
+                                        tuyến đường đến
+                                        SECC</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Column -->
+                        <div class="lifecycle-column">
+                            <div class="lifecycle-column-header">
+                                <div class="lifecycle-column-title">
+                                    <span style="color: var(--odoo-warning)">●</span> Tích cực
+                                </div>
+                                <span class="lifecycle-column-count">0</span>
+                            </div>
+                            <div
+                                style="text-align: center; padding: var(--spacing-xl); color: var(--text-light); font-size: 12px;">
+                                Không có sự kiện tích cực
+                            </div>
+                        </div>
+
+                        <!-- Return Column -->
+                        <div class="lifecycle-column">
+                            <div class="lifecycle-column-header">
+                                <div class="lifecycle-column-title">
+                                    <span style="color: var(--text-light)">●</span> Trở lại
+                                </div>
+                                <span class="lifecycle-column-count">0</span>
+                            </div>
+                            <div
+                                style="text-align: center; padding: var(--spacing-xl); color: var(--text-light); font-size: 12px;">
+                                Không có hàng trả lại đang chờ xử lý
+                            </div>
+                        </div>
+
+                        <!-- Reconcile Column -->
+                        <div class="lifecycle-column">
+                            <div class="lifecycle-column-header">
+                                <div class="lifecycle-column-title">
+                                    <span style="color: var(--text-light)">●</span> Hòa giải
+                                </div>
+                                <span class="lifecycle-column-count">0</span>
+                            </div>
+                            <div
+                                style="text-align: center; padding: var(--spacing-xl); color: var(--text-light); font-size: 12px;">
+                                Không có sự hòa giải nào đang chờ xử lý
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Completed -->
+                    <div class="mt-lg">
+                        <div class="section-title">Đã hoàn thành gần đây</div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Sự kiện #</th>
+                                        <th>Name</th>
+                                        <th>Vị trí</th>
+                                        <th>Ngày</th>
+                                        <th>Ngân sách</th>
+                                        <th>Mặt hàng</th>
+                                        <th>Trạng thái</th>
+                                        <th>Chi nhánh</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><a href="#" onclick="switchView('detail'); return false;">EXH-2026-038</a>
+                                        </td>
+                                        <td>Hội chợ sự kiện thiết kế Sài Gòn</td>
+                                        <td>SECC Quân 7</td>
+                                        <td>15-20 tháng 3 năm 2026</td>
+                                        <td style="font-weight: 600;">480 triệu đồng</td>
+                                        <td>28</td>
+                                        <td><span class="badge badge-completed">Complete</span></td>
+                                        <td><span class="entity-tag entity-nk">NK</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="switchView('detail'); return false;">EXH-2026-035</a>
+                                        </td>
+                                        <td>Sự Kiện Nội Thất HCM</td>
+                                        <td>Phú Thọ</td>
+                                        <td>1-5 tháng 3 năm 2026</td>
+                                        <td style="font-weight: 600;">320 triệu đồng</td>
+                                        <td>20</td>
+                                        <td><span class="badge badge-completed">Complete</span></td>
+                                        <td><span class="entity-tag entity-bt">BT</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="#" onclick="switchView('detail'); return false;">EXH-2026-030</a>
+                                        </td>
+                                        <td>Kiến Trúc & Xây dựng 2026</td>
+                                        <td>Tân Bình</td>
+                                        <td>10-14 tháng 2 năm 2026</td>
+                                        <td style="font-weight: 600;">250 triệu đồng</td>
+                                        <td>15</td>
+                                        <td><span class="badge badge-discrepancy">Sự khác biệt</span></td>
+                                        <td><span class="entity-tag entity-hq">HQ</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- VIEW: CALENDAR -->
+                <!-- ============================================ -->
+                <div class="module-view" id="view-calendar">
+                    <div class="page-header">
+                        <h1 class="page-title">📅 Lịch sự kiện - Tháng 4 năm 2026</h1>
+                        <div class="btn-group">
+                            <div class="view-switcher">
+                                <button class="view-btn" onclick="switchView('lifecycle')">📊 Vòng đời</button>
+                                <button class="view-btn active" onclick="switchView('calendar')">📅 Lịch</button>
+                                <button class="view-btn" onclick="switchView('list')">📋 Danh sách</button>
+                            </div>
+                            <button class="btn btn-secondary btn-sm">◀ tháng ba</button>
+                            <button class="btn btn-secondary btn-sm">Tháng 5 ▶</button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-grid">
+                        <!-- Header Row -->
+                        <div class="calendar-header-cell">Thứ hai</div>
+                        <div class="calendar-header-cell">thứ ba</div>
+                        <div class="calendar-header-cell">Thứ tư</div>
+                        <div class="calendar-header-cell">Thứ năm</div>
+                        <div class="calendar-header-cell">Thứ Sáu</div>
+                        <div class="calendar-header-cell">Đã ngồi</div>
+                        <div class="calendar-header-cell">Mặt trời</div>
+
+                        <!-- Week 1 (Mar 30 - Apr 5) -->
+                        <div class="calendar-day other-month">
+                            <div class="calendar-day-number">30</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">1</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">2</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">3</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">4</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">5</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">6</div>
+                        </div>
+
+                        <!-- Week 2 (Apr 7-12) -->
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">7</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">8</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">9</div>
+                            <div class="calendar-event checkout" onclick="switchView('detail')">Nội Thất Hiển Đại -
+                                Thanh toán
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">10</div>
+                            <div class="calendar-event in-transit" onclick="switchView('detail')">VietBuild Q1 - Trong
+                                Quá cảnh
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">11</div>
+                            <div class="calendar-event in-transit" onclick="switchView('detail')">VietBuild Q1 - Trong
+                                Quá cảnh
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">12</div>
+                            <div class="calendar-event setup" onclick="switchView('detail')">VietBuild Q1 - Thiết Lập
+                            </div>
+                        </div>
+
+                        <!-- Week 3 (Apr 13-19) -->
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">13</div>
+                            <div class="calendar-event active" onclick="switchView('detail')">VietBuild Q1 - Đang hoạt
+                                động
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">14</div>
+                            <div class="calendar-event active" onclick="switchView('detail')">VietBuild Q1 - Đang hoạt
+                                động
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">15</div>
+                            <div class="calendar-event active" onclick="switchView('detail')">VietBuild Q1 - Đang hoạt
+                                động
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">16</div>
+                            <div class="calendar-event returning" onclick="switchView('detail')">VietBuild Q1 - Trở về
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">17</div>
+                            <div class="calendar-event returning" onclick="switchView('detail')">VietBuild Q1 - Trở về
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">18</div>
+                            <div class="calendar-event checkout" onclick="switchView('detail')">Nội Thất HD - Active
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">19</div>
+                            <div class="calendar-event active" onclick="switchView('detail')">Nội Thất HD - Active</div>
+                        </div>
+
+                        <!-- Week 4 (Apr 20-26) -->
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">20</div>
+                            <div class="calendar-event active" onclick="switchView('detail')">Nội Thất HD - Active</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">21</div>
+                            <div class="calendar-event active" onclick="switchView('detail')">Nội Thất HD - Active</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">22</div>
+                            <div class="calendar-event returning" onclick="switchView('detail')">Nội Thất HD - Trở Về
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">23</div>
+                            <div class="calendar-event returning" onclick="switchView('detail')">Nội Thất HD - Trở Về
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">24</div>
+                            <div class="calendar-event draft" onclick="switchView('detail')">VietBuild Q2 - Chuẩn bị
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">25</div>
+                            <div class="calendar-event draft" onclick="switchView('detail')">VietBuild Q2 - Chuẩn bị
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">26</div>
+                            <div class="calendar-event checkout" onclick="switchView('detail')">VietBuild Q2 - Thanh
+                                toán
+                            </div>
+                        </div>
+
+                        <!-- Week 5 (Apr 27 - May 3) -->
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">27</div>
+                            <div class="calendar-event in-transit" onclick="switchView('detail')">VietBuild Q2 - Transit
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">28</div>
+                            <div class="calendar-event setup" onclick="switchView('detail')">VietBuild Q2 - Thiết Lập
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">29</div>
+                            <div class="calendar-event active" onclick="switchView('detail')">VietBuild Q2 - Đang hoạt
+                                động
+                            </div>
+                            <div class="calendar-event draft" onclick="switchView('detail')">Thiết Kế ND - Chuẩn bị
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="calendar-day-number">30</div>
+                            <div class="calendar-event active" onclick="switchView('detail')">VietBuild Q2 - Đang hoạt
+                                động
+                            </div>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <div class="calendar-day-number">1</div>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <div class="calendar-day-number">2</div>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <div class="calendar-day-number">3</div>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="card mt-md">
+                        <div class="card-body">
+                            <div class="flex-gap" style="flex-wrap: wrap;">
+                                <span style="font-size: 12px; font-weight: 600; margin-right: 8px;">Huyền thoại:</span>
+                                <span class="badge badge-draft">Dự thảo/Chuẩn bị</span>
+                                <span class="badge badge-checkout">Thanh toán</span>
+                                <span class="badge badge-in-transit">Đang chuyển tiếp</span>
+                                <span class="badge badge-setup">Cài đặt</span>
+                                <span class="badge badge-active">Đang hoạt động</span>
+                                <span class="badge badge-returning">Trở về</span>
+                                <span class="badge badge-completed">Complete</span>
+                                <span class="badge badge-discrepancy">Sự khác biệt</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- VIEW: LIST -->
+                <!-- ============================================ -->
+                <div class="module-view" id="view-list">
+                    <div class="page-header">
+                        <h1 class="page-title">📋 Danh sách sự kiện</h1>
+                        <div class="btn-group">
+                            <div class="view-switcher">
+                                <button class="view-btn" onclick="switchView('lifecycle')">📊 Vòng đời</button>
+                                <button class="view-btn" onclick="switchView('calendar')">📅 Lịch</button>
+                                <button class="view-btn active" onclick="switchView('list')">📋 Danh sách</button>
+                            </div>
+                            <button class="filter-btn">Tất cả <span
+                                    style="background: var(--odoo-primary); color: white; padding: 0 5px; border-radius: 10px; font-size: 10px; margin-left: 4px;">8</span></button>
+                            <button class="filter-btn">Đang hoạt động</button>
+                            <button class="filter-btn">Complete</button>
+                            <button class="btn btn-primary btn-sm" onclick="openModal('newEventsModal')">➕
+                                Mới</button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-header">
+                            <span style="color: var(--text-secondary); font-size: 12px;">8 sự kiện được tìm
+                                thấy</span>
+                            <div class="flex-gap">
+                                <span style="font-size: 12px; color: var(--text-secondary);">Sắp xếp theo:</span>
+                                <select
+                                    style="font-size: 12px; padding: 3px 8px; border: 1px solid var(--border-color); border-radius: 4px;">
+                                    <option>Ngày (mới nhất)</option>
+                                    <option>Ngân sách (cao nhất)</option>
+                                    <option>Tên (A-Z)</option>
+                                    <option>Trạng thái</option>
+                                </select>
+                                <button class="btn btn-secondary btn-sm"
+                                    onclick="showToast('Exporting to Excel...', 'info')">📥 Xuất khẩu</button>
+                            </div>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 30px;"><input type="checkbox"></th>
+                                    <th>Dự án #</th>
+                                    <th>Tên sự kiện</th>
+                                    <th>Vị trí</th>
+                                    <th>Ngày bắt đầu</th>
+                                    <th>Ngày kết thúc</th>
+                                    <th>Ngân sách</th>
+                                    <th>Trạng thái</th>
+                                    <th>Mặt hàng</th>
+                                    <th>Chi nhánh</th>
+                                    <th>Giám đốc</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="switchView('detail'); return false;">EXH-2026-041</a></td>
+                                    <td><strong>VietBuild 2026 Q1</strong></td>
+                                    <td>SECC Quân 7</td>
+                                    <td>10 tháng 4 năm 2026</td>
+                                    <td>15 tháng 4 năm 2026</td>
+                                    <td style="font-weight: 600;">500 triệu đồng</td>
+                                    <td><span class="badge badge-in-transit">Đang chuyển tiếp</span></td>
+                                    <td>32</td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td>Hoàng Văn Đức</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="switchView('detail'); return false;">EXH-2026-042</a></td>
+                                    <td><strong>Hội chợ Nội Thất Hiển Đại</strong></td>
+                                    <td>Tân Bình</td>
+                                    <td>18 tháng 4 năm 2026</td>
+                                    <td>22 tháng 4 năm 2026</td>
+                                    <td style="font-weight: 600;">420 triệu đồng</td>
+                                    <td><span class="badge badge-checkout">Thanh toán</span></td>
+                                    <td>24</td>
+                                    <td><span class="entity-tag entity-hq">HQ</span></td>
+                                    <td>Phạm Ngọc Anh</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="switchView('detail'); return false;">EXH-2026-043</a></td>
+                                    <td><strong>VietBuild 2026 Quý 2</strong></td>
+                                    <td>SECC Quân 7</td>
+                                    <td>25 tháng 4 năm 2026</td>
+                                    <td>30 tháng 4 năm 2026</td>
+                                    <td style="font-weight: 600;">350 triệu đồng</td>
+                                    <td><span class="badge badge-draft">Nháp</span></td>
+                                    <td>18</td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td>Trần Văn Minh</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="switchView('detail'); return false;">EXH-2026-044</a></td>
+                                    <td><strong>Thiết Kế Nhà Đẹp 2026</strong></td>
+                                    <td>Phú Thọ</td>
+                                    <td>28 tháng 4 năm 2026</td>
+                                    <td>03 tháng 5 năm 2026</td>
+                                    <td style="font-weight: 600;">200 triệu đồng</td>
+                                    <td><span class="badge badge-draft">Nháp</span></td>
+                                    <td>12</td>
+                                    <td><span class="entity-tag entity-bt">BT</span></td>
+                                    <td>Lê Thị Hồng</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="switchView('detail'); return false;">EXH-2026-038</a></td>
+                                    <td><strong>Hội chợ sự kiện thiết kế Sài Gòn</strong></td>
+                                    <td>SECC Quân 7</td>
+                                    <td>15 tháng 3 năm 2026</td>
+                                    <td>20 tháng 3 năm 2026</td>
+                                    <td style="font-weight: 600;">480 triệu đồng</td>
+                                    <td><span class="badge badge-completed">Complete</span></td>
+                                    <td>28</td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td>Nguyễn Thị Mai</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="switchView('detail'); return false;">EXH-2026-035</a></td>
+                                    <td><strong>Sự Kiện Nội Thất HCM</strong></td>
+                                    <td>Phú Thọ</td>
+                                    <td>01 tháng 3 năm 2026</td>
+                                    <td>05 tháng 3 năm 2026</td>
+                                    <td style="font-weight: 600;">320 triệu đồng</td>
+                                    <td><span class="badge badge-completed">Complete</span></td>
+                                    <td>20</td>
+                                    <td><span class="entity-tag entity-bt">BT</span></td>
+                                    <td>Vũ Thanh Tâm</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="switchView('detail'); return false;">EXH-2026-030</a></td>
+                                    <td><strong>Kiến Trúc & Xây dựng 2026</strong></td>
+                                    <td>Tân Bình</td>
+                                    <td>10 tháng 2 năm 2026</td>
+                                    <td>14 tháng 2 năm 2026</td>
+                                    <td style="font-weight: 600;">250 triệu đồng</td>
+                                    <td><span class="badge badge-discrepancy">Sự khác biệt</span></td>
+                                    <td>15</td>
+                                    <td><span class="entity-tag entity-hq">HQ</span></td>
+                                    <td>Đỗ Văn Kiên</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><a href="#" onclick="switchView('detail'); return false;">EXH-2026-025</a></td>
+                                    <td><strong>Sự Kiện Vật Liệu XD</strong></td>
+                                    <td>SECC Quân 7</td>
+                                    <td>20 tháng 1 năm 2026</td>
+                                    <td>25 tháng 1 năm 2026</td>
+                                    <td style="font-weight: 600;">180 triệu đồng</td>
+                                    <td><span class="badge badge-completed">Complete</span></td>
+                                    <td>10</td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td>Trần Văn Minh</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div
+                            style="padding: var(--spacing-md); display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-color);">
+                            <span style="font-size: 12px; color: var(--text-secondary);">Hiển thị 1-8 trên 8</span>
+                            <div class="flex-gap">
+                                <button class="btn btn-secondary btn-sm" disabled>◀ Trước đó</button>
+                                <button class="btn btn-primary btn-sm">1</button>
+                                <button class="btn btn-secondary btn-sm" disabled>Tiếp theo ►</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- VIEW: DETAIL FORM -->
+                <!-- ============================================ -->
+                <div class="module-view" id="view-detail">
+                    <button class="back-btn" onclick="switchView('lifecycle')">← Quay lại Sự kiện</button>
+
+                    <div class="page-header">
+                        <h1 class="page-title">EXH-2026-041: VietBuild 2026 Q1</h1>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary btn-sm"
+                                onclick="showToast('Printing events sheet...', 'info')">🖨️ In</button>
+                            <button class="btn btn-secondary btn-sm"
+                                onclick="showToast('Exporting details...', 'info')">📥
+                                Xuất khẩu</button>
+                            <button class="btn btn-warning btn-sm" onclick="openModal('checkoutModal')">📤 Thanh toán
+                                Mặt hàng</button>
+                            <button class="btn btn-success btn-sm" onclick="openModal('returnModal')">↩️ Trở về
+                                Mặt hàng</button>
+                        </div>
+                    </div>
+
+                    <!-- Detail Header Card -->
+                    <div class="detail-header">
+                        <div class="detail-title-row">
+                            <div>
+                                <div class="detail-title">VietBuild 2026 Q1</div>
+                                <div style="color: var(--text-secondary); font-size: 13px; margin-top: 4px;">Sự kiện
+                                    Dự án - NK Store</div>
+                            </div>
+                            <div class="flex-gap">
+                                <span class="badge badge-in-transit" style="font-size: 13px; padding: 5px 14px;">Đang
+                                    chuyển tiếp</span>
+                                <span class="entity-tag entity-nk" style="font-size: 12px; padding: 5px 12px;">NK
+                                    CỬA HÀNG</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-meta">
+                            <div class="detail-meta-item">
+                                <span class="detail-meta-label">Vị trí</span>
+                                <span class="detail-meta-value">SECC Quân 7, TP.HCM</span>
+                            </div>
+                            <div class="detail-meta-item">
+                                <span class="detail-meta-label">Ngày bắt đầu</span>
+                                <span class="detail-meta-value">10 tháng 4 năm 2026</span>
+                            </div>
+                            <div class="detail-meta-item">
+                                <span class="detail-meta-label">Ngày kết thúc</span>
+                                <span class="detail-meta-value">15 tháng 4 năm 2026</span>
+                            </div>
+                            <div class="detail-meta-item">
+                                <span class="detail-meta-label">Ngân sách</span>
+                                <span class="detail-meta-value"
+                                    style="color: var(--odoo-primary); font-size: 15px;">500.000.000 đồng</span>
+                            </div>
+                            <div class="detail-meta-item">
+                                <span class="detail-meta-label">Người quản lý dự án</span>
+                                <span class="detail-meta-value">Hoàng Văn Đức</span>
+                            </div>
+                            <div class="detail-meta-item">
+                                <span class="detail-meta-label">Tổng sản phẩm</span>
+                                <span class="detail-meta-value">32 mặt hàng</span>
+                            </div>
+                            <div class="detail-meta-item">
+                                <span class="detail-meta-label">Đã tạo</span>
+                                <span class="detail-meta-value">25 tháng 3 năm 2026</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-statusbar">
+                            <span
+                                style="font-size: 12px; font-weight: 600; margin-right: var(--spacing-md); color: var(--text-secondary);">Quy
+                                trình làm việc:</span>
+                            <button class="statusbar-btn"
+                                style="background: var(--odoo-success); color: white; border-color: var(--odoo-success);">Chuẩn
+                                bị</button>
+                            <button class="statusbar-btn"
+                                style="background: var(--odoo-success); color: white; border-color: var(--odoo-success);">Thanh
+                                toán</button>
+                            <button class="statusbar-btn active">Đang chuyển tiếp</button>
+                            <button class="statusbar-btn">Cài đặt</button>
+                            <button class="statusbar-btn">Đang hoạt động</button>
+                            <button class="statusbar-btn">Trở lại</button>
+                            <button class="statusbar-btn">Hòa giải</button>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchTab(this, 'tab-items')">📦 Vật phẩm</div>
+                        <div class="tab" onclick="switchTab(this, 'tab-checkout')">📤 Nhật ký thanh toán</div>
+                        <div class="tab" onclick="switchTab(this, 'tab-return')">↩️ Nhật ký trả lại</div>
+                        <div class="tab" onclick="switchTab(this, 'tab-discrepancy')">⚠️ Sự khác biệt</div>
+                        <div class="tab" onclick="switchTab(this, 'tab-info')">ℹ️ Thông tin</div>
+                    </div>
+
+                    <!-- Tab: Items -->
+                    <div class="tab-content active" id="tab-items">
+                        <div class="table-container">
+                            <div class="table-header">
+                                <span style="font-weight: 600;">Vật phẩm sự kiện (32)</span>
+                                <div class="flex-gap">
+                                    <select
+                                        style="font-size: 12px; padding: 3px 8px; border: 1px solid var(--border-color); border-radius: 4px;">
+                                        <option>Tất cả danh mục</option>
+                                        <option>Sofa</option>
+                                        <option>cấm</option>
+                                        <option>Tú</option>
+                                        <option>Giuong</option>
+                                        <option>Thiết kế nội thất</option>
+                                    </select>
+                                    <button class="btn btn-secondary btn-sm"
+                                        onclick="showToast('Scanning QR codes...', 'info')">📷 Quét QR</button>
+                                </div>
+                            </div>
+                            <table class="table items-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30px;"><input type="checkbox"></th>
+                                        <th>Mã QR</th>
+                                        <th>Mã mặt hàng</th>
+                                        <th>Tên sản phẩm</th>
+                                        <th>Danh mục</th>
+                                        <th>Tình trạng</th>
+                                        <th>Trạng thái</th>
+                                        <th>Vị trí</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div class="qr-code">QR<br>001</div>
+                                        </td>
+                                        <td><a href="#">ITM-SF-001</a></td>
+                                        <td><strong>Sofa Chữ L Sang Trọng</strong></td>
+                                        <td>Sofa</td>
+                                        <td><span class="badge badge-success">Tốt</span></td>
+                                        <td><span class="badge badge-in-transit">Đang chuyển tiếp</span></td>
+                                        <td>Xe tải số 3</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div class="qr-code">QR<br>002</div>
+                                        </td>
+                                        <td><a href="#">ITM-TA-015</a></td>
+                                        <td><strong>Bản An Go OC 6 người</strong></td>
+                                        <td>cấm</td>
+                                        <td><span class="badge badge-success">Tốt</span></td>
+                                        <td><span class="badge badge-in-transit">Đang chuyển tiếp</span></td>
+                                        <td>Xe tải số 3</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div class="qr-code">QR<br>003</div>
+                                        </td>
+                                        <td><a href="#">ITM-TB-022</a></td>
+                                        <td><strong>Tứ Bếp Hiến Đại I-Shape</strong></td>
+                                        <td>Tú bep</td>
+                                        <td><span class="badge badge-success">Tốt</span></td>
+                                        <td><span class="badge badge-in-transit">Đang chuyển tiếp</span></td>
+                                        <td>Xe tải số 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div class="qr-code">QR<br>004</div>
+                                        </td>
+                                        <td><a href="#">ITM-GN-008</a></td>
+                                        <td><strong>Giuong Ngũ Goi Cao Su</strong></td>
+                                        <td>Giuong</td>
+                                        <td><span class="badge badge-success">Tốt</span></td>
+                                        <td><span class="badge badge-in-transit">Đang chuyển tiếp</span></td>
+                                        <td>Xe tải số 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div class="qr-code">QR<br>005</div>
+                                        </td>
+                                        <td><a href="#">ITM-TQ-031</a></td>
+                                        <td><strong>Tứ Quan Áo 3 Bương</strong></td>
+                                        <td>Tú quân áo</td>
+                                        <td><span class="badge badge-success">Tốt</span></td>
+                                        <td><span class="badge badge-checkout">Đã kiểm tra</span></td>
+                                        <td>Kho NK</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div class="qr-code">QR<br>006</div>
+                                        </td>
+                                        <td><a href="#">ITM-DK-042</a></td>
+                                        <td><strong>Đền Trắng Trị Pha Lễ</strong></td>
+                                        <td>Thiết kế nội thất</td>
+                                        <td><span class="badge badge-success">Tốt</span></td>
+                                        <td><span class="badge badge-checkout">Đã kiểm tra</span></td>
+                                        <td>Kho NK</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div class="qr-code">QR<br>007</div>
+                                        </td>
+                                        <td><a href="#">ITM-GG-019</a></td>
+                                        <td><strong>Ghe Giám Đốc Đa Thất</strong></td>
+                                        <td>ghè</td>
+                                        <td><span class="badge badge-warning">Vết xước nhỏ</span></td>
+                                        <td><span class="badge badge-checkout">Đã kiểm tra</span></td>
+                                        <td>Kho NK</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div class="qr-code">QR<br>008</div>
+                                        </td>
+                                        <td><a href="#">ITM-BT-055</a></td>
+                                        <td><strong>Bản Trà Kinh Cường Lục</strong></td>
+                                        <td>Bản trà</td>
+                                        <td><span class="badge badge-success">Tốt</span></td>
+                                        <td><span class="badge badge-checkout">Đã kiểm tra</span></td>
+                                        <td>Kho NK</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div
+                                style="padding: var(--spacing-sm) var(--spacing-md); font-size: 12px; color: var(--text-secondary); text-align: center; border-top: 1px solid var(--border-color);">
+                                Hiển thị 8 trong 32 mục <a href="#" style="color: var(--odoo-primary);">Xem tất cả</a>
+                            </div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="grid-3 mt-md">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="section-title" style="font-size: 13px;">Theo trạng thái</div>
+                                    <div style="margin-bottom: 0px;">
+                                        <div class="flex-between text-sm mb-md">
+                                            <span>Đang chuyển tiếp</span><span style="font-weight: 600;">24</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill blue" style="width: 75%"></div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-bottom: 0px;">
+                                        <div class="flex-between text-sm mb-md">
+                                            <span>Đã kiểm tra</span><span style="font-weight: 600;">8</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill orange" style="width: 25%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex-between text-sm mb-md">
+                                            <span>Đã giao hàng</span><span style="font-weight: 600;">0</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill green" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="section-title" style="font-size: 13px;">Theo danh mục</div>
+                                    <div class="text-sm" style="line-height: 2;">
+                                        <div>🛋️Sofa: <strong>6 món</strong></div>
+                                        <div>🪑 Cấm: <strong>8 món</strong></div>
+                                        <div>🗄️ Tú: <strong>7 món</strong></div>
+                                        <div>🛏️ Dương: <strong>4 món</strong></div>
+                                        <div>💡 Trang trí: <strong>7 món</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="section-title" style="font-size: 13px;">Chuyên chở</div>
+                                    <div class="text-sm" style="line-height: 2;">
+                                        <div>🚚 Xe tải số 1: <strong>12 món</strong></div>
+                                        <div>🚚 Xe tải số 2: <strong>8 món</strong></div>
+                                        <div>🚚 Xe tải số 3: <strong>12 món</strong></div>
+                                        <div style="margin-top: 8px;">📍 Thời gian dự kiến: <strong>12 tháng 4,
+                                                14:00</strong></div>
+                                        <div>📍 Từ: <strong>Kho NK</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Checkout Log -->
+                    <div class="tab-content" id="tab-checkout">
+                        <div class="card mb-md">
+                            <div class="card-header">
+                                <span class="card-title">Tóm tắt thanh toán</span>
+                                <span class="badge badge-success">Complete</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="grid-2">
+                                    <div class="form-group">
+                                        <label>Ngày thanh toán</label>
+                                        <div class="readonly-value">09/04/2026, 08:30</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Đã kiểm tra bởi</label>
+                                        <div class="readonly-value">Hoàng Văn Đức</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Nhân viên kho</label>
+                                        <div class="readonly-value">Nguyễn Văn Tài</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Thẩm quyền giải quyết #</label>
+                                        <div class="readonly-value">CHK-2026-041-001</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ghi chú</label>
+                                    <div class="readonly-value">Tất cả 32 mục đã được kiểm tra thành công. Đã tải 24 mục
+                                        lên
+                                        xe tải ngay lập tức. NK Store còn 8 món cho đợt sau.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <div class="table-header">
+                                <span class="card-title">Nhật ký các mục thanh toán</span>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã mặt hàng</th>
+                                        <th>Sản phẩm</th>
+                                        <th>Thời gian thanh toán</th>
+                                        <th>được quét bởi</th>
+                                        <th>tình trạng hết</th>
+                                        <th>Chuyên chở</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>ITM-SF-001</td>
+                                        <td>Sofa Chữ L Sang Trọng</td>
+                                        <td>09/04, 08:35</td>
+                                        <td>Nguyễn Văn Tài</td>
+                                        <td><span class="badge badge-success">Tốt</span></td>
+                                        <td>Xe tải số 3</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ITM-TA-015</td>
+                                        <td>Bản An Go OC 6 người</td>
+                                        <td>09 tháng 4, 08:42</td>
+                                        <td>Nguyễn Văn Tài</td>
+                                        <td><span class="badge badge-success">Tốt</span></td>
+                                        <td>Xe tải số 3</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ITM-TB-022</td>
+                                        <td>Tứ Bếp Hiến Đại I-Shape</td>
+                                        <td>09 tháng 4, 09:01</td>
+                                        <td>Nguyễn Văn Tài</td>
+                                        <td><span class="badge badge-success">Tốt</span></td>
+                                        <td>Xe tải số 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ITM-GG-019</td>
+                                        <td>Ghe Giám Đốc Đa Thất</td>
+                                        <td>09/04, 09:15</td>
+                                        <td>Nguyễn Văn Tài</td>
+                                        <td><span class="badge badge-warning">Vết xước nhỏ</span></td>
+                                        <td>Xe tải số 2</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Return Log -->
+                    <div class="tab-content" id="tab-return">
+                        <div class="card mb-md">
+                            <div class="card-body"
+                                style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
+                                <div style="font-size: 36px; margin-bottom: var(--spacing-md);">📦</div>
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: var(--spacing-xs);">Không
+                                    Trở lại
+                                    Chưa</div>
+                                <div style="font-size: 12px;">Sự kiện này hiện đang trong quá trình vận chuyển. Xử lý
+                                    trả lại
+                                    sẽ có mặt sau khi sự kiện kết thúc (15 tháng 4 năm 2026).</div>
+                                <button class="btn btn-secondary btn-sm mt-md"
+                                    style="pointer-events: none; opacity: 0.5;">↩️ Quy trình hoàn trả</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Discrepancies -->
+                    <div class="tab-content" id="tab-discrepancy">
+                        <div class="card mb-md">
+                            <div class="card-body"
+                                style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
+                                <div style="font-size: 36px; margin-bottom: var(--spacing-md);">✅</div>
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: var(--spacing-xs);">Không
+                                    Sự khác biệt</div>
+                                <div style="font-size: 12px;">Tất cả các mục chiếm cho đến nay. Những khác biệt sẽ
+                                    bị gắn cờ
+                                    trong quá trình đối chiếu hoàn trả nếu có mặt hàng nào bị thiếu hoặc hư hỏng.</div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="border: 1px dashed var(--odoo-warning); background: #FFFBF0;">
+                            <div class="card-body">
+                                <div class="section-title" style="color: var(--odoo-warning);">⚠️ Các vấn đề đã biết từ
+                                    trước đó
+                                    Sự kiện</div>
+                                <div class="text-sm" style="color: var(--text-secondary);">
+                                    Tham khảo: EXH-2026-030 (Kien Trúc & Xay Dung 2026)
+                                </div>
+                                <table class="table mt-md">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã mặt hàng</th>
+                                            <th>Sản phẩm</th>
+                                            <th>Vấn đề</th>
+                                            <th>Mức độ nghiêm trọng</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="discrepancy-row">
+                                            <td>ITM-DK-038</td>
+                                            <td>Đến Ông Thời Cơ</td>
+                                            <td>Thiếu - Không tìm thấy khi trả lại</td>
+                                            <td><span class="badge badge-danger">Cao</span></td>
+                                            <td><span class="badge badge-warning">Đang điều tra</span></td>
+                                        </tr>
+                                        <tr class="discrepancy-row">
+                                            <td>ITM-SF-012</td>
+                                            <td>Sofa Mini 2 Chỗ</td>
+                                            <td>Hư hỏng - Rách ở tựa tay trái</td>
+                                            <td><span class="badge badge-warning">Trung bình</span></td>
+                                            <td><span class="badge badge-success">Sửa chữa</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Info -->
+                    <div class="tab-content" id="tab-info">
+                        <div class="grid-2">
+                            <div class="card">
+                                <div class="card-header"><span class="card-title">Chi tiết sự kiện</span></div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label>Số dự án</label>
+                                        <div class="readonly-value">EXH-2026-041</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tên sự kiện</label>
+                                        <div class="readonly-value">VietBuild 2026 Q1</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Địa điểm</label>
+                                        <div class="readonly-value">SECC - Trung tâm Hội chợ & Sự kiện Sài Gòn</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Địa chỉ</label>
+                                        <div class="readonly-value">799 Nguyễn Văn Linh, Phú Mỹ Hưng, Quận 7, TP.HCM
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Số gian hàng</label>
+                                        <div class="readonly-value">Hội trường A - Gian hàng A12</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Kích thước gian hàng</label>
+                                        <div class="readonly-value">6m x 8m = 48m2</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header"><span class="card-title">Tài chính & Đội ngũ</span></div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label>Tổng ngân sách</label>
+                                        <div class="readonly-value"
+                                            style="font-size: 16px; font-weight: 700; color: var(--odoo-primary);">
+                                            500.000.000 đồng</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Cho thuê gian hàng</label>
+                                        <div class="readonly-value">120.000.000 đồng</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Chuyên chở</label>
+                                        <div class="readonly-value">45.000.000 đồng</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Lao động thiết lập</label>
+                                        <div class="readonly-value">35.000.000 đồng</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tài liệu tiếp thị</label>
+                                        <div class="readonly-value">25.000.000 đồng</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Người quản lý dự án</label>
+                                        <div class="readonly-value">Hoàng Văn Đức</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Đại diện bán hàng</label>
+                                        <div class="readonly-value">Nguyễn Thị Lân</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Đội thiết lập</label>
+                                        <div class="readonly-value">4 người (2 ngày)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ============================================ -->
+                <!-- VIEW: TRANSACTIONS (Thanh toán / Trả lại) -->
+                <!-- ============================================ -->
+                <div class="module-view" id="view-transactions">
+                    <div class="page-header">
+                        <h1 class="page-title">🔄 Thanh toán &amp; Trả lại</h1>
+                        <div class="btn-group">
+                            <button class="filter-btn" onclick="filterTransactions('all')" id="ftAll" style="background:var(--odoo-primary);color:white;border-color:var(--odoo-primary);">Tất cả <span style="background:rgba(255,255,255,0.3);padding:0 5px;border-radius:10px;font-size:10px;margin-left:4px;">18</span></button>
+                            <button class="filter-btn" onclick="filterTransactions('checkout')" id="ftCheckout">Thanh toán <span style="background:var(--odoo-warning);color:white;padding:0 5px;border-radius:10px;font-size:10px;margin-left:4px;">11</span></button>
+                            <button class="filter-btn" onclick="filterTransactions('return')" id="ftReturn">Trả lại <span style="background:var(--odoo-success);color:white;padding:0 5px;border-radius:10px;font-size:10px;margin-left:4px;">7</span></button>
+                            <button class="btn btn-secondary btn-sm" onclick="showToast('Xuất Excel...','info')">📥 Xuất khẩu</button>
+                        </div>
+                    </div>
+
+                    <!-- Summary KPIs -->
+                    <div class="stats-grid" style="grid-template-columns: repeat(4,1fr);">
+                        <div class="stat-card">
+                            <div class="stat-icon orange">📤</div>
+                            <div class="stat-info">
+                                <div class="stat-value">11</div>
+                                <div class="stat-label">Lượt thanh toán (tháng 4)</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">↩️</div>
+                            <div class="stat-info">
+                                <div class="stat-value">7</div>
+                                <div class="stat-label">Lượt trả lại</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red">⚠️</div>
+                            <div class="stat-info">
+                                <div class="stat-value">3</div>
+                                <div class="stat-label">Sự khác biệt đang chờ</div>
+                            </div>
+                            <span class="stat-trend down">Cần xử lý</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon blue">📦</div>
+                            <div class="stat-info">
+                                <div class="stat-value">147</div>
+                                <div class="stat-label">Tổng mặt hàng xử lý</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transactions Table -->
+                    <div class="table-container">
+                        <div class="table-header">
+                            <span style="font-weight:600;">Lịch sử giao dịch</span>
+                            <div class="flex-gap">
+                                <span style="font-size:12px;color:var(--text-secondary);">Lọc theo sự kiện:</span>
+                                <select style="font-size:12px;padding:3px 8px;border:1px solid var(--border-color);border-radius:4px;">
+                                    <option>Tất cả sự kiện</option>
+                                    <option>VietBuild 2026 Q1</option>
+                                    <option>Hội chợ Nội Thất Hiển Đại</option>
+                                    <option>VietBuild 2026 Q2</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table class="table" id="transactionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Mã GD</th>
+                                    <th>Loại</th>
+                                    <th>Sự kiện</th>
+                                    <th>Mã mặt hàng</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Ngày giờ</th>
+                                    <th>Nhân viên</th>
+                                    <th>Tình trạng</th>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr data-type="checkout">
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">TXN-2026-0118</a></td>
+                                    <td><span class="badge badge-checkout">📤 Thanh toán</span></td>
+                                    <td>VietBuild 2026 Q1</td>
+                                    <td>ITM-SF-001</td>
+                                    <td>Sofa Chữ L Sang Trọng</td>
+                                    <td>09/04/2026, 08:35</td>
+                                    <td>Nguyễn Văn Tài</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td>Xe tải số 3</td>
+                                </tr>
+                                <tr data-type="checkout">
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">TXN-2026-0117</a></td>
+                                    <td><span class="badge badge-checkout">📤 Thanh toán</span></td>
+                                    <td>VietBuild 2026 Q1</td>
+                                    <td>ITM-TA-015</td>
+                                    <td>Bàn Ăn Gỗ Óc 6 người</td>
+                                    <td>09/04/2026, 08:42</td>
+                                    <td>Nguyễn Văn Tài</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td>Xe tải số 3</td>
+                                </tr>
+                                <tr data-type="checkout">
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">TXN-2026-0116</a></td>
+                                    <td><span class="badge badge-checkout">📤 Thanh toán</span></td>
+                                    <td>VietBuild 2026 Q1</td>
+                                    <td>ITM-GG-019</td>
+                                    <td>Ghế Giám Đốc Đa Tầng</td>
+                                    <td>09/04/2026, 09:15</td>
+                                    <td>Nguyễn Văn Tài</td>
+                                    <td><span class="badge badge-warning">Vết xước nhỏ</span></td>
+                                    <td>-</td>
+                                </tr>
+                                <tr data-type="checkout">
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">TXN-2026-0110</a></td>
+                                    <td><span class="badge badge-checkout">📤 Thanh toán</span></td>
+                                    <td>Hội chợ Nội Thất Hiển Đại</td>
+                                    <td>ITM-TB-022</td>
+                                    <td>Tủ Bếp Hiện Đại I-Shape</td>
+                                    <td>18/04/2026, 07:50</td>
+                                    <td>Lê Minh Tuấn</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td>Xe tải số 1</td>
+                                </tr>
+                                <tr data-type="checkout">
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">TXN-2026-0109</a></td>
+                                    <td><span class="badge badge-checkout">📤 Thanh toán</span></td>
+                                    <td>Hội chợ Nội Thất Hiển Đại</td>
+                                    <td>ITM-GN-008</td>
+                                    <td>Giường Ngủ Gỗ Cao Su</td>
+                                    <td>18/04/2026, 08:10</td>
+                                    <td>Lê Minh Tuấn</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td>Xe tải số 2</td>
+                                </tr>
+                                <tr data-type="return">
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">TXN-2026-0098</a></td>
+                                    <td><span class="badge badge-active">↩️ Trả lại</span></td>
+                                    <td>Hội chợ sự kiện thiết kế Sài Gòn</td>
+                                    <td>ITM-SF-001</td>
+                                    <td>Sofa Chữ L Sang Trọng</td>
+                                    <td>21/03/2026, 14:20</td>
+                                    <td>Phạm Văn Hùng</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td>Trả đủ</td>
+                                </tr>
+                                <tr data-type="return">
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">TXN-2026-0097</a></td>
+                                    <td><span class="badge badge-active">↩️ Trả lại</span></td>
+                                    <td>Hội chợ sự kiện thiết kế Sài Gòn</td>
+                                    <td>ITM-DK-038</td>
+                                    <td>Đèn Ông Thơi Cổ</td>
+                                    <td>21/03/2026, 14:45</td>
+                                    <td>Phạm Văn Hùng</td>
+                                    <td><span class="badge badge-danger">Mất tích</span></td>
+                                    <td style="color:var(--odoo-danger);font-size:11px;">Không tìm thấy tại địa điểm</td>
+                                </tr>
+                                <tr data-type="return">
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">TXN-2026-0096</a></td>
+                                    <td><span class="badge badge-active">↩️ Trả lại</span></td>
+                                    <td>Hội chợ sự kiện thiết kế Sài Gòn</td>
+                                    <td>ITM-SF-012</td>
+                                    <td>Sofa Mini 2 Chỗ</td>
+                                    <td>21/03/2026, 15:00</td>
+                                    <td>Phạm Văn Hùng</td>
+                                    <td><span class="badge badge-warning">Hư hỏng</span></td>
+                                    <td style="color:var(--odoo-warning);font-size:11px;">Rách ở tựa tay trái</td>
+                                </tr>
+                                <tr data-type="return">
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">TXN-2026-0082</a></td>
+                                    <td><span class="badge badge-active">↩️ Trả lại</span></td>
+                                    <td>Sự Kiện Nội Thất HCM</td>
+                                    <td>ITM-BT-055</td>
+                                    <td>Bàn Trà Kính Cường Lực</td>
+                                    <td>06/03/2026, 09:30</td>
+                                    <td>Nguyễn Văn Tài</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td>Trả đủ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="padding:var(--spacing-md);display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border-color);">
+                            <span style="font-size:12px;color:var(--text-secondary);">Hiển thị 1-9 trên 18</span>
+                            <div class="flex-gap">
+                                <button class="btn btn-secondary btn-sm" disabled>◀ Trước</button>
+                                <button class="btn btn-primary btn-sm">1</button>
+                                <button class="btn btn-secondary btn-sm">2</button>
+                                <button class="btn btn-secondary btn-sm">Tiếp ▶</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- VIEW: ITEMS MASTER (Danh mục mặt hàng) -->
+                <!-- ============================================ -->
+                <div class="module-view" id="view-items-master">
+                    <div class="page-header">
+                        <h1 class="page-title">📦 Danh mục mặt hàng sự kiện</h1>
+                        <div class="btn-group">
+                            <select style="font-size:12px;padding:6px 10px;border:1px solid var(--border-color);border-radius:var(--radius-sm);">
+                                <option>Tất cả danh mục</option>
+                                <option>Sofa</option>
+                                <option>Bàn ăn</option>
+                                <option>Tủ bếp</option>
+                                <option>Giường ngủ</option>
+                                <option>Ghế</option>
+                                <option>Trang trí</option>
+                            </select>
+                            <select style="font-size:12px;padding:6px 10px;border:1px solid var(--border-color);border-radius:var(--radius-sm);">
+                                <option>Tất cả trạng thái</option>
+                                <option>Trong kho</option>
+                                <option>Đang chuyển tiếp</option>
+                                <option>Đang trưng bày</option>
+                                <option>Cần bảo trì</option>
+                            </select>
+                            <button class="btn btn-secondary btn-sm" onclick="showToast('Xuất danh sách mặt hàng...','info')">📥 Xuất khẩu</button>
+                            <button class="btn btn-primary btn-sm" onclick="showToast('Thêm mặt hàng mới...','info')">➕ Thêm mặt hàng</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">📦</div>
+                            <div class="stat-info">
+                                <div class="stat-value">84</div>
+                                <div class="stat-label">Tổng mặt hàng</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">🏠</div>
+                            <div class="stat-info">
+                                <div class="stat-value">47</div>
+                                <div class="stat-label">Trong kho</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">🚚</div>
+                            <div class="stat-info">
+                                <div class="stat-value">23</div>
+                                <div class="stat-label">Đang vận chuyển</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">🏛️</div>
+                            <div class="stat-info">
+                                <div class="stat-value">10</div>
+                                <div class="stat-label">Đang trưng bày</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red">🔧</div>
+                            <div class="stat-info">
+                                <div class="stat-value">4</div>
+                                <div class="stat-label">Cần bảo trì</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Table -->
+                    <div class="table-container">
+                        <div class="table-header">
+                            <span style="font-weight:600;">84 mặt hàng</span>
+                            <div class="flex-gap">
+                                <span style="font-size:12px;color:var(--text-secondary);">Sắp xếp theo:</span>
+                                <select style="font-size:12px;padding:3px 8px;border:1px solid var(--border-color);border-radius:4px;">
+                                    <option>Mã hàng (A-Z)</option>
+                                    <option>Tên (A-Z)</option>
+                                    <option>Danh mục</option>
+                                    <option>Tình trạng</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width:30px;"><input type="checkbox"></th>
+                                    <th>Mã QR</th>
+                                    <th>Mã hàng</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Danh mục</th>
+                                    <th>Tình trạng</th>
+                                    <th>Trạng thái</th>
+                                    <th>Sự kiện hiện tại</th>
+                                    <th>Lần sử dụng</th>
+                                    <th>Chi nhánh</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><div class="qr-code">QR<br>001</div></td>
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">ITM-SF-001</a></td>
+                                    <td><strong>Sofa Chữ L Sang Trọng</strong></td>
+                                    <td>Sofa</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td><span class="badge badge-in-transit">Đang vận chuyển</span></td>
+                                    <td style="font-size:11px;">VietBuild Q1</td>
+                                    <td style="text-align:center;">8</td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td><button class="btn btn-secondary btn-sm" onclick="showToast('Xem chi tiết ITM-SF-001','info')">Xem</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><div class="qr-code">QR<br>015</div></td>
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">ITM-TA-015</a></td>
+                                    <td><strong>Bàn Ăn Gỗ Óc 6 người</strong></td>
+                                    <td>Bàn ăn</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td><span class="badge badge-in-transit">Đang vận chuyển</span></td>
+                                    <td style="font-size:11px;">VietBuild Q1</td>
+                                    <td style="text-align:center;">12</td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td><button class="btn btn-secondary btn-sm" onclick="showToast('Xem chi tiết ITM-TA-015','info')">Xem</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><div class="qr-code">QR<br>022</div></td>
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">ITM-TB-022</a></td>
+                                    <td><strong>Tủ Bếp Hiện Đại I-Shape</strong></td>
+                                    <td>Tủ bếp</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td><span class="badge badge-in-transit">Đang vận chuyển</span></td>
+                                    <td style="font-size:11px;">VietBuild Q1</td>
+                                    <td style="text-align:center;">5</td>
+                                    <td><span class="entity-tag entity-hq">HQ</span></td>
+                                    <td><button class="btn btn-secondary btn-sm" onclick="showToast('Xem chi tiết ITM-TB-022','info')">Xem</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><div class="qr-code">QR<br>008</div></td>
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">ITM-GN-008</a></td>
+                                    <td><strong>Giường Ngủ Gỗ Cao Su</strong></td>
+                                    <td>Giường</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td><span class="badge badge-active">Đang trưng bày</span></td>
+                                    <td style="font-size:11px;">Nội Thất Hiển Đại</td>
+                                    <td style="text-align:center;">6</td>
+                                    <td><span class="entity-tag entity-hq">HQ</span></td>
+                                    <td><button class="btn btn-secondary btn-sm" onclick="showToast('Xem chi tiết ITM-GN-008','info')">Xem</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><div class="qr-code">QR<br>019</div></td>
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">ITM-GG-019</a></td>
+                                    <td><strong>Ghế Giám Đốc Đa Tầng</strong></td>
+                                    <td>Ghế</td>
+                                    <td><span class="badge badge-warning">Vết xước nhỏ</span></td>
+                                    <td><span class="badge badge-secondary">Trong kho</span></td>
+                                    <td style="font-size:11px;color:var(--text-secondary);">--</td>
+                                    <td style="text-align:center;">9</td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td><button class="btn btn-warning btn-sm" onclick="showToast('Yêu cầu bảo trì ITM-GG-019','warning')">🔧 Bảo trì</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><div class="qr-code">QR<br>042</div></td>
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">ITM-DK-042</a></td>
+                                    <td><strong>Đèn Trang Trí Pha Lê</strong></td>
+                                    <td>Trang trí</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td><span class="badge badge-secondary">Trong kho</span></td>
+                                    <td style="font-size:11px;color:var(--text-secondary);">--</td>
+                                    <td style="text-align:center;">4</td>
+                                    <td><span class="entity-tag entity-bt">BT</span></td>
+                                    <td><button class="btn btn-secondary btn-sm" onclick="showToast('Xem chi tiết ITM-DK-042','info')">Xem</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><div class="qr-code">QR<br>031</div></td>
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">ITM-TQ-031</a></td>
+                                    <td><strong>Tủ Quần Áo 3 Buồng</strong></td>
+                                    <td>Tủ</td>
+                                    <td><span class="badge badge-danger">Cần sửa chữa</span></td>
+                                    <td><span class="badge badge-secondary">Trong kho</span></td>
+                                    <td style="font-size:11px;color:var(--text-secondary);">--</td>
+                                    <td style="text-align:center;">7</td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td><button class="btn btn-danger btn-sm" onclick="showToast('Gửi yêu cầu sửa chữa ITM-TQ-031','warning')">⚠️ Sửa chữa</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td><div class="qr-code">QR<br>055</div></td>
+                                    <td><a href="#" style="color:var(--odoo-primary);font-weight:500;">ITM-BT-055</a></td>
+                                    <td><strong>Bàn Trà Kính Cường Lực</strong></td>
+                                    <td>Bàn trà</td>
+                                    <td><span class="badge badge-success">Tốt</span></td>
+                                    <td><span class="badge badge-active">Đang trưng bày</span></td>
+                                    <td style="font-size:11px;">Nội Thất Hiển Đại</td>
+                                    <td style="text-align:center;">11</td>
+                                    <td><span class="entity-tag entity-bt">BT</span></td>
+                                    <td><button class="btn btn-secondary btn-sm" onclick="showToast('Xem chi tiết ITM-BT-055','info')">Xem</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="padding:var(--spacing-md);display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border-color);">
+                            <span style="font-size:12px;color:var(--text-secondary);">Hiển thị 1-8 trên 84</span>
+                            <div class="flex-gap">
+                                <button class="btn btn-secondary btn-sm" disabled>◀ Trước</button>
+                                <button class="btn btn-primary btn-sm">1</button>
+                                <button class="btn btn-secondary btn-sm">2</button>
+                                <button class="btn btn-secondary btn-sm">3</button>
+                                <button class="btn btn-secondary btn-sm">Tiếp ▶</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- VIEW: BUDGET (Ngân sách) -->
+                <!-- ============================================ -->
+                <div class="module-view" id="view-budget">
+                    <div class="page-header">
+                        <h1 class="page-title">💰 Ngân sách sự kiện</h1>
+                        <div class="btn-group">
+                            <select style="font-size:12px;padding:6px 10px;border:1px solid var(--border-color);border-radius:var(--radius-sm);">
+                                <option>Quý 2 năm 2026</option>
+                                <option>Quý 1 năm 2026</option>
+                                <option>Năm 2025</option>
+                            </select>
+                            <button class="btn btn-secondary btn-sm" onclick="showToast('Xuất báo cáo ngân sách...','info')">📊 Báo cáo</button>
+                            <button class="btn btn-secondary btn-sm" onclick="showToast('Xuất Excel...','info')">📥 Xuất khẩu</button>
+                        </div>
+                    </div>
+
+                    <!-- Budget KPIs -->
+                    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">💼</div>
+                            <div class="stat-info">
+                                <div class="stat-value" style="font-size:18px;">1,47 tỷ</div>
+                                <div class="stat-label">Tổng ngân sách Q2/2026</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">💸</div>
+                            <div class="stat-info">
+                                <div class="stat-value" style="font-size:18px;">842M</div>
+                                <div class="stat-label">Đã chi tiêu</div>
+                            </div>
+                            <span class="stat-trend up">57% ngân sách</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">💹</div>
+                            <div class="stat-info">
+                                <div class="stat-value" style="font-size:18px;">628M</div>
+                                <div class="stat-label">Còn lại</div>
+                            </div>
+                            <span class="stat-trend up">43% còn lại</span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">📈</div>
+                            <div class="stat-info">
+                                <div class="stat-value" style="font-size:18px;">2,1 tỷ</div>
+                                <div class="stat-label">Doanh thu ước tính</div>
+                            </div>
+                            <span class="stat-trend up">ROI 43%</span>
+                        </div>
+                    </div>
+
+                    <!-- Per-event Budget Table -->
+                    <div class="section-title">Ngân sách theo từng sự kiện</div>
+                    <div class="table-container mb-lg">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Sự kiện</th>
+                                    <th>Chi nhánh</th>
+                                    <th>Tổng ngân sách</th>
+                                    <th>Thuê gian hàng</th>
+                                    <th>Vận chuyển</th>
+                                    <th>Nhân công</th>
+                                    <th>Marketing</th>
+                                    <th>Đã chi</th>
+                                    <th>Còn lại</th>
+                                    <th>Tiến độ</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong><a href="#" onclick="switchView('detail');return false;" style="color:var(--odoo-primary);">VietBuild 2026 Q1</a></strong></td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td style="font-weight:700;">500M đ</td>
+                                    <td>120M đ</td>
+                                    <td>45M đ</td>
+                                    <td>35M đ</td>
+                                    <td>25M đ</td>
+                                    <td style="font-weight:600;color:var(--odoo-warning);">312M đ</td>
+                                    <td style="font-weight:600;color:var(--odoo-success);">188M đ</td>
+                                    <td style="min-width:120px;">
+                                        <div class="progress-bar"><div class="progress-fill orange" style="width:62%"></div></div>
+                                        <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">62%</div>
+                                    </td>
+                                    <td><span class="badge badge-in-transit">Đang chạy</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><a href="#" onclick="switchView('detail');return false;" style="color:var(--odoo-primary);">Hội chợ Nội Thất Hiển Đại</a></strong></td>
+                                    <td><span class="entity-tag entity-hq">HQ</span></td>
+                                    <td style="font-weight:700;">420M đ</td>
+                                    <td>90M đ</td>
+                                    <td>38M đ</td>
+                                    <td>28M đ</td>
+                                    <td>20M đ</td>
+                                    <td style="font-weight:600;color:var(--odoo-warning);">280M đ</td>
+                                    <td style="font-weight:600;color:var(--odoo-success);">140M đ</td>
+                                    <td style="min-width:120px;">
+                                        <div class="progress-bar"><div class="progress-fill orange" style="width:67%"></div></div>
+                                        <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">67%</div>
+                                    </td>
+                                    <td><span class="badge badge-checkout">Thanh toán</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><a href="#" onclick="switchView('detail');return false;" style="color:var(--odoo-primary);">VietBuild 2026 Q2</a></strong></td>
+                                    <td><span class="entity-tag entity-nk">NK</span></td>
+                                    <td style="font-weight:700;">350M đ</td>
+                                    <td>80M đ</td>
+                                    <td>32M đ</td>
+                                    <td>22M đ</td>
+                                    <td>15M đ</td>
+                                    <td style="font-weight:600;color:var(--odoo-warning);">149M đ</td>
+                                    <td style="font-weight:600;color:var(--odoo-success);">201M đ</td>
+                                    <td style="min-width:120px;">
+                                        <div class="progress-bar"><div class="progress-fill blue" style="width:43%"></div></div>
+                                        <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">43%</div>
+                                    </td>
+                                    <td><span class="badge badge-draft">Chuẩn bị</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><a href="#" onclick="switchView('detail');return false;" style="color:var(--odoo-primary);">Thiết Kế Nhà Đẹp 2026</a></strong></td>
+                                    <td><span class="entity-tag entity-bt">BT</span></td>
+                                    <td style="font-weight:700;">200M đ</td>
+                                    <td>50M đ</td>
+                                    <td>18M đ</td>
+                                    <td>12M đ</td>
+                                    <td>8M đ</td>
+                                    <td style="font-weight:600;color:var(--odoo-warning);">101M đ</td>
+                                    <td style="font-weight:600;color:var(--odoo-success);">99M đ</td>
+                                    <td style="min-width:120px;">
+                                        <div class="progress-bar"><div class="progress-fill blue" style="width:50%"></div></div>
+                                        <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">50%</div>
+                                    </td>
+                                    <td><span class="badge badge-draft">Chuẩn bị</span></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background:var(--content-bg);font-weight:700;">
+                                    <td colspan="2">TỔNG CỘNG Q2/2026</td>
+                                    <td style="color:var(--odoo-primary);">1,47 tỷ đ</td>
+                                    <td>340M đ</td>
+                                    <td>133M đ</td>
+                                    <td>97M đ</td>
+                                    <td>68M đ</td>
+                                    <td style="color:var(--odoo-warning);">842M đ</td>
+                                    <td style="color:var(--odoo-success);">628M đ</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Cost Breakdown -->
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">📊 Phân bổ chi phí Q2/2026</span></div>
+                            <div class="card-body">
+                                <div style="margin-bottom:12px;">
+                                    <div class="flex-between text-sm mb-md">
+                                        <span>🏢 Thuê gian hàng</span>
+                                        <span style="font-weight:600;">340M đ <span style="color:var(--text-secondary);font-weight:400;">(23%)</span></span>
+                                    </div>
+                                    <div class="progress-bar"><div class="progress-fill blue" style="width:23%"></div></div>
+                                </div>
+                                <div style="margin-bottom:12px;">
+                                    <div class="flex-between text-sm mb-md">
+                                        <span>🚚 Vận chuyển</span>
+                                        <span style="font-weight:600;">133M đ <span style="color:var(--text-secondary);font-weight:400;">(9%)</span></span>
+                                    </div>
+                                    <div class="progress-bar"><div class="progress-fill orange" style="width:9%"></div></div>
+                                </div>
+                                <div style="margin-bottom:12px;">
+                                    <div class="flex-between text-sm mb-md">
+                                        <span>👷 Nhân công</span>
+                                        <span style="font-weight:600;">97M đ <span style="color:var(--text-secondary);font-weight:400;">(7%)</span></span>
+                                    </div>
+                                    <div class="progress-bar"><div class="progress-fill purple" style="width:7%"></div></div>
+                                </div>
+                                <div style="margin-bottom:12px;">
+                                    <div class="flex-between text-sm mb-md">
+                                        <span>📣 Marketing</span>
+                                        <span style="font-weight:600;">68M đ <span style="color:var(--text-secondary);font-weight:400;">(5%)</span></span>
+                                    </div>
+                                    <div class="progress-bar"><div class="progress-fill green" style="width:5%"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex-between text-sm mb-md">
+                                        <span>🔧 Chi phí khác</span>
+                                        <span style="font-weight:600;">204M đ <span style="color:var(--text-secondary);font-weight:400;">(14%)</span></span>
+                                    </div>
+                                    <div class="progress-bar"><div class="progress-fill red" style="width:14%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">📈 ROI &amp; Hiệu quả sự kiện</span></div>
+                            <div class="card-body">
+                                <div class="table-container" style="border:none;">
+                                    <table class="table" style="font-size:12px;">
+                                        <thead>
+                                            <tr>
+                                                <th>Sự kiện</th>
+                                                <th>Chi phí</th>
+                                                <th>Doanh thu</th>
+                                                <th>ROI</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>VietBuild Q1</td>
+                                                <td>500M đ</td>
+                                                <td>850M đ</td>
+                                                <td><span style="color:var(--odoo-success);font-weight:700;">+70%</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Nội Thất HD</td>
+                                                <td>420M đ</td>
+                                                <td>680M đ</td>
+                                                <td><span style="color:var(--odoo-success);font-weight:700;">+62%</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>VietBuild Q2</td>
+                                                <td>350M đ</td>
+                                                <td>420M đ</td>
+                                                <td><span style="color:var(--odoo-warning);font-weight:700;">+20%</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Thiết Kế ND</td>
+                                                <td>200M đ</td>
+                                                <td>150M đ</td>
+                                                <td><span style="color:var(--odoo-danger);font-weight:700;">-25%</span></td>
+                                            </tr>
+                                            <tr style="background:var(--content-bg);font-weight:700;">
+                                                <td>TỔNG</td>
+                                                <td>1,47 tỷ đ</td>
+                                                <td>2,1 tỷ đ</td>
+                                                <td><span style="color:var(--odoo-success);font-weight:700;">+43%</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div style="margin-top:16px;padding:12px;background:var(--content-bg);border-radius:var(--radius-md);">
+                                    <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">💡 Nhận xét</div>
+                                    <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
+                                        VietBuild Q1 có ROI cao nhất (70%). Sự kiện "Thiết Kế Nhà Đẹp" có chi phí vượt doanh thu — cần xem xét lại scope cho lần sau.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end page-content -->
+        </div><!-- end main-content -->
+    </div><!-- end app-layout -->
+
+    <!-- ============================================ -->
+    <!-- MODAL: New Events -->
+    <!-- ============================================ -->
+    <div class="modal-overlay" id="newEventsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">➕ Tạo sự kiện mới</span>
+                <button class="modal-close" onclick="closeModal('newEventsModal')">& lần;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Tên sự kiện *</label>
+                        <input type="text" placeholder="ví dụ: VietBuild 2026 Q3">
+                    </div>
+                    <div class="form-group">
+                        <label>Thực thể *</label>
+                        <select>
+                            <option>NK Store - Nguyễn Kiệm</option>
+                            <option>BT Store - Bình Tân</option>
+                            <option>HQ - Trụ Sở Chính</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Giám đốc dự án *</label>
+                        <select>
+                            <option>Hoàng Văn Đức</option>
+                            <option>Trần Văn Minh</option>
+                            <option>Lê Thị Hồng</option>
+                            <option>Phạm Ngọc Anh</option>
+                            <option>Nguyễn Thị Mai</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Địa điểm / Địa điểm *</label>
+                        <input type="text" placeholder="ví dụ: SECC Quan 7">
+                    </div>
+                    <div class="form-group">
+                        <label>Số gian hàng</label>
+                        <input type="text" placeholder="ví dụ: Hội trường A - Gian hàng A12">
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày bắt đầu *</label>
+                        <input type="date" value="2026-05-01">
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày kết thúc *</label>
+                        <input type="date" value="2026-05-05">
+                    </div>
+                    <div class="form-group">
+                        <label>Ngân sách (đồng) *</label>
+                        <input type="text" placeholder="ví dụ: 300.000.000">
+                    </div>
+                    <div class="form-group">
+                        <label>Mục ước tính</label>
+                        <input type="number" placeholder="ví dụ: 20" min="1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mô tả / Ghi chú</label>
+                    <textarea rows="3" placeholder="Thông tin thêm về sự kiện..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('newEventsModal')">Hủy bỏ</button>
+                <button class="btn btn-primary"
+                    onclick="closeModal('newEventsModal'); showToast('Events created successfully: EXH-2026-045', 'success')">Tạo
+                    Sự kiện</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAL: Checkout Items -->
+    <!-- ============================================ -->
+    <div class="modal-overlay" id="checkoutModal">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <span class="modal-title">📤 Kiểm tra hạng mục - VietBuild 2026 Q1</span>
+                <button class="modal-close" onclick="closeModal('checkoutModal')">& lần;</button>
+            </div>
+            <div class="modal-body">
+                <div class="grid-2 mb-md">
+                    <div class="form-group">
+                        <label>Ngày thanh toán</label>
+                        <input type="date" value="2026-04-09">
+                    </div>
+                    <div class="form-group">
+                        <label>Nhân viên kho</label>
+                        <select>
+                            <option>Nguyễn Văn Tài</option>
+                            <option>Lê Minh Tuấn</option>
+                            <option>Phạm Văn Hùng</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-title">Chọn mặt hàng để thanh toán</div>
+
+                <!-- Remaining items not yet checked out -->
+                <div class="checkbox-list mb-md">
+                    <label class="checkbox-item" onclick="toggleCheckbox(this)">
+                        <input type="checkbox">
+                        <div class="qr-code" style="width: 40px; height: 40px; font-size: 8px;">QR</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 12px;">ITM-TQ-031 - Tứ Quan Áo 3 Bường</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Tú quân áo | Tình trạng: Tốt
+                            </div>
+                        </div>
+                    </label>
+                    <label class="checkbox-item" onclick="toggleCheckbox(this)">
+                        <input type="checkbox">
+                        <div class="qr-code" style="width: 40px; height: 40px; font-size: 8px;">QR</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 12px;">ITM-DK-042 - Đen Trắng Trị Pha Lê</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Trang trí | Tình trạng: Tốt
+                            </div>
+                        </div>
+                    </label>
+                    <label class="checkbox-item" onclick="toggleCheckbox(this)">
+                        <input type="checkbox">
+                        <div class="qr-code" style="width: 40px; height: 40px; font-size: 8px;">QR</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 12px;">ITM-GG-019 - Ghe Giám Đốc Đà Thật</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">ghè | Tình trạng: Có vết xước
+                                nhỏ
+                            </div>
+                        </div>
+                    </label>
+                    <label class="checkbox-item" onclick="toggleCheckbox(this)">
+                        <input type="checkbox">
+                        <div class="qr-code" style="width: 40px; height: 40px; font-size: 8px;">QR</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 12px;">ITM-BT-055 - Bản Trà Kinh Cường Lực</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Bản trà | Tình trạng: Tốt</div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>Nhiệm vụ vận chuyển</label>
+                    <select>
+                        <option>Xe tải số 1</option>
+                        <option>Xe tải số 2</option>
+                        <option>Xe tải số 3</option>
+                        <option>Vân số 1</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Ghi chú thanh toán</label>
+                    <textarea rows="2" placeholder="Bất kỳ hướng dẫn đặc biệt nào về thanh toán..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('checkoutModal')">Hủy bỏ</button>
+                <button class="btn btn-success"
+                    onclick="closeModal('checkoutModal'); showToast('4 items checked out successfully for EXH-2026-041', 'success')">Xác
+                    nhận
+                    Thanh toán (4 sản phẩm)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAL: Return Items -->
+    <!-- ============================================ -->
+    <div class="modal-overlay" id="returnModal">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <span class="modal-title">↩️ Trả Vật Phẩm - VietBuild 2026 Q1</span>
+                <button class="modal-close" onclick="closeModal('returnModal')">& lần;</button>
+            </div>
+            <div class="modal-body">
+                <div class="grid-2 mb-md">
+                    <div class="form-group">
+                        <label>Ngày về</label>
+                        <input type="date" value="2026-04-16">
+                    </div>
+                    <div class="form-group">
+                        <label>Nhân viên tiếp nhận</label>
+                        <select>
+                            <option>Nguyễn Văn Tài</option>
+                            <option>Lê Minh Tuấn</option>
+                            <option>Phạm Văn Hùng</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-title">Các mặt hàng cần trả lại - Kiểm tra tình trạng</div>
+
+                <div class="table-container mb-md" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Mã mặt hàng</th>
+                                <th>Sản phẩm</th>
+                                <th>tình trạng hết</th>
+                                <th>Tình trạng Trong</th>
+                                <th>Sự khác biệt?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>ITM-SF-001</td>
+                                <td><strong>Sofa Chữ L Sang Trọng</strong></td>
+                                <td><span class="badge badge-success">Tốt</span></td>
+                                <td>
+                                    <div class="condition-select">
+                                        <button class="condition-btn selected-good"
+                                            onclick="selectCondition(this, 'good')">Tốt</button>
+                                        <button class="condition-btn" onclick="selectCondition(this, 'damaged')">Bị hư
+                                            hại</button>
+                                        <button class="condition-btn" onclick="selectCondition(this, 'missing')">Mất
+                                            tích</button>
+                                    </div>
+                                </td>
+                                <td><span class="text-sm text-muted">--</span></td>
+                            </tr>
+                            <tr>
+                                <td>ITM-TA-015</td>
+                                <td><strong>Bản An Go OC 6 người</strong></td>
+                                <td><span class="badge badge-success">Tốt</span></td>
+                                <td>
+                                    <div class="condition-select">
+                                        <button class="condition-btn selected-good"
+                                            onclick="selectCondition(this, 'good')">Tốt</button>
+                                        <button class="condition-btn" onclick="selectCondition(this, 'damaged')">Bị hư
+                                            hại</button>
+                                        <button class="condition-btn" onclick="selectCondition(this, 'missing')">Mất
+                                            tích</button>
+                                    </div>
+                                </td>
+                                <td><span class="text-sm text-muted">--</span></td>
+                            </tr>
+                            <tr>
+                                <td>ITM-TB-022</td>
+                                <td><strong>Tứ Bếp Hiến Đại I-Shape</strong></td>
+                                <td><span class="badge badge-success">Tốt</span></td>
+                                <td>
+                                    <div class="condition-select">
+                                        <button class="condition-btn"
+                                            onclick="selectCondition(this, 'good')">Tốt</button>
+                                        <button class="condition-btn selected-damaged"
+                                            onclick="selectCondition(this, 'damaged')">Bị hư hại</button>
+                                        <button class="condition-btn" onclick="selectCondition(this, 'missing')">Mất
+                                            tích</button>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-danger" style="font-size: 10px;">Cào vào cửa</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>ITM-GN-008</td>
+                                <td><strong>Giuong Ngũ Goi Cao Su</strong></td>
+                                <td><span class="badge badge-success">Tốt</span></td>
+                                <td>
+                                    <div class="condition-select">
+                                        <button class="condition-btn selected-good"
+                                            onclick="selectCondition(this, 'good')">Tốt</button>
+                                        <button class="condition-btn" onclick="selectCondition(this, 'damaged')">Bị hư
+                                            hại</button>
+                                        <button class="condition-btn" onclick="selectCondition(this, 'missing')">Mất
+                                            tích</button>
+                                    </div>
+                                </td>
+                                <td><span class="text-sm text-muted">--</span></td>
+                            </tr>
+                            <tr>
+                                <td>ITM-DK-042</td>
+                                <td><strong>Đền Trắng Trị Pha Lễ</strong></td>
+                                <td><span class="badge badge-success">Tốt</span></td>
+                                <td>
+                                    <div class="condition-select">
+                                        <button class="condition-btn"
+                                            onclick="selectCondition(this, 'good')">Tốt</button>
+                                        <button class="condition-btn" onclick="selectCondition(this, 'damaged')">Bị hư
+                                            hại</button>
+                                        <button class="condition-btn selected-missing"
+                                            onclick="selectCondition(this, 'missing')">Mất tích</button>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-danger" style="font-size: 10px;">Không tìm thấy</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-group">
+                    <label>Ghi chú trả lại / Giải thích sự khác biệt</label>
+                    <textarea rows="3"
+                        placeholder="Mô tả bất kỳ thiệt hại hoặc các mặt hàng bị thiếu...">Tú Bếp: Cào vào tấm cửa bên trái trong quá trình lắp đặt. Đèn Trang Trí: Không tìm thấy tại địa điểm - có thể bị bỏ quên tại nhà kho.</textarea>
+                </div>
+
+                <div
+                    style="background: #FFF5F5; border: 1px solid #FFCDD2; border-radius: var(--radius-md); padding: var(--spacing-md);">
+                    <div
+                        style="font-weight: 600; font-size: 13px; color: var(--odoo-danger); margin-bottom: var(--spacing-xs);">
+                        ⚠️ Tóm tắt sự khác biệt</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">
+                        <div>🔴 Hư hỏng: 1 món (ITM-TB-022)</div>
+                        <div>🔴 Thiếu: 1 sản phẩm (ITM-DK-042)</div>
+                        <div>🟢 Tốt: 3 món</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('returnModal')">Hủy bỏ</button>
+                <button class="btn btn-warning"
+                    onclick="closeModal('returnModal'); showToast('Return logged: 2 discrepancies found. Reconciliation required.', 'warning')">Nhật
+                    ký
+                    Trả lại (2 điểm khác biệt)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- JAVASCRIPT -->
+    <!-- ============================================ -->
+    <script>
+        // ===== VIEW SWITCHING =====
+        function switchView(viewName) {
+            document.querySelectorAll('.module-view').forEach(v => v.classList.remove('active'));
+            const target = document.getElementById('view-' + viewName);
+            if (target) target.classList.add('active');
+            document.querySelector('.page-content').scrollTop = 0;
+        }
+
+        // ===== NAV SWITCHING (with active state) =====
+        const navMap = {
+            'lifecycle': 'nav-lifecycle',
+            'calendar': 'nav-calendar',
+            'transactions': 'nav-transactions',
+            'items-master': 'nav-items-master',
+            'budget': 'nav-budget'
+        };
+        function switchViewNav(viewName) {
+            switchView(viewName);
+            // Remove active from all event nav items using IDs
+            Object.values(navMap).forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('active');
+            });
+            const navId = navMap[viewName];
+            if (navId) {
+                const navEl = document.getElementById(navId);
+                if (navEl) navEl.classList.add('active');
+            }
+        }
+
+        // ===== TRANSACTION FILTER =====
+        function filterTransactions(type) {
+            const rows = document.querySelectorAll('#transactionsTable tbody tr');
+            rows.forEach(row => {
+                if (type === 'all' || row.dataset.type === type) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            ['ftAll','ftCheckout','ftReturn'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                btn.style.background = 'white';
+                btn.style.color = 'var(--text-primary)';
+                btn.style.borderColor = 'var(--border-color)';
+            });
+            const activeBtn = document.getElementById(type === 'all' ? 'ftAll' : type === 'checkout' ? 'ftCheckout' : 'ftReturn');
+            if (activeBtn) {
+                activeBtn.style.background = 'var(--odoo-primary)';
+                activeBtn.style.color = 'white';
+                activeBtn.style.borderColor = 'var(--odoo-primary)';
+            }
+        }
+
+        // ===== TAB SWITCHING =====
+        function switchTab(tabEl, contentId) {
+            // Deactivate all tabs
+            tabEl.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tabEl.classList.add('active');
+            // Hide all tab contents
+            document.querySelectorAll('#view-detail .tab-content').forEach(c => c.classList.remove('active'));
+            // Show target
+            const target = document.getElementById(contentId);
+            if (target) target.classList.add('active');
+        }
+
+        // ===== ENTITY SWITCHING =====
+        function switchEntity(entity) {
+            const names = { hq: 'HQ - Tru So Chinh', nk: 'NK Store - Nguyen Kiệm', bt: 'BT Store - Binh Tan' };
+            showToast('Switched to: ' + (names[entity] || entity), 'info');
+        }
+
+        // ===== MODALS =====
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.add('show');
+        }
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.remove('show');
+        }
+        // Close modal on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function (e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+
+        // ===== TOAST NOTIFICATIONS =====
+        function showToast(message, type) {
+            const container = document.getElementById('toastContainer');
+            const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + (type || 'info');
+            toast.innerHTML =
+                '<span class="toast-icon">' + (icons[type] || 'ℹ️') + '</span>' +
+                '<span class="toast-message">' + message + '</span>' +
+                '<button class="toast-close" onclick="this.parentElement.remove()">✕</button>';
+            container.appendChild(toast);
+            // Auto-remove after 4 seconds
+            setTimeout(function () {
+                if (toast.parentElement) toast.remove();
+            }, 4000);
+        }
+
+        // ===== CHECKBOX TOGGLE (Visual) =====
+        function toggleCheckbox(labelEl) {
+            const checkbox = labelEl.querySelector('input[type="checkbox"]');
+            if (checkbox.checked) {
+                labelEl.classList.add('checked');
+            } else {
+                labelEl.classList.remove('checked');
+            }
+        }
+
+        // ===== CONDITION SELECT (Return Form) =====
+        function selectCondition(btn, condition) {
+            const container = btn.parentElement;
+            container.querySelectorAll('.condition-btn').forEach(b => {
+                b.className = 'condition-btn';
+            });
+            btn.classList.add('selected-' + condition);
+            // Update discrepancy cell
+            const row = btn.closest('tr');
+            const discCell = row.cells[row.cells.length - 1];
+            if (condition === 'good') {
+                discCell.innerHTML = '<span class="text-sm text-muted">--</span>';
+                row.style.background = '';
+            } else if (condition === 'damaged') {
+                discCell.innerHTML = '<span class="badge badge-danger" style="font-size: 10px;">Bị hư hại</span>';
+                row.style.background = '#FFF5F5';
+            } else if (condition === 'missing') {
+                discCell.innerHTML = '<span class="badge badge-danger" style="font-size: 10px;">Mất tích</span>';
+                row.style.background = '#FFF0F0';
+            }
+        }
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', function (e) {
+            // Ctrl+K = focus search
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('globalSearch').focus();
+            }
+            // Escape = close modals
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+            }
+        });
+
+        // ===== INITIAL TOAST =====
+        window.addEventListener('load', function () {
+            showToast('Events Module loaded - 5 eventss this month', 'info');
+        });
+    </script>
+    <div class="page-pattern"></div>
+</body>
+
+</html>
